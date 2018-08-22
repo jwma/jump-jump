@@ -25,7 +25,8 @@ func (c *JumpController) Get() {
 	targetUrl, err := client.Get(slug).Result()
 	if err != nil {
 		c.Ctx.WriteString("访问的链接不存在")
+		return
 	}
 
-	c.Ctx.Redirect(302, targetUrl)
+	c.Redirect(targetUrl, 302)
 }
