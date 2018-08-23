@@ -2,29 +2,11 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/go-redis/redis"
 	"time"
 	"encoding/json"
+	"github.com/jwma/jump-jump/app/models"
+	"github.com/jwma/jump-jump/app/db"
 )
-
-// 短链接请求记录结构
-type RequestRecord struct {
-	RemoteAddr string
-	UserAgent  string
-	RequestAt  int64
-}
-
-func getRedisClient() *redis.Client {
-	client := redis.NewClient(&redis.Options{
-		Addr:        "redis:6379",
-		Password:    "",
-		DB:          0,
-		IdleTimeout: -1,
-	})
-	return client
-}
-
-var client = getRedisClient()
 
 type JumpController struct {
 	beego.Controller
@@ -33,6 +15,7 @@ type JumpController struct {
 func (c *JumpController) Get() {
 	slug := c.Ctx.Input.Param(":slug")
 
+	client := db.GetRedisClient()
 	targetUrl, err := client.Get(slug).Result()
 	if err != nil {
 		beego.Error(err)
@@ -40,10 +23,10 @@ func (c *JumpController) Get() {
 		return
 	}
 
-	requestRecord := &RequestRecord{
-		c.Ctx.Request.RemoteAddr,
-		c.Ctx.Request.UserAgent(),
-		time.Now().Unix(),
+	requestRecord := &models.RequestRecord{
+		RemoteAddr: c.Ctx.Request.RemoteAddr,
+		UserAgent:  c.Ctx.Request.UserAgent(),
+		RequestAt:  time.Now().Unix(),
 	}
 	requestRecordJson, err := json.Marshal(requestRecord)
 	if err != nil {
