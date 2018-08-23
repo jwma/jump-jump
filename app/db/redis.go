@@ -9,11 +9,11 @@ var client *redis.Client
 
 func GetRedisClient() *redis.Client {
 	if client == nil {
-		beego.Debug("new redis client")
+		dbIdx, _ := beego.AppConfig.Int("redis_db")
 		client = redis.NewClient(&redis.Options{
-			Addr:        "mj-redis:6379",
-			Password:    "",
-			DB:          0,
+			Addr:        beego.AppConfig.String("redis_addr"),
+			Password:    beego.AppConfig.String("redis_password"),
+			DB:          dbIdx,
 			IdleTimeout: -1,
 		})
 	}
