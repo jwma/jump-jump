@@ -42,6 +42,12 @@ func (c *LinkController) Post() {
 	isEnabled, _ := c.GetBool("isEnabled")
 	description := c.GetString("description")
 
+	if url == "" {
+		c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "请填写URL"}
+		c.ServeJSON()
+		return
+	}
+
 	slug, err := generateUniqueSlug()
 	if err != nil {
 		c.Data["json"] = map[string]interface{}{"code": -1, "msg": err}

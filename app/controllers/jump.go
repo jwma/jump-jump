@@ -16,10 +16,10 @@ func (c *JumpController) Get() {
 	slug := c.Ctx.Input.Param(":slug")
 
 	client := db.GetRedisClient()
-	targetUrl, err := client.Get(slug).Result()
+	linkJson, err := client.Get("l:" + slug).Result()
 	if err != nil {
 		beego.Error(err)
-		c.Ctx.WriteString("访问的链接不存在")
+		c.Ctx.WriteString("链接不存在")
 		return
 	}
 
@@ -42,5 +42,16 @@ func (c *JumpController) Get() {
 		beego.Error(err)
 	}
 
-	c.Redirect(targetUrl, 302)
+	var link models.Link
+	if err := json.Unmarshal([]byte(linkJson), &link); err != nil {
+		beego.Error(err)
+		c.Ctx.WriteString("链接不存在")
+		return
+	}
+	if !link.IsEnabled {
+		c.Ctx.WriteString("链接已失效")
+		return
+	}
+
+	c.Redirect(link.Url, 302)
 }

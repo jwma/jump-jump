@@ -11,7 +11,7 @@ func GetRedisClient() *redis.Client {
 	if client == nil {
 		beego.Debug("new redis client")
 		client = redis.NewClient(&redis.Options{
-			Addr:        "localhost:6379",
+			Addr:        "mj-redis:6379",
 			Password:    "",
 			DB:          0,
 			IdleTimeout: -1,
