@@ -16,13 +16,15 @@ type RequestRecord struct {
 
 func getRedisClient() *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:        "localhost:6379",
+		Addr:        "redis:6379",
 		Password:    "",
 		DB:          0,
 		IdleTimeout: -1,
 	})
 	return client
 }
+
+var client = getRedisClient()
 
 type JumpController struct {
 	beego.Controller
@@ -31,10 +33,9 @@ type JumpController struct {
 func (c *JumpController) Get() {
 	slug := c.Ctx.Input.Param(":slug")
 
-	client := getRedisClient()
 	targetUrl, err := client.Get(slug).Result()
 	if err != nil {
-		beego.Warn(err)
+		beego.Error(err)
 		c.Ctx.WriteString("访问的链接不存在")
 		return
 	}
