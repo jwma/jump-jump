@@ -2,6 +2,8 @@ version: "3"
 services:
   web:
     build: .
+    depends_on:
+      - redis
     container_name: jump-jump-prod
     ports:
       - "8080:8080"

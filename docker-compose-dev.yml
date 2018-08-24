@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
+    depends_on:
+      - redis
     container_name: jump-jump-dev
     ports:
       - "8081:8081"
