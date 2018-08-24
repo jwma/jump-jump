@@ -7,6 +7,17 @@ jump jump
 - [ ] 短链接的数据报表
 - [ ] 后台用户验证模块
 
+### 怎么用？
+由于jump-jump还处于开发当中，数据报表和后台都还没完成，但已经实现了一个生成短链接的接口，下面是cURL的调用示例：
+```
+curl -X POST \
+  http://localhost:8080/admin/link \
+  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \
+  -F url=http://github.com/jwma \
+  -F isEnabled=true \
+  -F 'description=mj github'
+```
+
 ### 开发环境
 可以使用提供的`docker-compose-dev.yml`来启动jump-jump和依赖的Redis服务，并在开发过程中会自动编译新代码。
 ```
