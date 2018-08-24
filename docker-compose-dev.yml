@@ -1,0 +1,24 @@
+version: "3"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    container_name: jump-jump-dev
+    ports:
+      - "8081:8081"
+    environment:
+      J2HttpPort: 8081
+      J2RunMode: dev
+      J2RedisAddr: redis:6379
+    volumes:
+      - "$PWD:/go/src/github.com/jwma/jump-jump"
+    entrypoint: bee run
+
+  redis:
+    image: redis:latest
+    volumes:
+      - "$PWD/data/dev/redis:/data"
+    ports:
+      - "6380:6379"
+    entrypoint: redis-server --appendonly yes

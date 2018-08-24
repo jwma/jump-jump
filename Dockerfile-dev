@@ -1,0 +1,7 @@
+FROM golang:1.9
+
+RUN go get github.com/astaxie/beego
+RUN go get github.com/beego/bee
+RUN go get github.com/go-redis/redis
+
+WORKDIR /go/src/github.com/jwma/jump-jump/app
