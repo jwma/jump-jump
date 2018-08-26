@@ -10,12 +10,8 @@ jump jump
 ### 怎么用？
 由于jump-jump还处于开发当中，数据报表和后台都还没完成，但已经实现了一个生成短链接的接口，下面是cURL的调用示例：
 ```
-curl -X POST \
-  http://localhost:8080/admin/link \
-  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \
-  -F url=http://github.com/jwma \
-  -F isEnabled=true \
-  -F 'description=mj github'
+curl -d "url=https://github.com/jwma&isEnabled=true&description=mj github" \
+-X POST http://localhost:8081/admin/link
 ```
 
 ### 开发环境

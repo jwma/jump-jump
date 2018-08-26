@@ -16,18 +16,15 @@ func generateUniqueSlug() (string, error) {
 
 	for true {
 		slug := utils.RandStringRunes(6)
-		link, err := client.Get("l:" + slug).Result()
+		_, err := client.Get("l:" + slug).Result()
 		if err != nil {
 			switch err {
 			case redis.Nil:
 				return slug, nil
 			default:
 				beego.Error(err)
-				break
+				return "", err
 			}
-		}
-		if link != "" {
-			break
 		}
 	}
 	return "", nil
@@ -50,7 +47,7 @@ func (c *LinkController) Post() {
 
 	slug, err := generateUniqueSlug()
 	if err != nil {
-		c.Data["json"] = map[string]interface{}{"code": -1, "msg": err}
+		c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "服务繁忙，请稍后重试..."}
 		c.ServeJSON()
 		return
 	}
@@ -67,7 +64,8 @@ func (c *LinkController) Post() {
 	client := db.GetRedisClient()
 	linkJson, err := json.Marshal(link)
 	if err != nil {
-		c.Data["json"] = map[string]interface{}{"code": -1, "msg": err}
+		beego.Error(err)
+		c.Data["json"] = map[string]interface{}{"code": -1, "msg": "服务繁忙，请稍后重试..."}
 		c.ServeJSON()
 		return
 	}
