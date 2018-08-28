@@ -4,15 +4,15 @@
       <h3 class="form-title">创建短链接</h3>
       <div class="tips" v-show="tips != ''">{{ tips }}</div>
       <div class="form-item">
-        <div class="form-label"><label for="url">链接</label></div>
-        <div class="form-field"><input id="url" type="url" v-model="form.url"></div>
+        <div class="form-label"><label for="url">URL</label></div>
+        <div class="form-field"><input id="url" type="url" placeholder="-" v-model="form.url"></div>
       </div>
       <div class="form-item">
         <div class="form-label"><label for="description">描述</label></div>
-        <div class="form-field"><input id="description" type="text" v-model="form.description"></div>
+        <div class="form-field"><input id="description" type="text" placeholder="-" v-model="form.description"></div>
       </div>
       <div class="form-item button-wrapper">
-        <button class="submit-btn" @click="submit">提 交</button>
+        <button class="btn" @click="submit">提 交</button>
       </div>
     </div>
   </div>
@@ -58,42 +58,6 @@ export default {
 .home {
   font-size: 18px;
   text-align: center;
-}
-
-.form {
-  margin-top: 30px;
-}
-
-.form-title {
-  color: #555;
-}
-
-.form-item + .form-item {
-  margin-top: 15px;
-}
-
-.form-field > input {
-  padding: 5px 3px;
-  text-align: center;
-  width: 200px;
-}
-
-.button-wrapper {
-  margin-top: 15px;
-}
-
-.submit-btn {
-  font-size: 16px;
-  border: 1px solid #999;
-  background: #fff;
-  outline: none;
-  cursor: pointer;
-}
-
-.tips {
-  font-size: 16px;
-  color: crimson;
-  margin-bottom: 5px;
 }
 </style>
 
