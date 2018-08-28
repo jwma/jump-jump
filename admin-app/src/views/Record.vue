@@ -42,6 +42,9 @@ export default {
   },
   methods: {
     search () {
+      if (!this.slug) {
+        return
+      }
       Vue.prototype.$http.get(`${process.env.VUE_APP_API_ADDR}/admin/link?slug=${this.slug}`)
         .then(response => {
           if (response.data.code === 4999) {
@@ -56,7 +59,7 @@ export default {
         })
     },
     submit() {
-      const url = this.form.url, description = this.form.description, isEnabled = true
+      const url = this.form.url, description = this.form.description, isEnabled = this.form.isEnabled
       if (!url) {
         this.tips = '请填写链接'
         return
