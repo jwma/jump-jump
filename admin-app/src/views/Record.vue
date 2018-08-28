@@ -42,7 +42,7 @@ export default {
   },
   methods: {
     search () {
-      Vue.prototype.$http.get(`/api/admin/link?slug=${this.slug}`)
+      Vue.prototype.$http.get(`${process.env.VUE_APP_API_ADDR}/admin/link?slug=${this.slug}`)
         .then(response => {
           if (response.data.code === 4999) {
             alert(response.data.msg)
@@ -62,7 +62,7 @@ export default {
         return
       }
 
-      Vue.prototype.$http.patch(`/api/admin/link?slug=${this.slug}`, {url, description, isEnabled})
+      Vue.prototype.$http.patch(`${process.env.VUE_APP_API_ADDR}/admin/link?slug=${this.slug}`, {url, description, isEnabled})
         .then(response => {
           if (response.data.code === 4999) {
             this.tips = response.data.msg

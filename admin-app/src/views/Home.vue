@@ -39,7 +39,7 @@ export default {
         this.tips = '请填写链接'
         return
       }
-      Vue.prototype.$http.post('/api/admin/link', {url, description, isEnabled})
+      Vue.prototype.$http.post(`${process.env.VUE_APP_API_ADDR}/admin/link`, {url, description, isEnabled})
         .then(response => {
           if (response.data.code === 4999) {
             this.tips = response.data.msg
