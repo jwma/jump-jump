@@ -34,6 +34,39 @@ type LinkController struct {
 	beego.Controller
 }
 
+func (c *LinkController) Get() {
+	slug := c.GetString("slug")
+	if slug == "" {
+		c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "缺失参数"}
+		c.ServeJSON()
+		return
+	}
+	client := db.GetRedisClient()
+	linkJson, err := client.Get("l:" + slug).Result()
+	if err != nil {
+		switch err {
+		case redis.Nil:
+			c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "短链接不存在"}
+			c.ServeJSON()
+			return
+		default:
+			beego.Error(err)
+			c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "服务繁忙，请稍后重试..."}
+			c.ServeJSON()
+			return
+		}
+	}
+
+	var link models.Link
+	if err := json.Unmarshal([]byte(linkJson), &link); err != nil {
+		beego.Error(err)
+		c.Ctx.WriteString("链接不存在")
+		return
+	}
+	c.Data["json"] = map[string]interface{}{"code": 0, "msg": "ok", "link": link}
+	c.ServeJSON()
+}
+
 func (c *LinkController) Post() {
 	url := c.GetString("url")
 	isEnabled, _ := c.GetBool("isEnabled")
