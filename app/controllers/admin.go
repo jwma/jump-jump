@@ -106,3 +106,61 @@ func (c *LinkController) Post() {
 	c.Data["json"] = map[string]interface{}{"code": 0, "msg": "ok", "slug": slug}
 	c.ServeJSON()
 }
+
+func (c *LinkController) Patch() {
+	slug := c.GetString("slug")
+	url := c.GetString("url")
+	isEnabled, _ := c.GetBool("isEnabled")
+	description := c.GetString("description")
+
+	if slug == "" {
+		c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "缺失参数"}
+		c.ServeJSON()
+		return
+	}
+
+	if url == "" {
+		c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "请填写URL"}
+		c.ServeJSON()
+		return
+	}
+
+	client := db.GetRedisClient()
+	linkJson, err := client.Get("l:" + slug).Result()
+	if err != nil {
+		switch err {
+		case redis.Nil:
+			c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "短链接不存在"}
+			c.ServeJSON()
+			return
+		default:
+			beego.Error(err)
+			c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "服务繁忙，请稍后重试..."}
+			c.ServeJSON()
+			return
+		}
+	}
+
+	var link models.Link
+	if err := json.Unmarshal([]byte(linkJson), &link); err != nil {
+		beego.Error(err)
+		c.Ctx.WriteString("链接不存在")
+		return
+	}
+
+	link.Url = url
+	link.Description = description
+	link.IsEnabled = isEnabled
+	link.UpdatedAt = time.Now().Unix()
+
+	newLinkJson, err := json.Marshal(link)
+	if err != nil {
+		beego.Error(err)
+		c.Data["json"] = map[string]interface{}{"code": -1, "msg": "服务繁忙，请稍后重试..."}
+		c.ServeJSON()
+		return
+	}
+	client.Set("l:"+slug, string(newLinkJson), 0)
+	c.Data["json"] = map[string]interface{}{"code": 0, "msg": "ok", "slug": slug}
+	c.ServeJSON()
+}
