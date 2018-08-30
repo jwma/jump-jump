@@ -1,4 +1,8 @@
 version: "3"
+
+volumes:
+  node_modules:
+
 services:
   web:
     build:
@@ -16,6 +20,18 @@ services:
     volumes:
       - "$PWD:/go/src/github.com/jwma/jump-jump"
     entrypoint: bee run
+
+  frontend:
+    build:
+      context: ./admin-app
+    container_name: jump-jump-admin-app-dev
+    volumes:
+      - "$PWD/admin-app:/home/node/app"
+      - "node_modules:/home/node/app/node_modules"
+    ports:
+      - "8080:8080"
+    working_dir: /home/node/app
+    entrypoint: npm run serve
 
   redis:
     image: redis:latest
