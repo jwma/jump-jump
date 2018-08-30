@@ -23,7 +23,7 @@ import Vue from 'vue'
 
 export default {
   name: 'home',
-  data() {
+  data () {
     return {
       tips: null,
       form: {
@@ -33,7 +33,7 @@ export default {
     }
   },
   methods: {
-    submit() {
+    submit () {
       const url = this.form.url, description = this.form.description, isEnabled = true
       if (!url) {
         this.tips = '请填写链接'
@@ -60,4 +60,3 @@ export default {
   text-align: center;
 }
 </style>
-

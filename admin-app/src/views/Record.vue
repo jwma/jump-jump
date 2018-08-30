@@ -58,7 +58,7 @@ export default {
           }
         })
     },
-    submit() {
+    submit () {
       const url = this.form.url, description = this.form.description, isEnabled = this.form.isEnabled
       if (!url) {
         this.tips = '请填写链接'
@@ -94,4 +94,3 @@ export default {
   width: 200px;
 }
 </style>
-
