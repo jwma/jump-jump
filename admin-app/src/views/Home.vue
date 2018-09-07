@@ -2,7 +2,10 @@
   <div class="home">
     <div class="form">
       <h3 class="form-title">创建短链接</h3>
+
+      <!-- 所有提示信息在这里显示 -->
       <div class="tips" v-show="tips != ''">{{ tips }}</div>
+
       <div class="form-item">
         <div class="form-label"><label for="url">URL</label></div>
         <div class="form-field"><input id="url" type="url" placeholder="-" v-model="form.url"></div>
@@ -11,7 +14,9 @@
         <div class="form-label"><label for="description">描述</label></div>
         <div class="form-field"><input id="description" type="text" placeholder="-" v-model="form.description"></div>
       </div>
+
       <div class="form-item button-wrapper">
+        <!-- 绑定按钮点击事件 -->
         <button class="btn" @click="submit">提 交</button>
       </div>
     </div>

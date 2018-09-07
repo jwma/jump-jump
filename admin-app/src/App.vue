@@ -1,9 +1,12 @@
 <template>
-  <div id="app">
+  <!-- 整个应用的根节点 -->
+  <div id="app">  
     <div id="nav">
+      <!-- 导航栏部分定义了两个路由链接 -->
       <router-link to="/">Jump-Jump</router-link> |
       <router-link to="/list">Editor</router-link>
     </div>
+    <!-- 路由对应的组件会被渲染到 router-view 这里 -->
     <router-view/>
   </div>
 </template>
