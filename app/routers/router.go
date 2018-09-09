@@ -17,4 +17,7 @@ func init() {
 
 	// 根据不同短链接的slug进行跳转
 	beego.Router("/admin/link", &controllers.LinkController{})
+
+	// 登录
+	beego.Router("/login", &controllers.LoginController{})
 }

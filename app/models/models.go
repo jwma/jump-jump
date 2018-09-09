@@ -16,3 +16,10 @@ type RequestRecord struct {
 	UserAgent  string
 	RequestAt  int64
 }
+
+type User struct {
+	Username  string
+	Password  string
+	Salt      string
+	CreatedAt int64
+}
