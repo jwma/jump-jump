@@ -16,6 +16,11 @@ curl -d "url=https://github.com/jwma&isEnabled=true&description=mj github" \
 -X POST http://localhost:8081/admin/link
 ```
 
+访问短链接，`http://localhost:8081/xxxxxx`，`xxxxxx`则是短链接的 ID。
+
+### 创建管理用户
+`./app -username=YourUsername -password=YourPassword`
+
 ### 开发环境
 可以使用提供的`docker-compose-dev.yml`来启动jump-jump和依赖的Redis服务，并在开发过程中会自动编译新代码。
 ```
