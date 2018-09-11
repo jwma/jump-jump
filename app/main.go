@@ -8,8 +8,7 @@ import (
 	"github.com/jwma/jump-jump/app/db"
 	"github.com/fatih/structs"
 	"time"
-	"github.com/astaxie/beego/utils"
-	"golang.org/x/crypto/scrypt"
+	"github.com/jwma/jump-jump/app/utils"
 )
 
 func main() {
@@ -19,8 +18,8 @@ func main() {
 	flag.Parse()
 
 	if *username != "" && *password != "" {
-		salt := utils.RandomCreateBytes(6)
-		dk, _ := scrypt.Key([]byte(*password), salt, 1<<15, 8, 1, 32)
+		salt, _ := utils.RandomSalt(32)
+		dk, _ := utils.EncodePassword([]byte(*password), salt)
 		user := models.User{
 			Username:  *username,
 			Password:  string(dk),

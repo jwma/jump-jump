@@ -4,7 +4,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/jwma/jump-jump/app/db"
 	"github.com/go-redis/redis"
-	"golang.org/x/crypto/scrypt"
+	"github.com/jwma/jump-jump/app/utils"
 )
 
 type LoginController struct {
@@ -31,7 +31,7 @@ func (c *LoginController) Post() {
 		}
 	}
 
-	dk, _ := scrypt.Key([]byte(password), []byte(user["Salt"]), 1<<15, 8, 1, 32)
+	dk, _ := utils.EncodePassword([]byte(password), []byte(user["Salt"]))
 	if user["Password"] != string(dk) {
 		c.Data["json"] = map[string]interface{}{"code": 4999, "msg": "用户名或密码错误"}
 		c.ServeJSON()
