@@ -4,6 +4,8 @@ import (
 	"math/rand"
 	"time"
 	"golang.org/x/crypto/scrypt"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/astaxie/beego"
 )
 
 var letterRunes = []rune("1234567890abcdefghijklmnopqrstuvwxyz")
@@ -27,4 +29,15 @@ func RandomSalt(size int) ([]byte, error) {
 // 加盐密码哈希
 func EncodePassword(password []byte, salt []byte) ([]byte, error) {
 	return scrypt.Key(password, salt, 1<<15, 8, 1, 32)
+}
+
+func GenerateJWT(username string) string {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": username,
+		"iat":      time.Now().Unix(),
+		"exp":      time.Now().Add(time.Hour * 2).Unix(),
+	})
+
+	jwt, _ := token.SignedString([]byte(beego.AppConfig.String("secret_key")))
+	return jwt
 }

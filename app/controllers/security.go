@@ -38,6 +38,7 @@ func (c *LoginController) Post() {
 		return
 	}
 
-	c.Data["json"] = map[string]interface{}{"code": 0, "msg": "ok"}
+	token := utils.GenerateJWT(user["Username"])
+	c.Data["json"] = map[string]interface{}{"code": 0, "msg": "ok", "token": token}
 	c.ServeJSON()
 }

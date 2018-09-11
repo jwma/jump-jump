@@ -1,9 +1,10 @@
-FROM golang:1.9
+FROM golang:1.11
 
 RUN go get github.com/astaxie/beego
 RUN go get github.com/beego/bee
 RUN go get github.com/go-redis/redis
 RUN go get github.com/fatih/structs
+RUN go get github.com/dgrijalva/jwt-go
 RUN mkdir -p $GOPATH/src/golang.org/x/ && cd $GOPATH/src/golang.org/x/ && git clone https://github.com/golang/crypto && go install crypto
 
 WORKDIR /go/src/github.com/jwma/jump-jump/app
