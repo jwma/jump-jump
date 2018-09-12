@@ -15,6 +15,18 @@ flyio.interceptors.request.use((request) => {
   request.headers['Authorization'] = store.state.token
   return request
 })
+
+/**
+ * 使用 flyio 的拦截器拦截每次请求响应
+ * 处理 code = 4001，跳转到登录页
+ */
+flyio.interceptors.response.use((response) => {
+  if (response.data.code === 4001 && router.currentRoute.name != 'login') {
+    store.commit('eraseToken')
+    router.replace({ path: '/login' })
+    return Promise.reject(response.data.msg)
+  }
+})
 Vue.prototype.$http = flyio
 
 // 如果访问需要登录态的路由，则检查是否登录
@@ -39,6 +51,9 @@ store.commit({
   token: window.localStorage.getItem('token'),
   username: window.localStorage.getItem('username')
 })
+
+// 首次加载检查登录态
+store.dispatch('checkLoginStatus')
 
 new Vue({
   router,
