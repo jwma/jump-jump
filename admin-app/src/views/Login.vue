@@ -16,7 +16,7 @@
 
       <div class="form-item button-wrapper">
         <!-- 绑定按钮点击事件 -->
-        <button class="btn" @click="submit">登 陆</button>
+        <button class="btn" @click="submit">登 录</button>
       </div>
     </div>
 
