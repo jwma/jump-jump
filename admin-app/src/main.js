@@ -53,7 +53,7 @@ store.commit({
 })
 
 // 首次加载检查登录态
-store.dispatch('checkLoginStatus')
+store.state.token && store.dispatch('checkLoginStatus')
 
 new Vue({
   router,
