@@ -1,15 +1,30 @@
 <template>
   <!-- 整个应用的根节点 -->
   <div id="app">  
-    <div id="nav">
+    <div id="nav" v-show="$store.state.token">
       <!-- 导航栏部分定义了两个路由链接 -->
       <router-link to="/">Jump-Jump</router-link> |
-      <router-link to="/list">Editor</router-link>
+      <router-link to="/list">Editor</router-link> |
+      {{$store.state.username}} |
+      <a href="javascript:" @click="logout">登出</a>
     </div>
     <!-- 路由对应的组件会被渲染到 router-view 这里 -->
     <router-view/>
   </div>
 </template>
+
+<script>
+export default {
+  name: 'app',
+  methods: {
+    logout() {
+      this.$store.dispatch('logout')
+      this.$router.replace({name: 'login'})
+    }
+  }
+}
+</script>
+
 
 <style>
 #app {

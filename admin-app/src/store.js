@@ -37,6 +37,9 @@ export default new Vuex.Store({
           return response.data
         })
     },
+    logout({ commit, state }) {
+      commit('eraseToken')
+    },
     checkLoginStatus({ commit, state }) {
       return Vue.prototype.$http.post(`${process.env.VUE_APP_API_ADDR}/check-login`)
     }
