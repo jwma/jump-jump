@@ -11,7 +11,8 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-      component: Home
+      component: Home,
+      meta: { requiresAuth: true }
     },
     {
       path: '/list',
@@ -19,7 +20,14 @@ export default new Router({
       // route level code-splitting
       // this generates a separate chunk (record.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "record" */ './views/Record.vue')
+      component: () => import(/* webpackChunkName: "record" */ './views/Record.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import(/* webpackChunkName: "login" */ './views/Login.vue'),
+      meta: { requiresAuth: false }
     }
   ]
 })

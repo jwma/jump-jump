@@ -12,9 +12,33 @@ Vue.config.productionTip = false
  */
 flyio.interceptors.request.use((request) => {
   request.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+  request.headers['Authorization'] = store.state.token
   return request
 })
 Vue.prototype.$http = flyio
+
+// 如果访问需要登录态的路由，则检查是否登录
+router.beforeEach((to, form, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!store.state.token) {
+      next({
+        path: '/login',
+        query: { redirect: to.fullPath }
+      })
+    } else {
+      next()
+    }
+  } else {
+    next()
+  }
+})
+
+// 首次加载尝试从 localStorage 获取登录信息缓存
+store.commit({
+  type: 'login',
+  token: window.localStorage.getItem('token'),
+  username: window.localStorage.getItem('username')
+})
 
 new Vue({
   router,
