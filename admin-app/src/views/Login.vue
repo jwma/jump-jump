@@ -40,11 +40,11 @@ export default {
   methods: {
     submit() {
       if (!this.form.username || !this.form.password) {
-        this.tips = '请输入登陆信息'
+        this.tips = '请输入登录信息'
         return
       }
       this.$store.dispatch('login', this.form).then(rs => {
-        // 处理登陆成功或失败的结果
+        // 处理登录成功或失败的结果
         if (rs.code === 0) {
           const redirect = this.$route.query.redirect == '/login' ? '/' : this.$route.query.redirect
           this.$router.push({ path: redirect || '/' })

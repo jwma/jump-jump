@@ -22,7 +22,7 @@ func init() {
 	// 登录态过滤器
 	beego.InsertFilter("/admin/*", beego.BeforeRouter, func(ctx *context.Context) {
 		authorization := ctx.Input.Header("Authorization")
-		needLoginJson := map[string]interface{}{"code": 4001, "msg": "请登陆"}
+		needLoginJson := map[string]interface{}{"code": 4001, "msg": "请登录"}
 		if authorization == "" {
 			ctx.Output.JSON(needLoginJson, false, true)
 		}
@@ -45,7 +45,7 @@ func init() {
 	// 检查登录态
 	beego.Post("/check-login", func(ctx *context.Context) {
 		authorization := ctx.Input.Header("Authorization")
-		needLoginJson := map[string]interface{}{"code": 4001, "msg": "请登陆"}
+		needLoginJson := map[string]interface{}{"code": 4001, "msg": "请登录"}
 
 		if authorization == "" {
 			ctx.Output.JSON(needLoginJson, false, true)
