@@ -85,12 +85,14 @@ func (c *LinkController) Post() {
 		return
 	}
 
+	createdBy := c.Ctx.Input.GetData("username").(string)
 	now := time.Now().Unix()
 	link := &models.Link{
 		Slug:        slug,
 		Url:         url,
 		IsEnabled:   isEnabled,
 		Description: description,
+		CreatedBy:   createdBy,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
