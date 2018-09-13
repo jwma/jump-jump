@@ -33,11 +33,12 @@ func EncodePassword(password []byte, salt []byte) ([]byte, error) {
 
 func GenerateJWT(username string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": username,
-		"iat":      time.Now().Unix(),
-		"exp":      time.Now().Add(time.Hour * 2).Unix(),
+		"username": username,                             // Payload 部分可以加入用户名的记录，最终可通过解密 Token 得到
+		"iat":      time.Now().Unix(),                    // 设置 Token 的签发时间
+		"exp":      time.Now().Add(time.Hour * 2).Unix(), // 设置 Token 过期时间
 	})
 
+	// 使用一个密钥字符串对 Token 进行签名，只要密钥没有泄露，就没有人能篡改 Token 的数据
 	jwt, _ := token.SignedString([]byte(beego.AppConfig.String("secret_key")))
 	return jwt
 }
