@@ -24,6 +24,9 @@ curl -d "url=https://github.com/jwma&isEnabled=true&description=mj github" \
 ### 开发环境
 可以使用提供的`docker-compose-dev.yml`来启动jump-jump和依赖的Redis服务，并在开发过程中会自动编译新代码。
 ```
+# 配置 admin-app 环境变量
+将 admin-app 目录下的 .env.default 文件拷贝一份到相同目录，并命名为 .env.local
+
 # 启动
 docker-compose -f docker-compose-dev.yml up --build
 
