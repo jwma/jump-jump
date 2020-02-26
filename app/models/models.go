@@ -6,7 +6,7 @@ type Link struct {
 	Url         string
 	IsEnabled   bool
 	Description string
-	CreatedBy	string
+	CreatedBy   string
 	CreatedAt   int64
 	UpdatedAt   int64
 }

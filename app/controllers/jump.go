@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
-	"time"
 	"encoding/json"
-	"github.com/jwma/jump-jump/app/models"
+	"github.com/astaxie/beego"
 	"github.com/jwma/jump-jump/app/db"
+	"github.com/jwma/jump-jump/app/models"
+	"time"
 )
 
 type JumpController struct {

@@ -1,14 +1,14 @@
 package main
 
 import (
-	_ "github.com/jwma/jump-jump/app/routers"
-	"github.com/astaxie/beego"
 	"flag"
-	"github.com/jwma/jump-jump/app/models"
-	"github.com/jwma/jump-jump/app/db"
+	"github.com/astaxie/beego"
 	"github.com/fatih/structs"
-	"time"
+	"github.com/jwma/jump-jump/app/db"
+	"github.com/jwma/jump-jump/app/models"
+	_ "github.com/jwma/jump-jump/app/routers"
 	"github.com/jwma/jump-jump/app/utils"
+	"time"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 			CreatedAt: time.Now().Unix(),
 		}
 		client := db.GetRedisClient()
-		client.HMSet("u:" + *username, structs.Map(user))
+		client.HMSet("u:"+*username, structs.Map(user))
 		return
 	}
 

@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/jwma/jump-jump/app/db"
 	"github.com/go-redis/redis"
+	"github.com/jwma/jump-jump/app/db"
 	"github.com/jwma/jump-jump/app/utils"
 )
 

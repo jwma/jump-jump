@@ -1,11 +1,11 @@
 package utils
 
 import (
+	"github.com/astaxie/beego"
+	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/scrypt"
 	"math/rand"
 	"time"
-	"golang.org/x/crypto/scrypt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/astaxie/beego"
 )
 
 var letterRunes = []rune("1234567890abcdefghijklmnopqrstuvwxyz")

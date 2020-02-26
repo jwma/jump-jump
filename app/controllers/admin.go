@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/jwma/jump-jump/app/models"
-	"github.com/jwma/jump-jump/app/db"
-	"time"
-	"github.com/jwma/jump-jump/app/utils"
-	"github.com/go-redis/redis"
 	"encoding/json"
+	"github.com/astaxie/beego"
+	"github.com/go-redis/redis"
+	"github.com/jwma/jump-jump/app/db"
+	"github.com/jwma/jump-jump/app/models"
+	"github.com/jwma/jump-jump/app/utils"
+	"time"
 )
 
 // 生成随机且唯一的slug

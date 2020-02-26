@@ -1,10 +1,10 @@
 package routers
 
 import (
-	"github.com/jwma/jump-jump/app/controllers"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/jwma/jump-jump/app/controllers"
 )
 
 func init() {

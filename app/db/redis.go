@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/go-redis/redis"
 	"github.com/astaxie/beego"
+	"github.com/go-redis/redis"
 )
 
 var client *redis.Client
