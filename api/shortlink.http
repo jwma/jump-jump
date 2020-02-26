@@ -1,0 +1,29 @@
+# create short link
+POST http://{{host}}:{{port}}/v1/short-link/
+Content-Type: application/json
+
+{
+  "url": "https://www.google.com",
+  "description": "Google",
+  "is_enable": true
+}
+
+###
+
+# get short link
+GET http://{{host}}:{{port}}/v1/short-link/4pk3sd
+Content-Type: application/json
+
+###
+
+# update short link
+PATCH http://{{host}}:{{port}}/v1/short-link/4pk3sd
+Content-Type: application/json
+
+{
+  "url": "http://anmuji.com",
+  "description": "anmuji",
+  "is_enable": false
+}
+
+###
