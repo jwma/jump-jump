@@ -107,6 +107,10 @@ func NewRequestHistory(link *ShortLink, IP string, UA string) *RequestHistory {
 	return &RequestHistory{link: link, IP: IP, UA: UA, Url: link.Url}
 }
 
+func (r *RequestHistory) SetLink(link *ShortLink) {
+	r.link = link
+}
+
 func (r *RequestHistory) key() string {
 	return fmt.Sprintf("history:%s", r.link.Id)
 }
@@ -122,4 +126,21 @@ func (r *RequestHistory) Save() error {
 
 	c.LPush(r.key(), j)
 	return nil
+}
+
+func (r *RequestHistory) GetAll() ([]*RequestHistory, error) {
+	histories := make([]*RequestHistory, 0)
+	c := db.GetRedisClient()
+	all, err := c.LRange(r.key(), 0, -1).Result()
+	if err != nil {
+		log.Printf("fail to get all request history with key: %s, error: %v\n", r.key(), err)
+		return histories, err
+	}
+
+	for _, one := range all {
+		h := &RequestHistory{}
+		_ = json.Unmarshal([]byte(one), h)
+		histories = append(histories, h)
+	}
+	return histories, err
 }

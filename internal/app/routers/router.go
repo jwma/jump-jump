@@ -17,6 +17,7 @@ func SetupRouter() *gin.Engine {
 	shortLinkAPI.GET("/:id", handlers.GetShortLink)
 	shortLinkAPI.POST("/", handlers.CreateShortLink)
 	shortLinkAPI.PATCH("/:id", handlers.UpdateShortLink)
+	shortLinkAPI.GET("/:id/*action", handlers.ShortLinkActionHandler)
 
 	return r
 }

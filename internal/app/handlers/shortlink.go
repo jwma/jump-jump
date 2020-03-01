@@ -81,3 +81,18 @@ func UpdateShortLink(c *gin.Context) {
 		"data": gin.H{"shortLink": l},
 	})
 }
+
+func ShortLinkActionHandler(c *gin.Context) {
+	if c.Param("action") == "/history" {
+		rh := &models.RequestHistory{}
+		rh.SetLink(&models.ShortLink{Id: c.Param("id")})
+		histories, _ := rh.GetAll()
+
+		c.JSON(http.StatusOK, gin.H{
+			"msg":  "ok",
+			"data": gin.H{"histories": histories},
+		})
+		return
+	}
+	c.JSON(http.StatusNotFound, gin.H{})
+}
