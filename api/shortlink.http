@@ -3,8 +3,8 @@ POST http://{{host}}:{{port}}/v1/short-link/
 Content-Type: application/json
 
 {
-  "url": "https://www.google.com",
-  "description": "Google",
+  "url": "http://anmuji.com",
+  "description": "安木鸡主页",
   "is_enable": true
 }
 

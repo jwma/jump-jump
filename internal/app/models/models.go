@@ -60,7 +60,7 @@ func (s *ShortLink) Save() error {
 	s.UpdateTime = time.Now()
 	c := db.GetRedisClient()
 	j, _ := json.Marshal(s)
-	c.Set(s.key(), string(j), 0)
+	c.Set(s.key(), j, 0)
 
 	return nil
 }
@@ -97,13 +97,14 @@ func (s *ShortLink) Update(u *UpdateShortLinkParameter) error {
 
 type RequestHistory struct {
 	link *ShortLink `json:"-"`
+	Url  string     `json:"url"` // 由于短链接的目标连接可能会被修改，可以在访问历史记录中记录一下当前的目标连接
 	IP   string     `json:"ip"`
 	UA   string     `json:"ua"`
 	Time time.Time  `json:"time"`
 }
 
 func NewRequestHistory(link *ShortLink, IP string, UA string) *RequestHistory {
-	return &RequestHistory{link: link, IP: IP, UA: UA}
+	return &RequestHistory{link: link, IP: IP, UA: UA, Url: link.Url}
 }
 
 func (r *RequestHistory) key() string {
