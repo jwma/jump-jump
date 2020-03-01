@@ -94,3 +94,31 @@ func (s *ShortLink) Update(u *UpdateShortLinkParameter) error {
 
 	return s.Save()
 }
+
+type RequestHistory struct {
+	link *ShortLink `json:"-"`
+	IP   string     `json:"ip"`
+	UA   string     `json:"ua"`
+	Time time.Time  `json:"time"`
+}
+
+func NewRequestHistory(link *ShortLink, IP string, UA string) *RequestHistory {
+	return &RequestHistory{link: link, IP: IP, UA: UA}
+}
+
+func (r *RequestHistory) key() string {
+	return fmt.Sprintf("history:%s", r.link.Id)
+}
+
+func (r *RequestHistory) Save() error {
+	r.Time = time.Now()
+	c := db.GetRedisClient()
+	j, err := json.Marshal(r)
+	if err != nil {
+		log.Printf("fail to save short link request history with key: %s, error: %v\n", r.key(), err)
+		return err
+	}
+
+	c.LPush(r.key(), j)
+	return nil
+}
