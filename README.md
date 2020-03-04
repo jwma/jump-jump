@@ -1,6 +1,6 @@
 jump jump
 ===
-这是一个使用Go语言开发的一个短链接系统，将包含如下功能：
+使用 Go 语言开发的一个短链接系统，将包含如下功能：
 - [x] 生成短链接接口
 - [x] 短链接跳转功能
 - [x] 短链接数据统计功能
@@ -9,44 +9,8 @@ jump jump
 
 
 ### V2 TODO
-- [ ] 使用 gin 替换整个 beego
+- [x] 使用 gin 替换整个 beego
 - [ ] 优化 docker 相关的部分
 - [ ] 后台用户管理
 - [ ] 短链接数据报表
 
-### 怎么用？
-由于jump-jump还处于开发当中，数据报表和后台都还没完成，但已经实现了一个生成短链接的接口，下面是cURL的调用示例：
-```
-curl -d "url=https://github.com/jwma&isEnabled=true&description=mj github" \
--X POST http://localhost:8081/admin/link
-```
-
-访问短链接，`http://localhost:8081/xxxxxx`，`xxxxxx`则是短链接的 ID。
-
-### 创建管理用户
-`./app -username=YourUsername -password=YourPassword`
-
-### 开发环境
-可以使用提供的`docker-compose-dev.yml`来启动jump-jump和依赖的Redis服务，并在开发过程中会自动编译新代码。
-```
-# 配置 admin-app 环境变量
-将 admin-app 目录下的 .env.default 文件拷贝一份到相同目录，并命名为 .env.local
-
-# 启动
-docker-compose -f docker-compose-dev.yml up --build
-
-# 停止并清除容器
-docker-compose -f docker-compose-dev.yml down --volumes
-```
-启动成功后，可以打开`http://localhost:8081`访问jump-jump。
-
-### 生产环境
-可以使用提供的`docker-compose.yml`来启动jump-jump和依赖的Redis服务。
-```
-# 启动
-docker-compose up --build
-
-# 停止并清除容器
-docker-compose down --volumes
-```
-启动成功后，可以打开`http://localhost:8080`访问jump-jump。
