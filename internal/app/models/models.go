@@ -11,10 +11,11 @@ import (
 )
 
 type User struct {
-	Username   string    `json:"username"`
-	Password   string    `json:"password"`
-	Salt       string    `json:"salt"`
-	CreateTime time.Time `json:"create_time"`
+	Username    string    `json:"username"`
+	RawPassword string    `json:"-"`
+	Password    []byte    `json:"password"`
+	Salt        []byte    `json:"salt"`
+	CreateTime  time.Time `json:"create_time"`
 }
 
 func (u *User) IsExists() bool {
@@ -32,16 +33,16 @@ func (u *User) IsExists() bool {
 }
 
 func (u *User) Save() error {
-	if u.Username == "" || u.Password == "" {
+	if u.Username == "" || u.RawPassword == "" {
 		return fmt.Errorf("username or password can not be empty string")
 	}
 	if u.IsExists() {
 		return fmt.Errorf("%s already exitis", u.Username)
 	}
 	salt, _ := utils.RandomSalt(32)
-	dk, _ := utils.EncodePassword([]byte(u.Password), salt)
-	u.Password = string(dk)
-	u.Salt = string(salt)
+	dk, _ := utils.EncodePassword([]byte(u.RawPassword), salt)
+	u.Password = dk
+	u.Salt = salt
 	u.CreateTime = time.Now()
 
 	client := db.GetRedisClient()

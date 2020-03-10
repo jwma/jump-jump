@@ -13,8 +13,8 @@ func main() {
 	flag.Parse()
 
 	user := models.User{
-		Username: *username,
-		Password: *password,
+		Username:    *username,
+		RawPassword: *password,
 	}
 
 	err := user.Save()
