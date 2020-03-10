@@ -1,0 +1,16 @@
+# 登入
+POST http://{{host}}/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+> {%
+  client.test('Login successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status)
+  });
+%}
+
+###

@@ -1,5 +1,5 @@
 # create short link
-POST http://{{host}}:{{port}}/v1/short-link/
+POST http://{{host}}/v1/short-link/
 Content-Type: application/json
 
 {
@@ -11,13 +11,13 @@ Content-Type: application/json
 ###
 
 # get short link
-GET http://{{host}}:{{port}}/v1/short-link/4pk3sd
+GET http://{{host}}/v1/short-link/4pk3sd
 Content-Type: application/json
 
 ###
 
 # update short link
-PATCH http://{{host}}:{{port}}/v1/short-link/4pk3sd
+PATCH http://{{host}}/v1/short-link/4pk3sd
 Content-Type: application/json
 
 {
