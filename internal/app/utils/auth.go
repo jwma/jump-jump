@@ -4,8 +4,11 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/scrypt"
 	"math/rand"
+	"os"
 	"time"
 )
+
+var secretKey = os.Getenv("SECRET_KEY")
 
 // 生成随机盐值
 func RandomSalt(size int) ([]byte, error) {
