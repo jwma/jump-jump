@@ -13,6 +13,8 @@ func SetupRouter() *gin.Engine {
 		c.String(http.StatusOK, "码极工作室/MJ Studio")
 	})
 
+	r.POST("/v1/user/login", handlers.Login)
+
 	shortLinkAPI := r.Group("/v1/short-link")
 	shortLinkAPI.GET("/:id", handlers.GetShortLink)
 	shortLinkAPI.POST("/", handlers.CreateShortLink)
