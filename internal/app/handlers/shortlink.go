@@ -24,6 +24,9 @@ func GetShortLink(c *gin.Context) {
 }
 
 func CreateShortLink(c *gin.Context) {
+	reqUser, _ := c.Get("user")
+	user := reqUser.(*models.User)
+
 	l := models.ShortLink{}
 
 	if err := c.BindJSON(&l); err != nil {
@@ -39,7 +42,7 @@ func CreateShortLink(c *gin.Context) {
 		return
 	}
 
-	l.CreatedBy = "admin"
+	l.CreatedBy = user.Username
 
 	err = l.Save()
 	if err != nil {
