@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var secretKey = os.Getenv("SECRET_KEY")
+var SecretKey = os.Getenv("SECRET_KEY")
 
 // 生成随机盐值
 func RandomSalt(size int) ([]byte, error) {
@@ -30,6 +30,6 @@ func GenerateJWT(username string) string {
 	})
 
 	// 使用一个密钥字符串对 Token 进行签名，只要密钥没有泄露，就没有人能篡改 Token 的数据
-	t, _ := token.SignedString([]byte(secretKey))
+	t, _ := token.SignedString([]byte(SecretKey))
 	return t
 }
