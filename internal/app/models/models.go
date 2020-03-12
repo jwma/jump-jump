@@ -172,20 +172,19 @@ func (r *RequestHistory) SetLink(link *ShortLink) {
 }
 
 func (r *RequestHistory) key() string {
-	return fmt.Sprintf("history:%s", r.link.Id)
+	return fmt.Sprintf("history:%s:%s", r.link.Id, time.Now().Format("20060102"))
 }
 
-func (r *RequestHistory) Save() error {
+func (r *RequestHistory) Save() {
 	r.Time = time.Now()
 	c := db.GetRedisClient()
 	j, err := json.Marshal(r)
 	if err != nil {
 		log.Printf("fail to save short link request history with key: %s, error: %v\n", r.key(), err)
-		return err
+		return
 	}
 
 	c.LPush(r.key(), j)
-	return nil
 }
 
 func (r *RequestHistory) GetAll() ([]*RequestHistory, error) {
