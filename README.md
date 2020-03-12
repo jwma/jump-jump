@@ -7,3 +7,6 @@ Jump Jump
 v2 版本正在重构中，重构完成后，将会支持如下的功能：
 
 ![Jump Jump 功能模块](j2module.png?raw=true "Jump Jump 功能模块")
+
+## 关注我的公众号了解更多
+![qr code](qrcode.png?raw=true "qr code")
