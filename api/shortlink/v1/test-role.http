@@ -139,3 +139,27 @@ Authorization: {{token}}
 %}
 
 ###
+
+# 9. 使用 token 删除使用 token 创建的短链接
+DELETE http://{{host}}/v1/short-link/{{user_shortlink_id}}
+Authorization: {{token}}
+
+> {%
+   client.test('Delete short link successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
+
+# 10. 使用 token 删除使用 admin_token 创建的短链接
+DELETE http://{{host}}/v1/short-link/{{admin_shortlink_id}}
+Authorization: {{token}}
+
+> {%
+   client.test('Delete short link failed', function() {
+    client.assert(403 === response.status, 'Want 403, but got ' + response.status);
+  });
+%}
+
+###

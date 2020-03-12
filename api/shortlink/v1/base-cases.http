@@ -82,3 +82,28 @@ Authorization: {{token}}
 %}
 
 ###
+
+# 6. 删除短链接
+DELETE http://{{host}}/v1/short-link/{{short_link_id}}
+Authorization: {{token}}
+
+> {%
+   client.test('Delete short link successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
+
+# 7. 重复删除短链接
+#    期望返回 404
+DELETE http://{{host}}/v1/short-link/{{short_link_id}}
+Authorization: {{token}}
+
+> {%
+   client.test('Delete short link failed', function() {
+    client.assert(404 === response.status, 'Want 404, but got ' + response.status);
+  });
+%}
+
+###
