@@ -59,3 +59,18 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 		c.Set("user", u)
 	}
 }
+
+type AuthAPIFunc func(c *gin.Context, user *models.User)
+
+func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u, exists := c.Get("user")
+		if !exists {
+			log.Println("请求的 API Func 没有经过 JWTAuthenticatorMiddleware 处理，请修改路由设置")
+			c.JSON(http.StatusUnauthorized, gin.H{})
+			return
+		}
+		user := u.(*models.User)
+		f(c, user)
+	}
+}

@@ -17,10 +17,10 @@ func SetupRouter() *gin.Engine {
 
 	shortLinkAPI := r.Group("/v1/short-link")
 	shortLinkAPI.Use(handlers.JWTAuthenticatorMiddleware())
-	shortLinkAPI.GET("/:id", handlers.GetShortLink)
-	shortLinkAPI.POST("/", handlers.CreateShortLink)
-	shortLinkAPI.PATCH("/:id", handlers.UpdateShortLink)
-	shortLinkAPI.GET("/:id/*action", handlers.ShortLinkActionHandler)
+	shortLinkAPI.GET("/:id", handlers.GetShortLinkAPI())
+	shortLinkAPI.POST("/", handlers.CreateShortLinkAPI())
+	shortLinkAPI.PATCH("/:id", handlers.UpdateShortLinkAPI())
+	shortLinkAPI.GET("/:id/*action", handlers.ShortLinkActionAPI())
 
 	return r
 }
