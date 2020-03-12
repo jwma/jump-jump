@@ -1,0 +1,141 @@
+# 1. 使用 RoleUser 角色的用户登入
+POST http://{{host}}/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+> {%
+  client.test('Login successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+  client.global.set('token',  'Bearer ' + response.body.data.token);
+%}
+
+###
+
+# 2. 使用 RoleAdmin 角色的用户登入
+POST http://{{host}}/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "{{adminUsername}}",
+  "password": "{{adminPassword}}"
+}
+
+> {%
+  client.test('Login successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+  client.global.set('admin_token',  'Bearer ' + response.body.data.token);
+%}
+
+###
+
+# 3. 使用 token 请求创建短链接接口
+POST http://{{host}}/v1/short-link/
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "url": "http://anmuji.com/?t={{$timestamp}}",
+  "description": "{{$uuid}}",
+  "is_enable": true
+}
+
+> {%
+  client.test('Create short link successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+  client.global.set('user_shortlink_id', response.body.data.shortLink.id);
+%}
+
+###
+
+# 4. 使用 admin_token 请求创建短链接接口
+POST http://{{host}}/v1/short-link/
+Content-Type: application/json
+Authorization: {{admin_token}}
+
+{
+  "url": "http://anmuji.com/?t={{$timestamp}}",
+  "description": "{{$uuid}}",
+  "is_enable": true
+}
+
+> {%
+  client.test('Create short link successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+  client.global.set('admin_shortlink_id', response.body.data.shortLink.id);
+%}
+
+###
+
+# 5. 使用 token 获取使用 token 创建的短链接
+GET http://{{host}}/v1/short-link/{{user_shortlink_id}}/
+Content-Type: application/json
+Authorization: {{token}}
+
+> {%
+   client.test('Get short link successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
+
+# 6. 使用 token 获取使用 admin_token 所创建的短链接
+#    期望返回 403
+GET http://{{host}}/v1/short-link/{{admin_shortlink_id}}/
+Content-Type: application/json
+Authorization: {{token}}
+
+> {%
+   client.test('Get admin short link failed', function() {
+    client.assert(403 === response.status, 'Want 403, but got ' + response.status);
+  });
+%}
+
+###
+
+# 7. 使用 token 更新使用 token 创建的短链接
+PATCH http://{{host}}/v1/short-link/{{user_shortlink_id}}
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "url": "http://anmuji.com",
+  "description": "{{$uuid}}",
+  "isEnable": true
+}
+
+> {%
+   client.test('Update user short link successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
+
+# 8. 使用 token 更新使用 admin_token 创建的短链接
+#    期望返回 403
+PATCH http://{{host}}/v1/short-link/{{admin_shortlink_id}}
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "url": "http://anmuji.com",
+  "description": "{{$uuid}}",
+  "isEnable": true
+}
+
+> {%
+   client.test('Update admin short link failed', function() {
+    client.assert(403 === response.status, 'Want 403, but got ' + response.status);
+  });
+%}
+
+###

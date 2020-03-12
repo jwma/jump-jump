@@ -9,7 +9,7 @@ Content-Type: application/json
 
 > {%
   client.test('Login successfully', function() {
-    client.assert(200 === response.status, 'Want 200, but got ' + response.status)
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
   });
 %}
 

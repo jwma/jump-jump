@@ -1,0 +1,84 @@
+# 短链接管理接口基础测试
+
+# 1. 用户登入
+POST http://{{host}}/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+> {%
+  client.test('Login successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+  client.global.set('token',  'Bearer ' + response.body.data.token);
+%}
+
+###
+
+# 2. 创建短链接
+POST http://{{host}}/v1/short-link/
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "url": "http://anmuji.com/?t={{$timestamp}}",
+  "description": "{{$uuid}}",
+  "is_enable": true
+}
+
+> {%
+  client.test('Create short link successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+  client.global.set("short_link_id", response.body.data.shortLink.id);
+%}
+
+###
+
+# 3. 获取短链接
+GET http://{{host}}/v1/short-link/{{short_link_id}}
+Content-Type: application/json
+Authorization: {{token}}
+
+> {%
+   client.test('Get short link successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
+
+# 4. 获取短链接访问历史
+GET http://{{host}}/v1/short-link/{{short_link_id}}/history
+Content-Type: application/json
+Authorization: {{token}}
+
+> {%
+   client.test('Get short link history successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
+
+# 5. 更新短链接
+PATCH http://{{host}}/v1/short-link/{{short_link_id}}
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "url": "http://anmuji.com",
+  "description": "{{$uuid}}",
+  "isEnable": true
+}
+
+> {%
+   client.test('Update short link successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
