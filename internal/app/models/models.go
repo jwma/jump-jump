@@ -163,6 +163,19 @@ func (s *ShortLink) Update(u *UpdateShortLinkParameter) error {
 	return s.Save()
 }
 
+func (s *ShortLink) Delete() {
+	c := db.GetRedisClient()
+
+	// 删除短链接本身
+	c.Del(s.key())
+
+	// 删除访问历史
+	keys, _ := c.Keys(fmt.Sprintf("history:%s:*", s.Id)).Result()
+	if len(keys) > 0 {
+		c.Del(keys...)
+	}
+}
+
 type RequestHistory struct {
 	link *ShortLink `json:"-"`
 	Url  string     `json:"url"` // 由于短链接的目标连接可能会被修改，可以在访问历史记录中记录一下当前的目标连接

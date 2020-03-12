@@ -102,6 +102,29 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 	})
 }
 
+func DeleteShortLinkAPI() gin.HandlerFunc {
+	return Authenticator(func(c *gin.Context, user *models.User) {
+		l := &models.ShortLink{Id: c.Param("id")}
+		err := l.Get()
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"msg": err.Error(),
+			})
+			return
+		}
+
+		if !user.IsAdmin() && user.Username != l.CreatedBy {
+			c.JSON(http.StatusForbidden, gin.H{
+				"msg": "你无权修改",
+			})
+			return
+		}
+
+		l.Delete()
+		c.JSON(http.StatusOK, gin.H{})
+	})
+}
+
 func ShortLinkActionAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if c.Param("action") == "/history" {
