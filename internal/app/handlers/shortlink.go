@@ -3,13 +3,11 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/models"
-	"log"
 	"net/http"
 )
 
 func GetShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		log.Println("当前请求用户：" + user.Username)
 		l := &models.ShortLink{Id: c.Param("id")}
 		err := l.Get()
 		if err != nil {
@@ -18,6 +16,14 @@ func GetShortLinkAPI() gin.HandlerFunc {
 			})
 			return
 		}
+
+		if !user.IsAdmin() && user.Username != l.CreatedBy {
+			c.JSON(http.StatusForbidden, gin.H{
+				"msg": "你无权查看",
+			})
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"msg": "ok",
 			"data": gin.H{
@@ -45,7 +51,6 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 		}
 
 		l.CreatedBy = user.Username
-
 		err = l.Save()
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -72,6 +77,13 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
+		if !user.IsAdmin() && user.Username != l.CreatedBy {
+			c.JSON(http.StatusForbidden, gin.H{
+				"msg": "你无权修改",
+			})
+			return
+		}
+
 		updateShortLink := &models.UpdateShortLinkParameter{}
 		if err := c.ShouldBindJSON(updateShortLink); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
@@ -93,14 +105,33 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 func ShortLinkActionAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if c.Param("action") == "/history" {
+			l := &models.ShortLink{Id: c.Param("id")}
+			err := l.Get()
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{
+					"msg": err.Error(),
+				})
+				return
+			}
+
+			if !user.IsAdmin() && user.Username != l.CreatedBy {
+				c.JSON(http.StatusForbidden, gin.H{
+					"msg": "你无权查看",
+				})
+				return
+			}
+
 			rh := &models.RequestHistory{}
-			rh.SetLink(&models.ShortLink{Id: c.Param("id")})
+			rh.SetLink(l)
 			histories, _ := rh.GetAll()
 
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  "ok",
 				"data": gin.H{"histories": histories},
 			})
+			return
+		} else if c.Param("action") == "/" {
+			GetShortLinkAPI()(c)
 			return
 		}
 		c.JSON(http.StatusNotFound, gin.H{})

@@ -1,4 +1,4 @@
 .idea/
 /data/*
 !data/.gitkeep
-app/app
+http-client.private.env.json
