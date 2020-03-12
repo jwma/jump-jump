@@ -8,13 +8,15 @@ import (
 )
 
 func main() {
-	username := flag.String("username", "", "A admin user username.")
-	password := flag.String("password", "", "A admin user password.")
+	username := flag.String("username", "", "username.")
+	password := flag.String("password", "", "password.")
+	role := flag.Int("role", models.RoleUser, "role, 1: normal user, 2: administrator.")
 	flag.Parse()
 
 	user := models.User{
 		Username:    *username,
 		RawPassword: *password,
+		Role:        *role,
 	}
 
 	err := user.Save()

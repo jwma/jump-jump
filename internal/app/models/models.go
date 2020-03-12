@@ -10,12 +10,20 @@ import (
 	"time"
 )
 
+const RoleUser = 1
+const RoleAdmin = 2
+
 type User struct {
 	Username    string    `json:"username"`
+	Role        int       `json:"role"`
 	RawPassword string    `json:"-"`
 	Password    []byte    `json:"password"`
 	Salt        []byte    `json:"salt"`
 	CreateTime  time.Time `json:"create_time"`
+}
+
+func (u *User) IsAdmin() bool {
+	return u.Role == RoleAdmin
 }
 
 func (u *User) IsExists() bool {
