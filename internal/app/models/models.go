@@ -116,7 +116,7 @@ func (s *ShortLink) GenerateId() error {
 	return nil
 }
 
-func (s *ShortLink) Save() error {
+func (s *ShortLink) Save(isUpdate bool) error {
 	if s.Id == "" {
 		return fmt.Errorf("id错误")
 	}
@@ -127,7 +127,9 @@ func (s *ShortLink) Save() error {
 		return fmt.Errorf("未设置创建者，请通过接口创建短链接")
 	}
 
-	s.CreateTime = time.Now()
+	if !isUpdate {
+		s.CreateTime = time.Now()
+	}
 	s.UpdateTime = time.Now()
 	c := db.GetRedisClient()
 	j, _ := json.Marshal(s)
@@ -169,9 +171,8 @@ func (s *ShortLink) Update(u *UpdateShortLinkParameter) error {
 	s.Url = u.Url
 	s.Description = u.Description
 	s.IsEnable = u.IsEnable
-	s.UpdateTime = time.Now()
 
-	return s.Save()
+	return s.Save(true)
 }
 
 func (s *ShortLink) Delete() {

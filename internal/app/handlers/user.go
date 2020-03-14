@@ -16,8 +16,9 @@ func Login(c *gin.Context) {
 	f := &loginForm{}
 	err := c.BindJSON(f)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"msg":  "用户名或密码错误",
+			"code": 4999,
 			"data": nil,
 		})
 		return
@@ -26,8 +27,9 @@ func Login(c *gin.Context) {
 	u := &models.User{Username: f.Username}
 	err = u.Get()
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"msg":  "用户名或密码错误",
+			"code": 4999,
 			"data": nil,
 		})
 		return
@@ -35,18 +37,42 @@ func Login(c *gin.Context) {
 
 	dk, _ := utils.EncodePassword([]byte(f.Password), u.Salt)
 	if string(u.Password) != string(dk) {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"msg":  "用户名或密码错误11",
+		c.JSON(http.StatusOK, gin.H{
+			"msg":  "用户名或密码错误",
+			"code": 4999,
 			"data": nil,
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"msg": "ok",
+		"msg":  "ok",
+		"code": 0,
 		"data": gin.H{
-			"token":    utils.GenerateJWT(u.Username),
-			"username": u.Username,
+			"token": utils.GenerateJWT(u.Username),
 		},
+	})
+}
+
+func GetUserInfoAPI() gin.HandlerFunc {
+	return Authenticator(func(c *gin.Context, user *models.User) {
+		c.JSON(http.StatusOK, gin.H{
+			"msg":  "",
+			"code": 0,
+			"data": gin.H{
+				"username": user.Username,
+				"role":     user.Role,
+			},
+		})
+	})
+}
+
+func LogoutAPI() gin.HandlerFunc {
+	return Authenticator(func(c *gin.Context, user *models.User) {
+		c.JSON(http.StatusOK, gin.H{
+			"msg":  "",
+			"code": 0,
+			"data": nil,
+		})
 	})
 }

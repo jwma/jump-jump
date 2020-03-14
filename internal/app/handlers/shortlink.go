@@ -17,21 +17,26 @@ func GetShortLinkAPI() gin.HandlerFunc {
 		l := &models.ShortLink{Id: c.Param("id")}
 		err := l.Get()
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"msg": err.Error(),
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  err.Error(),
+				"code": 4999,
+				"data": nil,
 			})
 			return
 		}
 
 		if !user.IsAdmin() && user.Username != l.CreatedBy {
-			c.JSON(http.StatusForbidden, gin.H{
-				"msg": "你无权查看",
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "你无权查看",
+				"code": 4999,
+				"data": nil,
 			})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"msg": "ok",
+			"msg":  "ok",
+			"code": 0,
 			"data": gin.H{
 				"shortLink": l,
 			},
@@ -44,29 +49,38 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 		l := models.ShortLink{}
 
 		if err := c.BindJSON(&l); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"msg": "参数错误",
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "参数错误",
+				"code": 4999,
+				"data": nil,
 			})
 			return
 		}
 
 		err := l.GenerateId()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{})
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "服务器繁忙，请稍后再试...",
+				"code": 4999,
+				"data": nil,
+			})
 			return
 		}
 
 		l.CreatedBy = user.Username
-		err = l.Save()
+		err = l.Save(false)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"msg": err,
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  err.Error(),
+				"code": 4999,
+				"data": nil,
 			})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "ok",
+			"code": 0,
 			"data": gin.H{"shortLink": l},
 		})
 	})
@@ -77,32 +91,45 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 		l := &models.ShortLink{Id: c.Param("id")}
 		err := l.Get()
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"msg": err.Error(),
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  err.Error(),
+				"code": 4999,
+				"data": nil,
 			})
 			return
 		}
 
 		if !user.IsAdmin() && user.Username != l.CreatedBy {
-			c.JSON(http.StatusForbidden, gin.H{
-				"msg": "你无权修改",
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "你无权修改",
+				"code": 4999,
+				"data": nil,
 			})
 			return
 		}
 
 		updateShortLink := &models.UpdateShortLinkParameter{}
 		if err := c.ShouldBindJSON(updateShortLink); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  err.Error(),
+				"code": 4999,
+				"data": nil,
+			})
 			return
 		}
 
 		err = l.Update(updateShortLink)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  err.Error(),
+				"code": 4999,
+				"data": nil,
+			})
 		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "ok",
+			"code": 0,
 			"data": gin.H{"shortLink": l},
 		})
 	})
@@ -113,21 +140,29 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 		l := &models.ShortLink{Id: c.Param("id")}
 		err := l.Get()
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"msg": err.Error(),
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  err.Error(),
+				"code": 4999,
+				"data": nil,
 			})
 			return
 		}
 
 		if !user.IsAdmin() && user.Username != l.CreatedBy {
-			c.JSON(http.StatusForbidden, gin.H{
-				"msg": "你无权修改",
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "你无权修改",
+				"code": 4999,
+				"data": nil,
 			})
 			return
 		}
 
 		l.Delete()
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusOK, gin.H{
+			"msg":  "ok",
+			"code": 0,
+			"data": nil,
+		})
 	})
 }
 
@@ -137,15 +172,19 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			l := &models.ShortLink{Id: c.Param("id")}
 			err := l.Get()
 			if err != nil {
-				c.JSON(http.StatusNotFound, gin.H{
-					"msg": err.Error(),
+				c.JSON(http.StatusOK, gin.H{
+					"msg":  err.Error(),
+					"code": 4999,
+					"data": nil,
 				})
 				return
 			}
 
 			if !user.IsAdmin() && user.Username != l.CreatedBy {
-				c.JSON(http.StatusForbidden, gin.H{
-					"msg": "你无权查看",
+				c.JSON(http.StatusOK, gin.H{
+					"msg":  "你无权查看",
+					"code": 4999,
+					"data": nil,
 				})
 				return
 			}
@@ -156,6 +195,7 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  "ok",
+				"code": 0,
 				"data": gin.H{"histories": histories},
 			})
 			return
@@ -163,14 +203,18 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			GetShortLinkAPI()(c)
 			return
 		}
-		c.JSON(http.StatusNotFound, gin.H{})
+		c.JSON(http.StatusOK, gin.H{
+			"msg":  "请求资源不存在",
+			"code": 4999,
+			"data": nil,
+		})
 	})
 }
 
 func ListShortLinksAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		var page = 1
-		var pageSize int64 = 20
+		var pageSize = 20
 		var err error
 
 		if c.Query("page") != "" {
@@ -179,8 +223,14 @@ func ListShortLinksAPI() gin.HandlerFunc {
 				page = 1
 			}
 		}
-		start := int64(page-1) * pageSize
-		stop := start - 1 + pageSize
+		if c.Query("pageSize") != "" {
+			pageSize, err = strconv.Atoi(c.Query("pageSize"))
+			if err != nil {
+				pageSize = 20
+			}
+		}
+		start := int64((page - 1) * pageSize)
+		stop := start - 1 + int64(pageSize)
 
 		client := db.GetRedisClient()
 		var key string
@@ -194,15 +244,22 @@ func ListShortLinksAPI() gin.HandlerFunc {
 		if err != nil {
 			log.Printf("fail to list short links, err: %v\n", err)
 			c.JSON(http.StatusOK, gin.H{
-				"code": 499,
+				"code": 4999,
 				"msg":  "系统繁忙请稍后再试...",
+				"data": nil,
 			})
 			return
 		}
 
+		total, _ := client.ZCard(key).Result()
 		if len(ids) == 0 {
 			c.JSON(http.StatusOK, gin.H{
-				"data": []string{},
+				"msg":  "",
+				"code": 0,
+				"data": gin.H{
+					"total":      total,
+					"shortLinks": []string{},
+				},
 			})
 			return
 		}
@@ -223,9 +280,9 @@ func ListShortLinksAPI() gin.HandlerFunc {
 			links = append(links, l)
 		}
 
-		total, _ := client.ZCard(key).Result()
-
 		c.JSON(http.StatusOK, gin.H{
+			"msg":  "",
+			"code": 0,
 			"data": gin.H{
 				"total":      total,
 				"shortLinks": links,
