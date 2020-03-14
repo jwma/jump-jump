@@ -9,13 +9,18 @@ import (
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-	corsCfg := cors.DefaultConfig()
-	corsCfg.AllowAllOrigins = true
-	corsCfg.AddAllowHeaders("Authorization")
-	r.Use(cors.New(corsCfg))
 
+	if gin.Mode() == gin.DebugMode { // 开发环境下，开启 CORS
+		corsCfg := cors.DefaultConfig()
+		corsCfg.AllowAllOrigins = true
+		corsCfg.AddAllowHeaders("Authorization")
+		r.Use(cors.New(corsCfg))
+	}
+
+	r.LoadHTMLFiles("./web/admin/index.html")
+	r.StaticFS("/static", http.Dir("./web/admin/static"))
 	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "码极工作室/MJ Studio")
+		c.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
 	r.POST("/v1/user/login", handlers.Login)

@@ -10,9 +10,11 @@ func Redirect(c *gin.Context) {
 	l := &models.ShortLink{Id: c.Param("id")}
 	err := l.Get()
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"msg": err.Error(),
-		})
+		c.String(http.StatusOK, err.Error())
+		return
+	}
+	if !l.IsEnable {
+		c.String(http.StatusOK, "你访问的页面不存在哦")
 		return
 	}
 
