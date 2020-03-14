@@ -1,10 +1,10 @@
 Jump Jump
 ===
 
-使用 Go 开发的一个功能完善的短链接系统。
+使用 Go 开发的一个功能完善的短链接系统。旧版源码可查看 [prev 分支](https://github.com/jwma/jump-jump/tree/prev)。
 
 ## 功能模块
-v2 版本正在重构中，重构完成后，将会支持如下的功能：
+短链接基础功能已经开发完毕，其他功能正在开发中，完成后，将会支持如下的功能：
 
 ![Jump Jump 功能模块](j2module.png?raw=true "Jump Jump 功能模块")
 
