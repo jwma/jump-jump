@@ -96,13 +96,12 @@ Authorization: {{token}}
 ###
 
 # 7. 重复删除短链接
-#    期望返回 404
 DELETE http://{{host}}/v1/short-link/{{short_link_id}}
 Authorization: {{token}}
 
 > {%
    client.test('Delete short link failed', function() {
-    client.assert(404 === response.status, 'Want 404, but got ' + response.status);
+    client.assert(4999 === response.body.code, 'Want 4999, but got ' + response.body.code);
   });
 %}
 

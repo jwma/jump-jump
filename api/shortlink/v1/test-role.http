@@ -88,14 +88,13 @@ Authorization: {{token}}
 ###
 
 # 6. 使用 token 获取使用 admin_token 所创建的短链接
-#    期望返回 403
 GET http://{{host}}/v1/short-link/{{admin_shortlink_id}}/
 Content-Type: application/json
 Authorization: {{token}}
 
 > {%
    client.test('Get admin short link failed', function() {
-    client.assert(403 === response.status, 'Want 403, but got ' + response.status);
+    client.assert(4999 === response.body.code, 'Want 4999, but got ' + response.body.code);
   });
 %}
 
@@ -134,7 +133,7 @@ Authorization: {{token}}
 
 > {%
    client.test('Update admin short link failed', function() {
-    client.assert(403 === response.status, 'Want 403, but got ' + response.status);
+    client.assert(4999 === response.body.code, 'Want 4999, but got ' + response.body.code);
   });
 %}
 
@@ -158,7 +157,7 @@ Authorization: {{token}}
 
 > {%
    client.test('Delete short link failed', function() {
-    client.assert(403 === response.status, 'Want 403, but got ' + response.status);
+    client.assert(4999 === response.body.code, 'Want 4999, but got ' + response.body.code);
   });
 %}
 
