@@ -1,4 +1,4 @@
 .idea/
-/data/*
-!data/.gitkeep
+/deployments/data/*
+!deployments/data/.gitkeep
 http-client.private.env.json

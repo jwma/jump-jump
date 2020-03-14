@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  db:
+    image: redis:4.0
+    volumes:
+      - ./data:/data
+    ports:
+      - 6379:6379
+    command: ["redis-server", "--appendonly", "yes"]
+
+  apiserver:
+    image: studiomj/jump-jump
+    depends_on:
+      - db
+    ports:
+      - 8080:8080
+    entrypoint: ["./apiserver"]
+    environment:
+      - REDIS_DB=0
+      - REDIS_HOST=db:6379
+      - J2_API_ADDR=0.0.0.0:8080
+      - SECRET_KEY=YOUR_SECRET_KEY
+      - GIN_MODE=release
+
+  landingserver:
+    image: studiomj/jump-jump
+    depends_on:
+      - db
+    ports:
+      - 8081:8081
+    entrypoint: ["./landingserver"]
+    environment:
+      - REDIS_DB=0
+      - REDIS_HOST=db:6379
+      - J2_LANDING_ADDR=0.0.0.0:8081
+      - GIN_MODE=release
