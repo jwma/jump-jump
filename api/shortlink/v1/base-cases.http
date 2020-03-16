@@ -51,8 +51,8 @@ Authorization: {{token}}
 
 ###
 
-# 4. 获取短链接访问历史
-GET http://{{host}}/v1/short-link/{{short_link_id}}/history
+# 4. 获取短链接最近的访问历史
+GET http://{{host}}/v1/short-link/{{short_link_id}}/latest-request-history
 Content-Type: application/json
 Authorization: {{token}}
 

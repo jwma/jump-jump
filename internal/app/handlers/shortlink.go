@@ -169,7 +169,7 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 
 func ShortLinkActionAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		if c.Param("action") == "/history" {
+		if c.Param("action") == "/latest-request-history" {
 			l := &models.ShortLink{Id: c.Param("id")}
 			err := l.Get()
 			if err != nil {
