@@ -154,13 +154,13 @@ func (s *ShortLink) Get() error {
 	c := db.GetRedisClient()
 	rs, err := c.Get(s.key()).Result()
 	if err != nil {
-		log.Printf("fail to get short link with key: %s, error: %v\n", s.key(), err)
+		log.Printf("fail to get short Link with Key: %s, error: %v\n", s.key(), err)
 		return fmt.Errorf("短链接不存在")
 	}
 
 	err = json.Unmarshal([]byte(rs), s)
 	if err != nil {
-		log.Printf("fail to unmarshal short link, key: %s, error: %v\n", s.key(), err)
+		log.Printf("fail to unmarshal short Link, Key: %s, error: %v\n", s.key(), err)
 		return fmt.Errorf("短链接不存在")
 	}
 
@@ -192,7 +192,7 @@ func (s *ShortLink) Delete() {
 }
 
 type RequestHistory struct {
-	link *ShortLink `json:"-"`
+	Link *ShortLink `json:"-"`
 	Url  string     `json:"url"` // 由于短链接的目标连接可能会被修改，可以在访问历史记录中记录一下当前的目标连接
 	IP   string     `json:"ip"`
 	UA   string     `json:"ua"`
@@ -200,42 +200,5 @@ type RequestHistory struct {
 }
 
 func NewRequestHistory(link *ShortLink, IP string, UA string) *RequestHistory {
-	return &RequestHistory{link: link, IP: IP, UA: UA, Url: link.Url}
-}
-
-func (r *RequestHistory) SetLink(link *ShortLink) {
-	r.link = link
-}
-
-func (r *RequestHistory) key() string {
-	return fmt.Sprintf("history:%s:%s", r.link.Id, time.Now().Format("20060102"))
-}
-
-func (r *RequestHistory) Save() {
-	r.Time = time.Now()
-	c := db.GetRedisClient()
-	j, err := json.Marshal(r)
-	if err != nil {
-		log.Printf("fail to save short link request history with key: %s, error: %v\n", r.key(), err)
-		return
-	}
-
-	c.LPush(r.key(), j)
-}
-
-func (r *RequestHistory) GetAll() ([]*RequestHistory, error) {
-	histories := make([]*RequestHistory, 0)
-	c := db.GetRedisClient()
-	all, err := c.LRange(r.key(), 0, -1).Result()
-	if err != nil {
-		log.Printf("fail to get all request history with key: %s, error: %v\n", r.key(), err)
-		return histories, err
-	}
-
-	for _, one := range all {
-		h := &RequestHistory{}
-		_ = json.Unmarshal([]byte(one), h)
-		histories = append(histories, h)
-	}
-	return histories, err
+	return &RequestHistory{Link: link, IP: IP, UA: UA, Url: link.Url}
 }

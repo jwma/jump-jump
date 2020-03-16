@@ -7,6 +7,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
+	"github.com/jwma/jump-jump/internal/app/repository"
 	"log"
 	"net/http"
 	"strconv"
@@ -189,14 +190,21 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 				return
 			}
 
-			rh := &models.RequestHistory{}
-			rh.SetLink(l)
-			histories, _ := rh.GetAll()
+			repo := repository.NewRequestHistoryRepository(db.GetRedisClient())
+			r, err := repo.FindLatest(l.Id, 20)
+			if err != nil {
+				c.JSON(http.StatusOK, gin.H{
+					"msg":  err.Error(),
+					"code": 4999,
+					"data": nil,
+				})
+				return
+			}
 
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  "ok",
 				"code": 0,
-				"data": gin.H{"histories": histories},
+				"data": r,
 			})
 			return
 		} else if c.Param("action") == "/" {
