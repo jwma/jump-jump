@@ -27,15 +27,15 @@ func (r *RequestHistoryListResult) AddHistory(h ...*models.RequestHistory) {
 	r.Total += len(h)
 }
 
-type RequestHistoryRepository struct {
+type requestHistoryRepository struct {
 	db *redis.Client
 }
 
-func NewRequestHistoryRepository(db *redis.Client) *RequestHistoryRepository {
-	return &RequestHistoryRepository{db}
+func NewRequestHistoryRepository(db *redis.Client) *requestHistoryRepository {
+	return &requestHistoryRepository{db}
 }
 
-func (r *RequestHistoryRepository) Save(rh *models.RequestHistory) {
+func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 	rh.Time = time.Now()
 	key := utils.GetRequestHistoryKey(rh.Link.Id, rh.Time)
 	j, err := json.Marshal(rh)
@@ -47,7 +47,7 @@ func (r *RequestHistoryRepository) Save(rh *models.RequestHistory) {
 	r.db.LPush(key, j)
 }
 
-func (r *RequestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*RequestHistoryListResult, error) {
+func (r *requestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*RequestHistoryListResult, error) {
 	var start time.Time
 	var end time.Time
 	dayDuration := time.Hour * 24
@@ -81,7 +81,7 @@ func (r *RequestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*R
 	return result, nil
 }
 
-func (r *RequestHistoryRepository) FindLatest(linkId string, size int64) (*RequestHistoryListResult, error) {
+func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*RequestHistoryListResult, error) {
 	key := utils.GetRequestHistoryKey(linkId, time.Now())
 	rawRs, err := r.db.LRange(key, 0, size).Result()
 	if err != nil {
@@ -95,4 +95,67 @@ func (r *RequestHistoryRepository) FindLatest(linkId string, size int64) (*Reque
 		result.AddHistory(rh)
 	}
 	return result, nil
+}
+
+type userRepository struct {
+	db *redis.Client
+}
+
+func NewUserRepository(db *redis.Client) *userRepository {
+	return &userRepository{db}
+}
+
+func (r *userRepository) IsExists(username string) bool {
+	if username == "" {
+		return false
+	}
+
+	exists, err := r.db.HExists(utils.GetUserKey(), username).Result()
+	if err != nil {
+		log.Printf("fail to check user exists with username: %s, error: %v\n", username, err)
+		return false
+	}
+	return exists
+}
+
+func (r *userRepository) Save(u *models.User) error {
+	if u.Username == "" || u.RawPassword == "" {
+		return fmt.Errorf("username or password can not be empty string")
+	}
+	if _, exists := models.Roles[u.Role]; !exists {
+		return fmt.Errorf("user role can not be %b", u.Role)
+	}
+	if r.IsExists(u.Username) {
+		return fmt.Errorf("%s already exitis", u.Username)
+	}
+
+	salt, _ := utils.RandomSalt(32)
+	dk, _ := utils.EncodePassword([]byte(u.RawPassword), salt)
+	u.Password = dk
+	u.Salt = salt
+	u.CreateTime = time.Now()
+
+	j, _ := json.Marshal(u)
+	r.db.HSet(utils.GetUserKey(), u.Username, j)
+	return nil
+}
+
+func (r *userRepository) FindOneByUsername(username string) (*models.User, error) {
+	if username == "" {
+		return nil, fmt.Errorf("username can not be empty string")
+	}
+
+	j, err := r.db.HGet(utils.GetUserKey(), username).Result()
+	if err != nil {
+		log.Printf("fail to get user with username: %s, error: %v\n", username, err)
+		return nil, fmt.Errorf("用户不存在")
+	}
+
+	u := &models.User{}
+	err = json.Unmarshal([]byte(j), u)
+	if err != nil {
+		log.Printf("fail to Unmarshal user with username: %s, error: %v\n", username, err)
+		return nil, fmt.Errorf("用户不存在")
+	}
+	return u, nil
 }

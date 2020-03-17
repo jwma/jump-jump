@@ -13,6 +13,11 @@ import (
 const RoleUser = 1
 const RoleAdmin = 2
 
+var Roles = map[int]string{
+	RoleUser:  "user",
+	RoleAdmin: "admin",
+}
+
 type User struct {
 	Username    string    `json:"username"`
 	Role        int       `json:"role"`
@@ -24,58 +29,6 @@ type User struct {
 
 func (u *User) IsAdmin() bool {
 	return u.Role == RoleAdmin
-}
-
-func (u *User) IsExists() bool {
-	if u.Username == "" {
-		return false
-	}
-
-	client := db.GetRedisClient()
-	exists, err := client.HExists("users", u.Username).Result()
-	if err != nil {
-		log.Printf("fail to check user exists with username: %s, error: %v\n", u.Username, err)
-		return false
-	}
-	return exists
-}
-
-func (u *User) Save() error {
-	if u.Username == "" || u.RawPassword == "" {
-		return fmt.Errorf("username or password can not be empty string")
-	}
-	if u.IsExists() {
-		return fmt.Errorf("%s already exitis", u.Username)
-	}
-	salt, _ := utils.RandomSalt(32)
-	dk, _ := utils.EncodePassword([]byte(u.RawPassword), salt)
-	u.Password = dk
-	u.Salt = salt
-	u.CreateTime = time.Now()
-
-	client := db.GetRedisClient()
-	j, _ := json.Marshal(u)
-	client.HSet("users", u.Username, j)
-	return nil
-}
-
-func (u *User) Get() error {
-	if u.Username == "" {
-		return fmt.Errorf("username can not be empty string")
-	}
-
-	client := db.GetRedisClient()
-	j, err := client.HGet("users", u.Username).Result()
-	if err != nil {
-		log.Printf("fail to get user with username: %s, error: %v\n", u.Username, err)
-		return fmt.Errorf("用户不存在")
-	}
-	err = json.Unmarshal([]byte(j), u)
-	if err != nil {
-		log.Printf("fail to Unmarshal user with username: %s, error: %v\n", u.Username, err)
-		return fmt.Errorf("用户不存在")
-	}
-	return nil
 }
 
 type ShortLink struct {

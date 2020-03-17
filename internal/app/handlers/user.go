@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
+	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"net/http"
+	"strings"
 )
 
 type loginForm struct {
@@ -24,8 +27,8 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	u := &models.User{Username: f.Username}
-	err = u.Get()
+	repo := repository.NewUserRepository(db.GetRedisClient())
+	u, err := repo.FindOneByUsername(strings.TrimSpace(f.Username))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "用户名或密码错误",
