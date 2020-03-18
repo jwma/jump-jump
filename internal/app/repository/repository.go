@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis"
+	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"log"
@@ -32,8 +33,10 @@ type requestHistoryRepository struct {
 	db *redis.Client
 }
 
-func NewRequestHistoryRepository(db *redis.Client) *requestHistoryRepository {
-	return &requestHistoryRepository{db}
+var requestHistoryRepo = &requestHistoryRepository{db.GetRedisClient()}
+
+func GetRequestHistoryRepo() *requestHistoryRepository {
+	return requestHistoryRepo
 }
 
 func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
@@ -102,8 +105,10 @@ type userRepository struct {
 	db *redis.Client
 }
 
-func NewUserRepository(db *redis.Client) *userRepository {
-	return &userRepository{db}
+var userRepo = &userRepository{db.GetRedisClient()}
+
+func GetUserRepo() *userRepository {
+	return userRepo
 }
 
 func (r *userRepository) IsExists(username string) bool {
@@ -165,8 +170,10 @@ type shortLinkRepository struct {
 	db *redis.Client
 }
 
-func NewShortLinkRepository(db *redis.Client) *shortLinkRepository {
-	return &shortLinkRepository{db}
+var shortLinkRepo = &shortLinkRepository{db.GetRedisClient()}
+
+func GetShortLinkRepo() *shortLinkRepository {
+	return shortLinkRepo
 }
 
 func (r *shortLinkRepository) generateId(l int) (string, error) {

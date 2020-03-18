@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/jwma/jump-jump/internal/app/utils"
@@ -11,7 +10,7 @@ import (
 
 func GetShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+		slRepo := repository.GetShortLinkRepo()
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
@@ -54,7 +53,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		repo := repository.NewShortLinkRepository(db.GetRedisClient())
+		repo := repository.GetShortLinkRepo()
 		err := repo.Save(s)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
@@ -75,7 +74,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 
 func UpdateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+		slRepo := repository.GetShortLinkRepo()
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
@@ -105,7 +104,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		repo := repository.NewShortLinkRepository(db.GetRedisClient())
+		repo := repository.GetShortLinkRepo()
 		err = repo.Update(s, updateShortLink)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
@@ -125,7 +124,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 
 func DeleteShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+		slRepo := repository.GetShortLinkRepo()
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
@@ -145,7 +144,7 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		repo := repository.NewShortLinkRepository(db.GetRedisClient())
+		repo := repository.GetShortLinkRepo()
 		repo.Delete(s)
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "ok",
@@ -158,7 +157,7 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 func ShortLinkActionAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if c.Param("action") == "/latest-request-history" {
-			slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+			slRepo := repository.GetShortLinkRepo()
 			s, err := slRepo.Get(c.Param("id"))
 			if err != nil {
 				c.JSON(http.StatusOK, gin.H{
@@ -178,7 +177,7 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 				return
 			}
 
-			repo := repository.NewRequestHistoryRepository(db.GetRedisClient())
+			repo := repository.GetRequestHistoryRepo()
 			r, err := repo.FindLatest(s.Id, 20)
 			if err != nil {
 				c.JSON(http.StatusOK, gin.H{
@@ -221,7 +220,7 @@ func ListShortLinksAPI() gin.HandlerFunc {
 			key = utils.GetUserShortLinksKey(user.Username)
 		}
 
-		slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+		slRepo := repository.GetShortLinkRepo()
 		result, err := slRepo.List(key, start, stop)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{

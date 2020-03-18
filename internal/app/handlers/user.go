@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/jwma/jump-jump/internal/app/utils"
@@ -27,7 +26,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	repo := repository.NewUserRepository(db.GetRedisClient())
+	repo := repository.GetUserRepo()
 	u, err := repo.FindOneByUsername(strings.TrimSpace(f.Username))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{

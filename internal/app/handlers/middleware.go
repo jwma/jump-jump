@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/jwma/jump-jump/internal/app/utils"
@@ -48,7 +47,7 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 		}
 
 		// 获取用户
-		repo := repository.NewUserRepository(db.GetRedisClient())
+		repo := repository.GetUserRepo()
 		u, err := repo.FindOneByUsername(claims["identifier"].(string))
 		if err != nil {
 			log.Println(err)
