@@ -9,20 +9,20 @@ import (
 )
 
 func Redirect(c *gin.Context) {
-	l := &models.ShortLink{Id: c.Param("id")}
-	err := l.Get()
+	slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+	s, err := slRepo.Get(c.Param("id"))
 	if err != nil {
 		c.String(http.StatusOK, err.Error())
 		return
 	}
-	if !l.IsEnable {
+	if !s.IsEnable {
 		c.String(http.StatusOK, "你访问的页面不存在哦")
 		return
 	}
 
 	// 保存短链接请求记录（IP、User-Agent）
-	repo := repository.NewRequestHistoryRepository(db.GetRedisClient())
-	go repo.Save(models.NewRequestHistory(l, c.Request.RemoteAddr, c.Request.UserAgent()))
+	rhRepo := repository.NewRequestHistoryRepository(db.GetRedisClient())
+	go rhRepo.Save(models.NewRequestHistory(s, c.Request.RemoteAddr, c.Request.UserAgent()))
 
-	c.Redirect(http.StatusTemporaryRedirect, l.Url)
+	c.Redirect(http.StatusTemporaryRedirect, s.Url)
 }

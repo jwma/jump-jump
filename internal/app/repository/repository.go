@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/jwma/jump-jump/internal/app/models"
@@ -24,7 +25,7 @@ func NewEmptyRequestHistoryResult() *RequestHistoryListResult {
 
 func (r *RequestHistoryListResult) AddHistory(h ...*models.RequestHistory) {
 	r.Histories = append(r.Histories, h...)
-	r.Total += len(h)
+	r.Total = len(r.Histories)
 }
 
 type requestHistoryRepository struct {
@@ -158,4 +159,170 @@ func (r *userRepository) FindOneByUsername(username string) (*models.User, error
 		return nil, fmt.Errorf("用户不存在")
 	}
 	return u, nil
+}
+
+type shortLinkRepository struct {
+	db *redis.Client
+}
+
+func NewShortLinkRepository(db *redis.Client) *shortLinkRepository {
+	return &shortLinkRepository{db}
+}
+
+func (r *shortLinkRepository) generateId(l int) (string, error) {
+	var id string
+	for true {
+		id = utils.RandStringRunes(l)
+		rs, err := r.db.Exists(utils.GetShortLinkKey(id)).Result()
+		if rs == 0 {
+			break
+		}
+		if err != nil {
+			log.Println(err)
+			return "", err
+		}
+	}
+	return id, nil
+}
+
+func (r *shortLinkRepository) save(s *models.ShortLink, isUpdate bool) error {
+	if isUpdate && s.Id == "" {
+		return fmt.Errorf("id错误")
+	}
+	if s.Url == "" {
+		return fmt.Errorf("请填写url")
+	}
+	if s.CreatedBy == "" {
+		return fmt.Errorf("未设置创建者，请通过接口创建短链接")
+	}
+
+	if !isUpdate {
+		id, err := r.generateId(6)
+		if err != nil {
+			log.Println(err)
+			return errors.New("服务器繁忙，请稍后再试")
+		}
+		s.Id = id
+		s.CreateTime = time.Now()
+	}
+	s.UpdateTime = time.Now()
+	j, _ := json.Marshal(s)
+
+	pipeline := r.db.Pipeline()
+	// 保存短链接
+	pipeline.Set(utils.GetShortLinkKey(s.Id), j, 0)
+	// 保存用户的短链接记录，保存到创建者及全局
+	record := redis.Z{
+		Score:  float64(time.Now().Unix()),
+		Member: s.Id,
+	}
+	pipeline.ZAdd(utils.GetUserShortLinksKey(s.CreatedBy), record)
+	pipeline.ZAdd(utils.GetShortLinksKey(), record)
+	_, err := pipeline.Exec()
+	if err != nil {
+		log.Println(err)
+		return errors.New("服务器繁忙，请稍后再试")
+	}
+	return nil
+}
+
+func (r *shortLinkRepository) Save(s *models.ShortLink) error {
+	return r.save(s, false)
+}
+
+func (r *shortLinkRepository) Update(s *models.ShortLink, params *models.UpdateShortLinkParameter) error {
+	s.Url = params.Url
+	s.Description = params.Description
+	s.IsEnable = params.IsEnable
+
+	return r.save(s, true)
+}
+
+func (r *shortLinkRepository) Delete(s *models.ShortLink) {
+	pipeline := r.db.Pipeline()
+
+	// 删除短链接本身
+	pipeline.Del(utils.GetShortLinkKey(s.Id))
+	// 删除用户的短链接记录及全局短链接记录
+	pipeline.ZRem(utils.GetUserShortLinksKey(s.CreatedBy), s.Id)
+	pipeline.ZRem(utils.GetShortLinksKey(), s.Id)
+	_, _ = pipeline.Exec()
+
+	// 删除访问历史
+	keys, _ := r.db.Keys(fmt.Sprintf("history:%s:*", s.Id)).Result()
+	if len(keys) > 0 {
+		r.db.Del(keys...)
+	}
+}
+
+func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
+	if id == "" {
+		return nil, fmt.Errorf("短链接不存在")
+	}
+
+	key := utils.GetShortLinkKey(id)
+	s := &models.ShortLink{}
+	rs, err := r.db.Get(key).Result()
+	if err != nil {
+		log.Printf("fail to get short Link with Key: %s, error: %v\n", key, err)
+		return nil, fmt.Errorf("短链接不存在")
+	}
+
+	err = json.Unmarshal([]byte(rs), s)
+	if err != nil {
+		log.Printf("fail to unmarshal short Link, Key: %s, error: %v\n", key, err)
+		return nil, fmt.Errorf("短链接不存在")
+	}
+
+	return s, nil
+}
+
+type shortLinkListResult struct {
+	ShortLinks []*models.ShortLink `json:"shortLinks"`
+	Total      int64               `json:"total"`
+}
+
+func makeEmptyShortLinkListResult() *shortLinkListResult {
+	return &shortLinkListResult{
+		ShortLinks: make([]*models.ShortLink, 0),
+		Total:      0,
+	}
+}
+
+func (r *shortLinkListResult) AddLink(links ...*models.ShortLink) {
+	r.ShortLinks = append(r.ShortLinks, links...)
+}
+
+func (r *shortLinkRepository) List(key string, start int64, stop int64) (*shortLinkListResult, error) {
+	result := makeEmptyShortLinkListResult()
+
+	total, _ := r.db.ZCard(key).Result()
+	result.Total = total
+	if total == 0 {
+		return result, nil
+	}
+
+	ids, err := r.db.ZRevRange(key, start, stop).Result()
+	if err != nil {
+		return result, errors.New("系统繁忙请稍后再试")
+	}
+
+	if len(ids) == 0 {
+		return result, nil
+	}
+
+	linkRs := make([]*redis.StringCmd, 0)
+	pipeline := r.db.Pipeline()
+	for _, id := range ids {
+		r := pipeline.Get(utils.GetShortLinkKey(id))
+		linkRs = append(linkRs, r)
+	}
+	_, _ = pipeline.Exec()
+
+	for _, cmd := range linkRs {
+		s := &models.ShortLink{}
+		err = json.Unmarshal([]byte(cmd.Val()), s)
+		result.AddLink(s)
+	}
+	return result, nil
 }

@@ -1,22 +1,18 @@
 package handlers
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
 	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
-	"log"
+	"github.com/jwma/jump-jump/internal/app/utils"
 	"net/http"
-	"strconv"
 )
 
 func GetShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		l := &models.ShortLink{Id: c.Param("id")}
-		err := l.Get()
+		slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  err.Error(),
@@ -26,7 +22,7 @@ func GetShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !user.IsAdmin() && user.Username != l.CreatedBy {
+		if !user.IsAdmin() && user.Username != s.CreatedBy {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  "你无权查看",
 				"code": 4999,
@@ -39,7 +35,7 @@ func GetShortLinkAPI() gin.HandlerFunc {
 			"msg":  "ok",
 			"code": 0,
 			"data": gin.H{
-				"shortLink": l,
+				"shortLink": s,
 			},
 		})
 	})
@@ -47,9 +43,9 @@ func GetShortLinkAPI() gin.HandlerFunc {
 
 func CreateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		l := models.ShortLink{}
+		s := &models.ShortLink{CreatedBy: user.Username}
 
-		if err := c.BindJSON(&l); err != nil {
+		if err := c.BindJSON(&s); err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  "参数错误",
 				"code": 4999,
@@ -58,18 +54,8 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		err := l.GenerateId()
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"msg":  "服务器繁忙，请稍后再试...",
-				"code": 4999,
-				"data": nil,
-			})
-			return
-		}
-
-		l.CreatedBy = user.Username
-		err = l.Save(false)
+		repo := repository.NewShortLinkRepository(db.GetRedisClient())
+		err := repo.Save(s)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  err.Error(),
@@ -82,15 +68,15 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "ok",
 			"code": 0,
-			"data": gin.H{"shortLink": l},
+			"data": gin.H{"shortLink": s},
 		})
 	})
 }
 
 func UpdateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		l := &models.ShortLink{Id: c.Param("id")}
-		err := l.Get()
+		slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  err.Error(),
@@ -100,7 +86,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !user.IsAdmin() && user.Username != l.CreatedBy {
+		if !user.IsAdmin() && user.Username != s.CreatedBy {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  "你无权修改",
 				"code": 4999,
@@ -119,7 +105,8 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		err = l.Update(updateShortLink)
+		repo := repository.NewShortLinkRepository(db.GetRedisClient())
+		err = repo.Update(s, updateShortLink)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  err.Error(),
@@ -131,15 +118,15 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "ok",
 			"code": 0,
-			"data": gin.H{"shortLink": l},
+			"data": gin.H{"shortLink": s},
 		})
 	})
 }
 
 func DeleteShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		l := &models.ShortLink{Id: c.Param("id")}
-		err := l.Get()
+		slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  err.Error(),
@@ -149,7 +136,7 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !user.IsAdmin() && user.Username != l.CreatedBy {
+		if !user.IsAdmin() && user.Username != s.CreatedBy {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  "你无权修改",
 				"code": 4999,
@@ -158,7 +145,8 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		l.Delete()
+		repo := repository.NewShortLinkRepository(db.GetRedisClient())
+		repo.Delete(s)
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "ok",
 			"code": 0,
@@ -170,8 +158,8 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 func ShortLinkActionAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if c.Param("action") == "/latest-request-history" {
-			l := &models.ShortLink{Id: c.Param("id")}
-			err := l.Get()
+			slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+			s, err := slRepo.Get(c.Param("id"))
 			if err != nil {
 				c.JSON(http.StatusOK, gin.H{
 					"msg":  err.Error(),
@@ -181,7 +169,7 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 				return
 			}
 
-			if !user.IsAdmin() && user.Username != l.CreatedBy {
+			if !user.IsAdmin() && user.Username != s.CreatedBy {
 				c.JSON(http.StatusOK, gin.H{
 					"msg":  "你无权查看",
 					"code": 4999,
@@ -191,7 +179,7 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			}
 
 			repo := repository.NewRequestHistoryRepository(db.GetRedisClient())
-			r, err := repo.FindLatest(l.Id, 20)
+			r, err := repo.FindLatest(s.Id, 20)
 			if err != nil {
 				c.JSON(http.StatusOK, gin.H{
 					"msg":  err.Error(),
@@ -221,80 +209,33 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 
 func ListShortLinksAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		var page = 1
-		var pageSize = 20
-		var err error
-
-		if c.Query("page") != "" {
-			page, err = strconv.Atoi(c.Query("page"))
-			if err != nil {
-				page = 1
-			}
-		}
-		if c.Query("pageSize") != "" {
-			pageSize, err = strconv.Atoi(c.Query("pageSize"))
-			if err != nil {
-				pageSize = 20
-			}
-		}
+		var page = utils.GetIntQueryValue(c, "page", 1)
+		var pageSize = utils.GetIntQueryValue(c, "pageSize", 20)
 		start := int64((page - 1) * pageSize)
 		stop := start - 1 + int64(pageSize)
 
-		client := db.GetRedisClient()
 		var key string
 		if user.IsAdmin() {
-			key = "links"
+			key = utils.GetShortLinksKey()
 		} else {
-			key = fmt.Sprintf("links:%s", user.Username)
+			key = utils.GetUserShortLinksKey(user.Username)
 		}
 
-		ids, err := client.ZRevRange(key, start, stop).Result()
+		slRepo := repository.NewShortLinkRepository(db.GetRedisClient())
+		result, err := slRepo.List(key, start, stop)
 		if err != nil {
-			log.Printf("fail to list short links, err: %v\n", err)
 			c.JSON(http.StatusOK, gin.H{
+				"msg":  err.Error(),
 				"code": 4999,
-				"msg":  "系统繁忙请稍后再试...",
 				"data": nil,
 			})
 			return
 		}
 
-		total, _ := client.ZCard(key).Result()
-		if len(ids) == 0 {
-			c.JSON(http.StatusOK, gin.H{
-				"msg":  "",
-				"code": 0,
-				"data": gin.H{
-					"total":      total,
-					"shortLinks": []string{},
-				},
-			})
-			return
-		}
-
-		linkRs := make([]*redis.StringCmd, 0)
-		p := client.Pipeline()
-		for _, id := range ids {
-			r := p.Get(fmt.Sprintf("link:%s", id))
-			linkRs = append(linkRs, r)
-
-		}
-		_, _ = p.Exec()
-
-		links := make([]*models.ShortLink, 0)
-		for _, cmd := range linkRs {
-			l := &models.ShortLink{}
-			err = json.Unmarshal([]byte(cmd.Val()), l)
-			links = append(links, l)
-		}
-
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "",
 			"code": 0,
-			"data": gin.H{
-				"total":      total,
-				"shortLinks": links,
-			},
+			"data": result,
 		})
 	})
 }
