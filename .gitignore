@@ -1,4 +1,5 @@
 .idea/
+.DS_Store
 /deployments/data/*
 !deployments/data/.gitkeep
 http-client.private.env.json
