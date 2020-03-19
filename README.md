@@ -1,5 +1,6 @@
 Jump Jump
 ===
+![Go](https://github.com/jwma/jump-jump/workflows/Go/badge.svg) ![license](https://img.shields.io/github/license/mashape/apistatus.svg)
 
 使用 Go 开发的一个功能完善的短链接系统。旧版源码可查看 [prev 分支](https://github.com/jwma/jump-jump/tree/prev)。
 
