@@ -1,7 +1,7 @@
 package server
 
 import (
-	_ "github.com/jwma/jump-jump/internal/app/db"
+	_ "github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/routers"
 )
 

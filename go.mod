@@ -10,6 +10,7 @@ require (
 	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
+	github.com/jwma/reborn v0.0.0-20200324171606-e11966640fcb
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
