@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/reborn"
+	"time"
 )
 
 var config *reborn.Reborn
@@ -24,4 +25,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	config.SetAutoReloadDuration(time.Second * 30)
+	config.StartAutoReload()
 }

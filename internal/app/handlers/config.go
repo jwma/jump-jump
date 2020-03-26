@@ -11,7 +11,7 @@ func GetConfig(c *gin.Context) {
 	landingHosts := cfg.GetStringSliceValue("landingHosts", make([]string, 0))
 
 	c.JSON(http.StatusOK, gin.H{
-		"msg":  "ok1",
+		"msg":  "ok",
 		"code": 0,
 		"data": gin.H{
 			"config": gin.H{"landingHosts": landingHosts},

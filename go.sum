@@ -37,6 +37,8 @@ github.com/jwma/reborn v0.0.0-20200324122811-393d79c925b2 h1:Ymscc3CDooiQaNTLV5a
 github.com/jwma/reborn v0.0.0-20200324122811-393d79c925b2/go.mod h1:tshy8uF9ZnJaltJqDX9F/hSe6AeCf8CKbt6OO/rwxHE=
 github.com/jwma/reborn v0.0.0-20200324171606-e11966640fcb h1:Xzhq5FA09TusvFbad+euU39WDTBz1DQtkjJELT14k1Y=
 github.com/jwma/reborn v0.0.0-20200324171606-e11966640fcb/go.mod h1:tshy8uF9ZnJaltJqDX9F/hSe6AeCf8CKbt6OO/rwxHE=
+github.com/jwma/reborn v0.0.0-20200326132007-2fa07c258aec h1:bfzlqMldSDAEG6ZDo7Y3iOu1H216vUIAcZjz2eH+kOY=
+github.com/jwma/reborn v0.0.0-20200326132007-2fa07c258aec/go.mod h1:tshy8uF9ZnJaltJqDX9F/hSe6AeCf8CKbt6OO/rwxHE=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
