@@ -10,7 +10,7 @@ var config *reborn.Reborn
 
 func getDefaultConfig() *reborn.Config {
 	d := reborn.NewConfig()
-	d.SetValue("landingHosts", []string{"http://localhost:8081/"})
+	d.SetValue("landingHosts", []string{"http://127.0.0.1:8081/"})
 
 	return d
 }
