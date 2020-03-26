@@ -1,5 +1,9 @@
-.idea/
 .DS_Store
+.idea/
+
+# docker-compose 运行时 redis 的数据挂载目录
 /deployments/data/*
 !deployments/data/.gitkeep
+
+# HTTP Client 私有环境变量
 http-client.private.env.json
