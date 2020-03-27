@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
@@ -44,7 +45,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		s := &models.ShortLink{CreatedBy: user.Username}
 
-		if err := c.BindJSON(&s); err != nil {
+		if err := c.ShouldBindJSON(&s); err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"msg":  "参数错误",
 				"code": 4999,
@@ -52,8 +53,23 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 			})
 			return
 		}
+		if user.Role == models.RoleUser && s.Id != "" { // 如果是普通用户，创建时不可以指定 ID
+			s.Id = ""
+		}
 
 		repo := repository.GetShortLinkRepo()
+		if s.Id != "" {
+			checkShortLink, _ := repo.Get(s.Id)
+			if checkShortLink.Id != "" {
+				c.JSON(http.StatusOK, gin.H{
+					"msg":  fmt.Sprintf("%s 已被占用，请使用其他 ID。", s.Id),
+					"code": 4999,
+					"data": nil,
+				})
+				return
+			}
+		}
+
 		err := repo.Save(s)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{

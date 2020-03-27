@@ -2,6 +2,8 @@ package utils
 
 import (
 	"math/rand"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -14,4 +16,10 @@ func RandStringRunes(n int) string {
 		b[i] = letterRunes[seededRand.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+var shortLinkIdMatcher = regexp.MustCompile("[a-zA-Z0-9]+")
+
+func TrimShortLinkId(s string) string {
+	return strings.Join(shortLinkIdMatcher.FindAllString(s, -1), "")
 }

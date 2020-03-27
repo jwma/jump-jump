@@ -224,7 +224,13 @@ func (r *shortLinkRepository) save(s *models.ShortLink, isUpdate bool) error {
 			log.Println(err)
 			return errors.New("服务器繁忙，请稍后再试")
 		}
-		s.Id = id
+		if s.Id == "" {
+			s.Id = id
+		}
+		s.Id = utils.TrimShortLinkId(s.Id)
+		if s.Id == "" {
+			return fmt.Errorf("id错误")
+		}
 		s.CreateTime = time.Now()
 	}
 	s.UpdateTime = time.Now()
