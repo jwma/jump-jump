@@ -26,6 +26,8 @@ func SetupRouter() *gin.Engine {
 	r.POST("/v1/user/login", handlers.Login)
 	r.GET("/v1/user/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserInfoAPI())
 	r.POST("/v1/user/logout", handlers.JWTAuthenticatorMiddleware(), handlers.LogoutAPI())
+	r.PATCH("/v1/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
+
 	r.GET("/v1/config", handlers.GetConfig)
 	r.PATCH("/v1/config", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateLandingHostsAPI())
 

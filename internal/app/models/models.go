@@ -12,6 +12,11 @@ var Roles = map[int]string{
 	RoleAdmin: "admin",
 }
 
+type ChangePasswordParameter struct {
+	Password    string `json:"password"`
+	NewPassword string `json:"newPassword"`
+}
+
 type User struct {
 	Username    string    `json:"username"`
 	Role        int       `json:"role"`

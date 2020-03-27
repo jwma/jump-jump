@@ -78,3 +78,46 @@ func LogoutAPI() gin.HandlerFunc {
 		})
 	})
 }
+
+func ChangePasswordAPI() gin.HandlerFunc {
+	return Authenticator(func(c *gin.Context, user *models.User) {
+		p := &models.ChangePasswordParameter{}
+		if err := c.ShouldBindJSON(p); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "请填写原密码和新密码",
+				"code": 4999,
+				"data": nil,
+			})
+			return
+		}
+
+		dk, _ := utils.EncodePassword([]byte(p.Password), user.Salt)
+		if string(user.Password) != string(dk) {
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "原密码错误",
+				"code": 4999,
+				"data": nil,
+			})
+			return
+		}
+
+		user.RawPassword = p.NewPassword
+
+		repo := repository.GetUserRepo()
+		err := repo.UpdatePassword(user)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  err.Error(),
+				"code": 4999,
+				"data": nil,
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"msg":  "ok",
+			"code": 0,
+			"data": nil,
+		})
+	})
+}

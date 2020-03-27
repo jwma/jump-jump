@@ -146,6 +146,21 @@ func (r *userRepository) Save(u *models.User) error {
 	return nil
 }
 
+func (r *userRepository) UpdatePassword(u *models.User) error {
+	if u.RawPassword == "" {
+		return fmt.Errorf("password can not be empty string")
+	}
+
+	salt, _ := utils.RandomSalt(32)
+	dk, _ := utils.EncodePassword([]byte(u.RawPassword), salt)
+	u.Password = dk
+	u.Salt = salt
+
+	j, _ := json.Marshal(u)
+	r.db.HSet(utils.GetUserKey(), u.Username, j)
+	return nil
+}
+
 func (r *userRepository) FindOneByUsername(username string) (*models.User, error) {
 	if username == "" {
 		return nil, fmt.Errorf("username can not be empty string")
