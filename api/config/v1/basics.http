@@ -1,0 +1,47 @@
+# 获取配置
+GET http://{{host}}/v1/config
+
+> {%
+  client.test('Get config successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
+
+# 用户登入
+POST http://{{host}}/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "{{adminUsername}}",
+  "password": "{{adminPassword}}"
+}
+
+> {%
+  client.test('Login successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+  client.global.set('token',  'Bearer ' + response.body.data.token);
+%}
+
+###
+
+# 更新 landingHosts 配置
+PATCH http://{{host}}/v1/config
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "hosts": [
+    "http://127.0.0.1:8081/"
+  ]
+}
+
+> {%
+  client.test('Update landing successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
