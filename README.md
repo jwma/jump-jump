@@ -1,19 +1,49 @@
-Jump Jump
-===
-![Go](https://github.com/jwma/jump-jump/workflows/Go/badge.svg) ![license](https://img.shields.io/github/license/mashape/apistatus.svg)
+<h1 align="center">
+  <br>Jump Jump<br>
+</h1>
 
-使用 Go 开发的一个功能完善的短链接系统。旧版源码可查看 [prev 分支](https://github.com/jwma/jump-jump/tree/prev)。
+<p align="center"><em>开箱即用，Go 语言开发的一个功能完善的短链接系统。</em></p>
+<p align="center">
+  <a href="https://github.com/jwma/jump-jump/workflows/Go/badge.svg" target="_blank">
+    <img src="https://github.com/jwma/jump-jump/workflows/Go/badge.svg" alt="ci">
+  </a>
+  <a href="https://img.shields.io/github/license/mashape/apistatus.svg" target="_blank">
+      <img src="https://img.shields.io/github/license/mashape/apistatus.svg" alt="license">
+  </a>
+</p>
 
-## 功能/使用
-短链接基础功能已经开发完毕，其他功能正在开发中，完成后，将会支持如下的功能：
+---
 
-![Jump Jump 功能模块](j2module.png?raw=true "Jump Jump 功能模块")
+* [快速体验](#快速体验)
+* [功能与使用](#功能与使用)
+    * [短链接管理](#短链接管理)
+* [本地启动](#本地启动)
+* [如何访问短链接？](#如何访问短链接)
+    * [设置短链接域名](#设置短链接域名)
+    * [获取完整短链接](#获取完整短链接)
+* [部署到服务器](#部署到服务器)
+* [关注我的公众号了解更多](#关注我的公众号了解更多)
+
+---
+
+## 快速体验
+
+[访问这里](http://anmuji.com/t/7pcu75)，来体验一下 Jump Jump 吧！
+
+## 功能与使用
+
+短链接基础功能已经开发完毕，后续的功能可以查看[版本规划](http://anmuji.com/t/h7ua8j)：
+
+![Jump Jump 功能模块](http://rs.majiawei.com/jumpjump/features.png)
 
 ### 短链接管理
-![短链接](shortlinklist.png?raw=true "短链接")
+
+![短链接](http://rs.majiawei.com/jumpjump/v1.1.0copyshortlink.png)
 
 ## 本地启动
-最快速的启动方式，就是使用 docker-compose 启动，使用如下命令：
+
+使用 `docker-compose` 启动，能够快速帮你启动 `redis`, `apiserver`, `landingserver`，使用如下命令：
+
 ```shell script
 # 克隆或下载项目源码到本地
 git clone https://github.com/jwma/jump-jump.git
@@ -51,18 +81,21 @@ docker-compose -f deployments/docker-compose.yaml -p jumpjump exec apiserver ./c
 
 在服务启动完毕且已经创建好用户之后，可以打开浏览器，访问 `http://localhost:8080` 进入管理后台进行短链接的管理工作。
 
-### 如何访问短链接？
-我们可以通过 `landingserver` 提供的服务来访问短链接，访问 `http://localhost:8081/{短链接ID}`，`{短链接ID}` 就是我们在
-管理后台看见的 ID，尝试添加一个短链接进行访问吧~
+## 如何访问短链接？
+
+### 设置短链接域名
+
+登入到管理后台之后，你能够看到短链接域名设置（只有管理员有权修改），在这里设置好你部署的域名/IP:Port，如：
+`http://127.0.0.1:8000/` 或者 `http://anmuji.com/t/`，这里有一点需要注意的是，需要以 `/` 结尾。
+
+### 获取完整短链接
+
+访问短链接列表页面，如果你已经创建了短链接，那么可以在列表的第一个字段，悬停一下，会出现一个带有域名的完整短链接，点击就可以自动拷贝到
+剪切板，你可以到需要使用的地方进行粘贴或者使用浏览器访问。
 
 ## 部署到服务器
-1. 通过源码构建镜像，推送到 Docker Hub 或者私有仓库；
-2. 在服务器拉取镜像；
-3. 参考源码中 `deployments/docker-compose.yaml` 文件编写属于你的 docker-compose 配置文件；
-4. 通过 docker-compose 启动服务；
-5. 通过 `createuser` 命令行工具创建用户； 
-6. 直接暴露服务端口 / 使用 Nginx 转发请求到服务；
-7. 搞定。
+
+这里提供了使用 docker-compose 的部署方案，[点击查看](http://anmuji.com/t/fk1ta3)。
 
 ## 关注我的公众号了解更多
-![qr code](qrcode.png?raw=true "qr code")
+![码极工作室](http://rs.majiawei.com/mjstudio/qrcode.png)
