@@ -3,8 +3,8 @@ POST http://{{host}}/v1/user/login
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "admin"
+  "username": "{{adminUsername}}",
+  "password": "{{adminPassword}}"
 }
 
 > {%
