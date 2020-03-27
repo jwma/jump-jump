@@ -293,13 +293,13 @@ func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
 	rs, err := r.db.Get(key).Result()
 	if err != nil {
 		log.Printf("fail to get short Link with Key: %s, error: %v\n", key, err)
-		return nil, fmt.Errorf("短链接不存在")
+		return s, fmt.Errorf("短链接不存在")
 	}
 
 	err = json.Unmarshal([]byte(rs), s)
 	if err != nil {
 		log.Printf("fail to unmarshal short Link, Key: %s, error: %v\n", key, err)
-		return nil, fmt.Errorf("短链接不存在")
+		return s, fmt.Errorf("短链接不存在")
 	}
 
 	return s, nil
