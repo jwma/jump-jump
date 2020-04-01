@@ -32,9 +32,8 @@
 
 ## 功能与使用
 
-短链接基础功能已经开发完毕，后续的功能可以查看[版本规划](http://anmuji.com/t/h7ua8j)：
+[功能模块](http://rs.majiawei.com/jumpjump/features.png)，后续的功能可以查看[版本规划](http://anmuji.com/t/h7ua8j)：
 
-![Jump Jump 功能模块](http://rs.majiawei.com/jumpjump/features.png)
 
 ### 短链接管理
 
