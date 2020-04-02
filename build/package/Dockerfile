@@ -18,7 +18,6 @@ RUN go build -o apiserver ./cmd/apiserver \
 FROM alpine
 
 ARG EXPOSE_PORT=8080
-ENV BUILD_APP $BUILD_APP
 ENV CGO_ENABLED=0
 
 EXPOSE $EXPOSE_PORT
