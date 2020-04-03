@@ -31,7 +31,7 @@ jobs:
           repository: studiomj/jump-jump
           tags: latest
           tag_with_ref: true
-          path: ./build/package
+          dockerfile: ./build/package/Dockerfile
 
       - name: Deploy
         env:
