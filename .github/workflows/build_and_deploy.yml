@@ -1,0 +1,52 @@
+# 构建最新 docker 镜像 - 推送到 Docker hub - 部署最新版本镜像到服务器
+# 参数说明：
+#   - secrets.DOCKER_USERNAME  Docker hub 用户名
+#   - secrets.DOCKER_PASSWORD  Docker hub 密码
+#   - secrets.SERVER_KEY       登入服务器密钥
+#   - secrets.SERVER_HOST      服务器地址
+#   - secrets.SERVER_USER      服务器用户
+
+name: Build and deploy
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check the release code
+        uses: actions/checkout@v2
+
+      - name: Build and push docker image
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: studiomj/jump-jump
+          tags: latest
+          tag_with_ref: true
+          path: ./build/package
+
+      - name: Deploy
+        env:
+          SERVER_KEY: ${{ secrets.SERVER_KEY }}
+          HOST: ${{ secrets.SERVER_HOST }}
+          USER: ${{ secrets.SERVER_USER }}
+        run: |
+          SSH_PATH="$HOME/.ssh"
+          mkdir -p $SSH_PATH
+          touch "$SSH_PATH/known_hosts"
+          echo "$SERVER_KEY" > "$SSH_PATH/id_rsa"
+          chmod 700 "$SSH_PATH"
+          chmod 600 "$SSH_PATH/known_hosts"
+          chmod 600 "$SSH_PATH/id_rsa"
+          eval $(ssh-agent)
+          ssh-add "$SSH_PATH/id_rsa"
+          ssh-keyscan -t rsa $HOST >> "$SSH_PATH/known_hosts"
+          ssh -o StrictHostKeyChecking=no -i $SSH_PATH/id_rsa -A -tt $USER@$HOST "./deploy/deploy-jump-jump.sh"
