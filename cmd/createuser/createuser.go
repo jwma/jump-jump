@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"os"
@@ -21,7 +22,7 @@ func main() {
 		Role:        *role,
 	}
 
-	repo := repository.GetUserRepo()
+	repo := repository.GetUserRepo(db.GetRedisClient())
 	err := repo.Save(user)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)

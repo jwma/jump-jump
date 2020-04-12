@@ -27,11 +27,3 @@ func GetRedisClient() *redis.Client {
 	}
 	return client
 }
-
-func init() {
-	c := GetRedisClient()
-	pong := c.Ping()
-	if pong.Err() != nil {
-		panic(pong.Err())
-	}
-}

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis"
-	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"log"
@@ -33,9 +32,12 @@ type requestHistoryRepository struct {
 	db *redis.Client
 }
 
-var requestHistoryRepo = &requestHistoryRepository{db.GetRedisClient()}
+var requestHistoryRepo *requestHistoryRepository
 
-func GetRequestHistoryRepo() *requestHistoryRepository {
+func GetRequestHistoryRepo(rdb *redis.Client) *requestHistoryRepository {
+	if requestHistoryRepo == nil {
+		requestHistoryRepo = &requestHistoryRepository{rdb}
+	}
 	return requestHistoryRepo
 }
 
@@ -105,9 +107,12 @@ type userRepository struct {
 	db *redis.Client
 }
 
-var userRepo = &userRepository{db.GetRedisClient()}
+var userRepo *userRepository
 
-func GetUserRepo() *userRepository {
+func GetUserRepo(rdb *redis.Client) *userRepository {
+	if userRepo == nil {
+		userRepo = &userRepository{rdb}
+	}
 	return userRepo
 }
 
@@ -185,9 +190,12 @@ type shortLinkRepository struct {
 	db *redis.Client
 }
 
-var shortLinkRepo = &shortLinkRepository{db.GetRedisClient()}
+var shortLinkRepo *shortLinkRepository
 
-func GetShortLinkRepo() *shortLinkRepository {
+func GetShortLinkRepo(rdb *redis.Client) *shortLinkRepository {
+	if shortLinkRepo == nil {
+		shortLinkRepo = &shortLinkRepository{rdb}
+	}
 	return shortLinkRepo
 }
 
@@ -317,7 +325,7 @@ func makeEmptyShortLinkListResult() *shortLinkListResult {
 	}
 }
 
-func (r *shortLinkListResult) AddLink(links ...*models.ShortLink) {
+func (r *shortLinkListResult) addLink(links ...*models.ShortLink) {
 	r.ShortLinks = append(r.ShortLinks, links...)
 }
 
@@ -350,7 +358,7 @@ func (r *shortLinkRepository) List(key string, start int64, stop int64) (*shortL
 	for _, cmd := range linkRs {
 		s := &models.ShortLink{}
 		err = json.Unmarshal([]byte(cmd.Val()), s)
-		result.AddLink(s)
+		result.addLink(s)
 	}
 	return result, nil
 }

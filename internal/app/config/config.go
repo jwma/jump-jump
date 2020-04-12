@@ -19,12 +19,14 @@ func GetConfig() *reborn.Reborn {
 	return config
 }
 
-func init() {
+func SetupConfig() error {
 	var err error
 	config, err = reborn.NewWithDefaults(db.GetRedisClient(), "j2config", getDefaultConfig())
 	if err != nil {
-		panic(err)
+		return err
 	}
 	config.SetAutoReloadDuration(time.Second * 30)
 	config.StartAutoReload()
+
+	return nil
 }
