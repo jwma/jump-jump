@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  setup-test-build:
+    name: Setup, Test and Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Set up Go 1.13
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build
+        if: success()
+        env:
+          CGO_ENABLED: 0
+        run: |
+          go build -o apiserver -v ./cmd/apiserver
+          go build -o landingserver -v ./cmd/landingserver
+          go build -o createuser -v ./cmd/createuser
