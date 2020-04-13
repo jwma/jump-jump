@@ -11,19 +11,19 @@ import (
 	"time"
 )
 
-type RequestHistoryListResult struct {
+type requestHistoryListResult struct {
 	Histories []*models.RequestHistory `json:"histories"`
 	Total     int                      `json:"total"`
 }
 
-func NewEmptyRequestHistoryResult() *RequestHistoryListResult {
-	return &RequestHistoryListResult{
+func newEmptyRequestHistoryResult() *requestHistoryListResult {
+	return &requestHistoryListResult{
 		Histories: make([]*models.RequestHistory, 0),
 		Total:     0,
 	}
 }
 
-func (r *RequestHistoryListResult) AddHistory(h ...*models.RequestHistory) {
+func (r *requestHistoryListResult) addHistory(h ...*models.RequestHistory) {
 	r.Histories = append(r.Histories, h...)
 	r.Total = len(r.Histories)
 }
@@ -53,11 +53,11 @@ func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 	r.db.LPush(key, j)
 }
 
-func (r *requestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*RequestHistoryListResult, error) {
+func (r *requestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*requestHistoryListResult, error) {
 	var start time.Time
 	var end time.Time
 	dayDuration := time.Hour * 24
-	result := NewEmptyRequestHistoryResult()
+	result := newEmptyRequestHistoryResult()
 
 	if len(d) <= 1 {
 		start = time.Now()
@@ -81,24 +81,24 @@ func (r *requestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*R
 		for _, one := range rs.Val() {
 			rh := &models.RequestHistory{}
 			_ = json.Unmarshal([]byte(one), rh)
-			result.AddHistory(rh)
+			result.addHistory(rh)
 		}
 	}
 	return result, nil
 }
 
-func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*RequestHistoryListResult, error) {
+func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*requestHistoryListResult, error) {
 	key := utils.GetRequestHistoryKey(linkId, time.Now())
 	rawRs, err := r.db.LRange(key, 0, size).Result()
 	if err != nil {
 		log.Printf("failed to find request history latest records with key: %s, err: %v\n", key, err)
 	}
 
-	result := NewEmptyRequestHistoryResult()
+	result := newEmptyRequestHistoryResult()
 	for _, one := range rawRs {
 		rh := &models.RequestHistory{}
 		_ = json.Unmarshal([]byte(one), rh)
-		result.AddHistory(rh)
+		result.addHistory(rh)
 	}
 	return result, nil
 }
