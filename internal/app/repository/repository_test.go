@@ -167,3 +167,101 @@ func TestRequestHistoryRepository_FindByDateRange(t *testing.T) {
 		t.Errorf("expected %b but gog %b\n", expected, rs.Total)
 	}
 }
+
+func TestUserRepository_Save(t *testing.T) {
+	repo := GetUserRepo(getTestRDB())
+
+	u := &models.User{
+		Username:    "",
+		Role:        0,
+		RawPassword: "",
+	}
+
+	// 测试保存不符合要求的用户数据
+	err := repo.Save(u)
+
+	if err == nil {
+		t.Errorf("expected error but got nil")
+	}
+
+	u.Username = "mj"
+	u.RawPassword = "123456"
+	err = repo.Save(u)
+
+	if err == nil {
+		t.Errorf("expected error but got nil")
+	}
+
+	u.Role = models.RoleUser
+	err = repo.Save(u)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	// 尝试使用已存在的用户名创建用户
+	u2 := &models.User{
+		Username:    "mj",
+		Role:        models.RoleUser,
+		RawPassword: "abcdefg",
+	}
+	err = repo.Save(u2)
+
+	if err == nil {
+		t.Errorf("expected error but got nil")
+	}
+}
+
+func TestUserRepository_FindOneByUsername(t *testing.T) {
+	repo := GetUserRepo(getTestRDB())
+
+	// 测试 username 空字符
+	_, err := repo.FindOneByUsername("")
+
+	if err == nil {
+		t.Errorf("expected error but got nil")
+	}
+
+	// 测试查找不存在的用户名
+	_, err = repo.FindOneByUsername("anmuji")
+
+	if err == nil {
+		t.Errorf("expected error but got nil")
+	}
+
+	// 正常查找
+	expectedUsername := "mj"
+	u, err := repo.FindOneByUsername(expectedUsername)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if u.Username != "mj" {
+		t.Errorf("expected %s but got %s\n", expectedUsername, u.Username)
+	}
+}
+
+func TestUserRepository_UpdatePassword(t *testing.T) {
+	repo := GetUserRepo(getTestRDB())
+
+	u, err := repo.FindOneByUsername("mj")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	//测试更新密码为空字符串
+	err = repo.UpdatePassword(u)
+
+	if err == nil {
+		t.Errorf("expected error but got nil")
+	}
+
+	//测试正常更新密码
+	u.RawPassword = "opqrst"
+	err = repo.UpdatePassword(u)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
