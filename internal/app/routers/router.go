@@ -17,6 +17,8 @@ func SetupRouter() *gin.Engine {
 		r.Use(cors.New(corsCfg))
 	}
 
+	r.Use(handlers.AllowedHostsMiddleware())
+
 	r.LoadHTMLFiles("./web/admin/index.html")
 	r.StaticFS("/static", http.Dir("./web/admin/static"))
 	r.GET("/", func(c *gin.Context) {

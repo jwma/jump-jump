@@ -22,6 +22,7 @@ services:
       - J2_API_ADDR=0.0.0.0:8080
       - SECRET_KEY=YOUR_SECRET_KEY
       - GIN_MODE=release
+      - ALLOWED_HOSTS=localhost,127.0.0.1
 
   landingserver:
     image: studiomj/jump-jump

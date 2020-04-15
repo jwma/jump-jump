@@ -8,8 +8,10 @@ import (
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/jwma/jump-jump/internal/app/utils"
+	"github.com/thoas/go-funk"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -74,5 +76,30 @@ func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
 		}
 		user := u.(*models.User)
 		f(c, user)
+	}
+}
+
+// 检查当前请求的 Host 是否属于我们所设定的 Host 列表中的其中一个
+// 如果不在设定列表中，则返回 HTTP Code 400 并中断后续逻辑的处理
+func AllowedHostsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		allowedHosts := os.Getenv("ALLOWED_HOSTS")
+
+		if allowedHosts != "" && allowedHosts != "*" {
+			if !funk.ContainsString(strings.Split(allowedHosts, ","), c.Request.Host) {
+				output := ""
+
+				if gin.Mode() == gin.DebugMode {
+					h := strings.Split(c.Request.Host, ":")[0]
+					output = fmt.Sprintf("You can see this message because GIN_MODE=debug.\n"+
+						"Invalid HTTP_HOST header: '%s'. "+
+						"You may need to add '%s' to ALLOWED_HOSTS environment variable.", c.Request.Host, h)
+				}
+
+				c.String(http.StatusBadRequest, output)
+				c.Abort()
+				return
+			}
+		}
 	}
 }
