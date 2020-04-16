@@ -86,11 +86,12 @@ func AllowedHostsMiddleware() gin.HandlerFunc {
 		allowedHosts := os.Getenv("ALLOWED_HOSTS")
 
 		if allowedHosts != "" && allowedHosts != "*" {
-			if !funk.ContainsString(strings.Split(allowedHosts, ","), c.Request.Host) {
+			h := strings.Split(c.Request.Host, ":")[0]
+
+			if !funk.ContainsString(strings.Split(allowedHosts, ","), h) {
 				output := ""
 
 				if gin.Mode() == gin.DebugMode {
-					h := strings.Split(c.Request.Host, ":")[0]
 					output = fmt.Sprintf("You can see this message because GIN_MODE=debug.\n"+
 						"Invalid HTTP_HOST header: '%s'. "+
 						"You may need to add '%s' to ALLOWED_HOSTS environment variable.", c.Request.Host, h)
