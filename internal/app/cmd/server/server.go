@@ -43,7 +43,7 @@ func Run(addr ...string) error {
 		return err
 	}
 
-	err = config.SetupConfig()
+	err = config.SetupConfig(db.GetRedisClient())
 
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func RunLanding(addr ...string) error {
 		return err
 	}
 
-	err = config.SetupConfig()
+	err = config.SetupConfig(db.GetRedisClient())
 
 	if err != nil {
 		return err

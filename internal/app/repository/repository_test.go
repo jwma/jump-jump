@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/go-redis/redis"
+	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"testing"
@@ -15,6 +16,8 @@ func getTestRDB() *redis.Client {
 func init() {
 	// 清空测试使用的数据库，以便后续测试正常运作
 	getTestRDB().FlushDB()
+
+	config.SetupConfig(getTestRDB())
 }
 
 func TestShortLinkRepository_Save(t *testing.T) {

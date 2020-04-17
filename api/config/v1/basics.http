@@ -28,7 +28,7 @@ Content-Type: application/json
 ###
 
 # 更新 landingHosts 配置
-PATCH http://{{host}}/v1/config
+PATCH http://{{host}}/v1/config/landing-hosts
 Content-Type: application/json
 Authorization: {{token}}
 
@@ -36,6 +36,25 @@ Authorization: {{token}}
   "hosts": [
     "http://127.0.0.1:8081/"
   ]
+}
+
+> {%
+  client.test('Update landing successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+  });
+%}
+
+###
+
+# 更新随机 ID 长度设置
+PATCH http://{{host}}/v1/config/id-length
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "idMinimumLength": 6,
+  "idLength": 8,
+  "idMaximumLength": 10
 }
 
 > {%

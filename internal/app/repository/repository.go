@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis"
+	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"log"
@@ -201,7 +202,7 @@ func GetShortLinkRepo(rdb *redis.Client) *shortLinkRepository {
 
 func (r *shortLinkRepository) generateId(l int) (string, error) {
 	var id string
-	for true {
+	for {
 		id = utils.RandStringRunes(l)
 		rs, err := r.db.Exists(utils.GetShortLinkKey(id)).Result()
 		if rs == 0 {
@@ -227,20 +228,34 @@ func (r *shortLinkRepository) save(s *models.ShortLink, isUpdate bool) error {
 	}
 
 	if !isUpdate {
-		id, err := r.generateId(6)
+		// 获取随机 ID 的长度
+		defaultLen := 6
+		idLen := config.GetConfig().GetIntValue("idLength", defaultLen)
+
+		if idLen <= 0 {
+			idLen = defaultLen
+		}
+
+		id, err := r.generateId(idLen)
+
 		if err != nil {
 			log.Println(err)
 			return errors.New("服务器繁忙，请稍后再试")
 		}
+
 		if s.Id == "" {
 			s.Id = id
 		}
+
 		s.Id = utils.TrimShortLinkId(s.Id)
+
 		if s.Id == "" {
 			return fmt.Errorf("id错误")
 		}
+
 		s.CreateTime = time.Now()
 	}
+
 	s.UpdateTime = time.Now()
 	j, _ := json.Marshal(s)
 
@@ -255,10 +270,13 @@ func (r *shortLinkRepository) save(s *models.ShortLink, isUpdate bool) error {
 	pipeline.ZAdd(utils.GetUserShortLinksKey(s.CreatedBy), record)
 	pipeline.ZAdd(utils.GetShortLinksKey(), record)
 	_, err := pipeline.Exec()
+
 	if err != nil {
 		log.Println(err)
 		return errors.New("服务器繁忙，请稍后再试")
+
 	}
+
 	return nil
 }
 
