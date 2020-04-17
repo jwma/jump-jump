@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/go-redis/redis"
 	"github.com/jwma/reborn"
 	"time"
 )
@@ -22,9 +22,9 @@ func GetConfig() *reborn.Reborn {
 	return config
 }
 
-func SetupConfig() error {
+func SetupConfig(rdb *redis.Client) error {
 	var err error
-	config, err = reborn.NewWithDefaults(db.GetRedisClient(), "j2config", getDefaultConfig())
+	config, err = reborn.NewWithDefaults(rdb, "j2config", getDefaultConfig())
 	if err != nil {
 		return err
 	}
