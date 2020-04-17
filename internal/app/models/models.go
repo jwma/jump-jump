@@ -40,6 +40,11 @@ type ShortLink struct {
 	UpdateTime  time.Time `json:"update_time"`
 }
 
+type CreateShortLinkParameter struct {
+	*ShortLink
+	IdLength int `json:"id_length"`
+}
+
 type UpdateShortLinkParameter struct {
 	Url         string `json:"url" binding:"required"`
 	Description string `json:"description"`
