@@ -20,6 +20,13 @@ func GetDefaultShortLinkNotFoundConfig() map[string]string {
 	}
 }
 
+func NewShortLinkNotFoundConfig(mode string, value string) map[string]string {
+	return map[string]string{
+		"mode":  mode,
+		"value": value,
+	}
+}
+
 func getDefaultConfig() *reborn.Config {
 	d := reborn.NewConfig()
 	d.SetValue("landingHosts", []string{"http://127.0.0.1:8081/"})

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/models"
+	"github.com/thoas/go-funk"
 	"net/http"
 )
 
@@ -128,6 +129,60 @@ func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 			"msg":  "最小长度 <= 默认长度 <= 最大长度，三个值均大于 0",
 			"code": 4999,
 			"data": nil,
+		})
+	})
+}
+
+type shortLinkNotFoundConfigParameter struct {
+	Mode  string `json:"mode" binding:"required"`
+	Value string `json:"value" binding:"required"`
+}
+
+func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
+	return Authenticator(func(c *gin.Context, user *models.User) {
+		if user.Role != models.RoleAdmin {
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "你无权修改短链接 404 处理配置",
+				"code": 4999,
+				"data": nil,
+			})
+			return
+		}
+
+		p := &shortLinkNotFoundConfigParameter{}
+
+		if err := c.ShouldBindJSON(p); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  err.Error(),
+				"code": 4999,
+				"data": nil,
+			})
+			return
+		}
+
+		if !funk.ContainsString([]string{config.ShortLinkNotFoundContentMode, config.ShortLinkNotFoundRedirectMode},
+			p.Mode) {
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "处理模式参数不正确",
+				"code": 4999,
+				"data": nil,
+			})
+			return
+		}
+
+		cc := config.NewShortLinkNotFoundConfig(p.Mode, p.Value)
+		cfg := config.GetConfig()
+		cfg.SetValue("shortLinkNotFoundConfig", cc)
+		cfg.Persist()
+
+		c.JSON(http.StatusOK, gin.H{
+			"msg":  "",
+			"code": 0,
+			"data": gin.H{
+				"config": gin.H{
+					"shortLinkNotFoundConfig": cc,
+				},
+			},
 		})
 	})
 }

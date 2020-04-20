@@ -64,3 +64,22 @@ Authorization: {{token}}
 %}
 
 ###
+
+# 更新短链接 404 处理配置
+PATCH http://{{host}}/v1/config/short-link-404-handling
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "mode": "redirect",
+  "value": "https://www.google.com"
+}
+
+> {%
+  client.test('Update landing successfully', function() {
+    client.assert(200 === response.status, 'Want 200, but got ' + response.status);
+    client.assert(0 === response.body.code, 'Want 0, but got ' + response.body.code);
+  });
+%}
+
+###
