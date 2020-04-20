@@ -31,8 +31,12 @@ func SetupRouter() *gin.Engine {
 	r.PATCH("/v1/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
 
 	r.GET("/v1/config", handlers.GetConfig)
-	r.PATCH("/v1/config/landing-hosts", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateLandingHostsAPI())
-	r.PATCH("/v1/config/id-length", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateIdLengthConfigAPI())
+	r.PATCH("/v1/config/landing-hosts", handlers.JWTAuthenticatorMiddleware(),
+		handlers.UpdateLandingHostsAPI())
+	r.PATCH("/v1/config/id-length", handlers.JWTAuthenticatorMiddleware(),
+		handlers.UpdateIdLengthConfigAPI())
+	r.PATCH("/v1/config/short-link-404-handling", handlers.JWTAuthenticatorMiddleware(),
+		handlers.UpdateShortLinkNotFoundConfigAPI())
 
 	shortLinkAPI := r.Group("/v1/short-link")
 	shortLinkAPI.Use(handlers.JWTAuthenticatorMiddleware())
