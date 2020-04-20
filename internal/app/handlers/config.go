@@ -13,6 +13,8 @@ func GetConfig(c *gin.Context) {
 	idMinimumLength := cfg.GetIntValue("idMinimumLength", 2)
 	idLength := cfg.GetIntValue("idLength", 6)
 	idMaximumLength := cfg.GetIntValue("idMaximumLength", 10)
+	shortLinkNotFoundConfig := cfg.GetStringStringMapValue("shortLinkNotFoundConfig",
+		config.GetDefaultShortLinkNotFoundConfig())
 
 	c.JSON(http.StatusOK, gin.H{
 		"msg":  "ok",
@@ -25,6 +27,7 @@ func GetConfig(c *gin.Context) {
 					"idLength":        idLength,
 					"idMaximumLength": idMaximumLength,
 				},
+				"shortLinkNotFoundConfig": shortLinkNotFoundConfig,
 			},
 		},
 	})

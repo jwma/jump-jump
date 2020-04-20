@@ -8,12 +8,25 @@ import (
 
 var config *reborn.Reborn
 
+const (
+	ShortLinkNotFoundContentMode  = "content"
+	ShortLinkNotFoundRedirectMode = "redirect"
+)
+
+func GetDefaultShortLinkNotFoundConfig() map[string]string {
+	return map[string]string{
+		"mode":  ShortLinkNotFoundContentMode,
+		"value": "你访问的页面不存在哦",
+	}
+}
+
 func getDefaultConfig() *reborn.Config {
 	d := reborn.NewConfig()
 	d.SetValue("landingHosts", []string{"http://127.0.0.1:8081/"})
 	d.SetValue("idMinimumLength", 2)
 	d.SetValue("idLength", 6)
 	d.SetValue("idMaximumLength", 10)
+	d.SetValue("shortLinkNotFoundConfig", GetDefaultShortLinkNotFoundConfig())
 
 	return d
 }
