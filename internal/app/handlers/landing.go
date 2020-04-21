@@ -10,7 +10,16 @@ import (
 	"net/http"
 )
 
+func LandingHome(c *gin.Context) {
+	c.Redirect(http.StatusTemporaryRedirect, "https://github.com/jwma/jump-jump")
+}
+
 func Redirect(c *gin.Context) {
+	if c.Param("id") == "favicon.ico" {
+		c.String(http.StatusNotFound, "")
+		return
+	}
+
 	slRepo := repository.GetShortLinkRepo(db.GetRedisClient())
 	s, err := slRepo.Get(c.Param("id"))
 

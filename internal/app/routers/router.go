@@ -53,6 +53,7 @@ func SetupRouter() *gin.Engine {
 func SetupLandingRouter() *gin.Engine {
 	r := gin.Default()
 
+	r.GET("/", handlers.LandingHome)
 	r.GET("/:id", handlers.Redirect)
 
 	return r
