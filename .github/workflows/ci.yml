@@ -41,3 +41,4 @@ jobs:
           go build -o apiserver -v ./cmd/apiserver
           go build -o landingserver -v ./cmd/landingserver
           go build -o createuser -v ./cmd/createuser
+          go build -o migraterequesthistory -v ./cmd/migraterequesthistory

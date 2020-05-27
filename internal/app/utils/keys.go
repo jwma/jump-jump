@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"time"
 )
 
 func GetUserKey() string {
@@ -21,6 +20,6 @@ func GetUserShortLinksKey(username string) string {
 	return fmt.Sprintf("links:%s", username)
 }
 
-func GetRequestHistoryKey(linkId string, d time.Time) string {
-	return fmt.Sprintf("history:%s:%s", linkId, d.Format("20060102"))
+func GetRequestHistoryKey(linkId string) string {
+	return fmt.Sprintf("history:%s", linkId)
 }

@@ -43,7 +43,7 @@ func GetRequestHistoryRepo(rdb *redis.Client) *requestHistoryRepository {
 
 func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 	rh.Time = time.Now()
-	key := utils.GetRequestHistoryKey(rh.Link.Id, rh.Time)
+	key := utils.GetRequestHistoryKey(rh.Link.Id)
 	j, err := json.Marshal(rh)
 	if err != nil {
 		log.Printf("fail to save request history with key: %s, error: %v\n", key, err)
@@ -53,42 +53,8 @@ func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 	r.db.LPush(key, j)
 }
 
-func (r *requestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*requestHistoryListResult, error) {
-	var start time.Time
-	var end time.Time
-	dayDuration := time.Hour * 24
-	result := newEmptyRequestHistoryResult()
-
-	if len(d) <= 1 {
-		start = time.Now()
-		end = start.Add(dayDuration)
-	} else {
-		start = d[0]
-		end = d[len(d)-1]
-	}
-	if end.Before(start) {
-		return result, fmt.Errorf("结束日期不能早于开始日期")
-	}
-
-	rawRs := make([]*redis.StringSliceCmd, 0)
-	p := r.db.Pipeline()
-	for ; start.Before(end); start = start.Add(dayDuration) {
-		rawRs = append(rawRs, p.LRange(utils.GetRequestHistoryKey(linkId, start), 0, -1))
-	}
-	_, _ = p.Exec()
-
-	for _, rs := range rawRs {
-		for _, one := range rs.Val() {
-			rh := &models.RequestHistory{}
-			_ = json.Unmarshal([]byte(one), rh)
-			result.addHistory(rh)
-		}
-	}
-	return result, nil
-}
-
 func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*requestHistoryListResult, error) {
-	key := utils.GetRequestHistoryKey(linkId, time.Now())
+	key := utils.GetRequestHistoryKey(linkId)
 	rawRs, err := r.db.LRange(key, 0, size).Result()
 	if err != nil {
 		log.Printf("failed to find request history latest records with key: %s, err: %v\n", key, err)
