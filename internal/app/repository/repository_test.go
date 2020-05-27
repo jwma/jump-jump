@@ -6,7 +6,6 @@ import (
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"testing"
-	"time"
 )
 
 func getTestRDB() *redis.Client {
@@ -120,46 +119,6 @@ func TestRequestHistoryRepository_FindLatest(t *testing.T) {
 	id := "testrh"
 	rhRepo := GetRequestHistoryRepo(getTestRDB())
 	rs, err := rhRepo.FindLatest(id, 10)
-	expected := 1
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if rs.Total != expected {
-		t.Errorf("expected %b but gog %b\n", expected, rs.Total)
-	}
-}
-
-func TestRequestHistoryRepository_FindByDate(t *testing.T) {
-	id := "testrh"
-	rhRepo := GetRequestHistoryRepo(getTestRDB())
-	rs, err := rhRepo.FindByDate(id, time.Now())
-	expected := 1
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if rs.Total != expected {
-		t.Errorf("expected %b but gog %b\n", expected, rs.Total)
-	}
-}
-
-func TestRequestHistoryRepository_FindByDateRange(t *testing.T) {
-	id := "testrh"
-	rhRepo := GetRequestHistoryRepo(getTestRDB())
-	start := time.Now()
-	end := start.Add(time.Hour * 24)
-
-	// 开始日期大于结束日期
-	_, err := rhRepo.FindByDate(id, end, start)
-	if err == nil {
-		t.Errorf("expected error but got nil")
-	}
-
-	// 正常情况
-	rs, err := rhRepo.FindByDate(id, start, end)
 	expected := 1
 
 	if err != nil {
