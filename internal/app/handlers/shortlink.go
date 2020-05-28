@@ -10,6 +10,7 @@ import (
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func GetShortLinkAPI() gin.HandlerFunc {
@@ -212,9 +213,11 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 
 func ShortLinkActionAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
+
 		if c.Param("action") == "/latest-request-history" {
 			slRepo := repository.GetShortLinkRepo(db.GetRedisClient())
 			s, err := slRepo.Get(c.Param("id"))
+
 			if err != nil {
 				c.JSON(http.StatusOK, gin.H{
 					"msg":  err.Error(),
@@ -234,7 +237,15 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			}
 
 			repo := repository.GetRequestHistoryRepo(db.GetRedisClient())
-			r, err := repo.FindLatest(s.Id, 20)
+			sizeStr := c.Query("size")
+			size, err := strconv.Atoi(sizeStr)
+
+			if err != nil {
+				size = 20
+			}
+
+			r, err := repo.FindLatest(s.Id, int64(size))
+
 			if err != nil {
 				c.JSON(http.StatusOK, gin.H{
 					"msg":  err.Error(),
@@ -254,6 +265,7 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			GetShortLinkAPI()(c)
 			return
 		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "请求资源不存在",
 			"code": 4999,
