@@ -50,7 +50,7 @@ func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 		return
 	}
 
-	r.db.LPush(key, j)
+	r.db.RPush(key, j)
 }
 
 func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*requestHistoryListResult, error) {
