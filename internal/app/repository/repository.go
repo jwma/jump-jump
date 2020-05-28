@@ -7,6 +7,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
+	"github.com/thoas/go-funk"
 	"log"
 	"time"
 )
@@ -55,17 +56,19 @@ func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 
 func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*requestHistoryListResult, error) {
 	key := utils.GetRequestHistoryKey(linkId)
-	rawRs, err := r.db.LRange(key, 0, size).Result()
+	rawRs, err := r.db.LRange(key, -size, -1).Result()
+
 	if err != nil {
 		log.Printf("failed to find request history latest records with key: %s, err: %v\n", key, err)
 	}
 
 	result := newEmptyRequestHistoryResult()
-	for _, one := range rawRs {
+	for _, one := range funk.ReverseStrings(rawRs) {
 		rh := &models.RequestHistory{}
 		_ = json.Unmarshal([]byte(one), rh)
 		result.addHistory(rh)
 	}
+
 	return result, nil
 }
 
