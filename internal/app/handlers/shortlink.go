@@ -10,7 +10,6 @@ import (
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 func GetShortLinkAPI() gin.HandlerFunc {
@@ -237,12 +236,7 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			}
 
 			repo := repository.GetRequestHistoryRepo(db.GetRedisClient())
-			sizeStr := c.Query("size")
-			size, err := strconv.Atoi(sizeStr)
-
-			if err != nil {
-				size = 20
-			}
+			size := utils.GetIntQueryValue(c, "size", 20)
 
 			r, err := repo.FindLatest(s.Id, int64(size))
 
