@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -52,11 +53,16 @@ type UpdateShortLinkParameter struct {
 }
 
 type RequestHistory struct {
+	Id   string     `json:"id"`
 	Link *ShortLink `json:"-"`
 	Url  string     `json:"url"` // 由于短链接的目标连接可能会被修改，可以在访问历史记录中记录一下当前的目标连接
 	IP   string     `json:"ip"`
 	UA   string     `json:"ua"`
 	Time time.Time  `json:"time"`
+}
+
+func (r *RequestHistory) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(r)
 }
 
 func NewRequestHistory(link *ShortLink, IP string, UA string) *RequestHistory {
