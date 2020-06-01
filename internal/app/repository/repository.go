@@ -42,7 +42,7 @@ func GetRequestHistoryRepo(rdb *redis.Client) *requestHistoryRepository {
 }
 
 func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
-	rh.Id = fmt.Sprintf("%s-%s", rh.Link.Id, utils.RandStringRunes(6))
+	rh.Id = utils.RandStringRunes(6)
 	rh.Time = time.Now()
 	key := utils.GetRequestHistoryKey(rh.Link.Id)
 
@@ -253,10 +253,7 @@ func (r *shortLinkRepository) Delete(s *models.ShortLink) {
 	_, _ = pipeline.Exec()
 
 	// 删除访问历史
-	keys, _ := r.db.Keys(fmt.Sprintf("history:%s:*", s.Id)).Result()
-	if len(keys) > 0 {
-		r.db.Del(keys...)
-	}
+	r.db.Del(utils.GetRequestHistoryKey(s.Id))
 }
 
 func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
