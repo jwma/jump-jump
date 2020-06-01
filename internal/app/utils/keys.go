@@ -21,5 +21,5 @@ func GetUserShortLinksKey(username string) string {
 }
 
 func GetRequestHistoryKey(linkId string) string {
-	return fmt.Sprintf("history:%s", linkId)
+	return fmt.Sprintf("rh:%s", linkId)
 }

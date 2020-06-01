@@ -7,7 +7,6 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
-	"github.com/thoas/go-funk"
 	"log"
 	"time"
 )
@@ -43,29 +42,33 @@ func GetRequestHistoryRepo(rdb *redis.Client) *requestHistoryRepository {
 }
 
 func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
+	rh.Id = utils.RandStringRunes(6)
 	rh.Time = time.Now()
 	key := utils.GetRequestHistoryKey(rh.Link.Id)
-	j, err := json.Marshal(rh)
-	if err != nil {
-		log.Printf("fail to save request history with key: %s, error: %v\n", key, err)
-		return
-	}
 
-	r.db.RPush(key, j)
+	_, err := r.db.ZAdd(key, redis.Z{
+		Score:  float64(rh.Time.Unix()),
+		Member: rh,
+	}).Result()
+
+	if err != nil {
+		log.Printf("fail to save request history with key: %s, error: %v, data: %v\n", key, err, rh)
+	}
 }
 
 func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*requestHistoryListResult, error) {
 	key := utils.GetRequestHistoryKey(linkId)
-	rawRs, err := r.db.LRange(key, -size, -1).Result()
+	rs, err := r.db.ZRangeWithScores(key, -size, -1).Result()
 
 	if err != nil {
 		log.Printf("failed to find request history latest records with key: %s, err: %v\n", key, err)
 	}
 
+	utils.ReverseAny(rs)
 	result := newEmptyRequestHistoryResult()
-	for _, one := range funk.ReverseStrings(rawRs) {
+	for _, one := range rs {
 		rh := &models.RequestHistory{}
-		_ = json.Unmarshal([]byte(one), rh)
+		_ = json.Unmarshal([]byte(one.Member.(string)), rh)
 		result.addHistory(rh)
 	}
 
@@ -250,10 +253,7 @@ func (r *shortLinkRepository) Delete(s *models.ShortLink) {
 	_, _ = pipeline.Exec()
 
 	// 删除访问历史
-	keys, _ := r.db.Keys(fmt.Sprintf("history:%s:*", s.Id)).Result()
-	if len(keys) > 0 {
-		r.db.Del(keys...)
-	}
+	r.db.Del(utils.GetRequestHistoryKey(s.Id))
 }
 
 func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
