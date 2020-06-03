@@ -127,7 +127,18 @@ func TestRequestHistoryRepository_FindLatest(t *testing.T) {
 	}
 
 	if rs.Total != expected {
-		t.Errorf("expected %b but gog %b\n", expected, rs.Total)
+		t.Errorf("expected %b but got %b\n", expected, rs.Total)
+	}
+}
+
+func TestRequestHistoryRepository_FindByDateRange(t *testing.T) {
+	id := "testrh"
+	rhRepo := GetRequestHistoryRepo(getTestRDB())
+	rs := rhRepo.FindByDateRange(id, time.Now().Add(-time.Second*10), time.Now())
+	expected := 1
+
+	if len(rs) != expected {
+		t.Errorf("expected %b but got %b\n", expected, len(rs))
 	}
 }
 
