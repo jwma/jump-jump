@@ -327,3 +327,23 @@ func (r *shortLinkRepository) List(key string, start int64, stop int64) (*shortL
 	}
 	return result, nil
 }
+
+type activeLinkRepository struct {
+	db *redis.Client
+}
+
+var activeLinkRepo *activeLinkRepository
+
+func GetActiveLinkRepo(rdb *redis.Client) *activeLinkRepository {
+	if activeLinkRepo == nil {
+		activeLinkRepo = &activeLinkRepository{rdb}
+	}
+	return activeLinkRepo
+}
+
+func (r *activeLinkRepository) Save(linkId string) {
+	r.db.ZAdd(utils.GetActiveLinkKey(), redis.Z{
+		Score:  float64(time.Now().Unix()),
+		Member: linkId,
+	})
+}

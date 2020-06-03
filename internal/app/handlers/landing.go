@@ -47,9 +47,13 @@ func Redirect(c *gin.Context) {
 		return
 	}
 
-	// 保存短链接请求记录（IP、User-Agent）
+	// 保存短链接请求记录（IP、User-Agent），保存活跃链接记录
 	rhRepo := repository.GetRequestHistoryRepo(db.GetRedisClient())
-	go rhRepo.Save(models.NewRequestHistory(s, c.ClientIP(), c.Request.UserAgent()))
+	alRepo := repository.GetActiveLinkRepo(db.GetRedisClient())
+	go func() {
+		rhRepo.Save(models.NewRequestHistory(s, c.ClientIP(), c.Request.UserAgent()))
+		alRepo.Save(s.Id)
+	}()
 
 	c.Redirect(http.StatusTemporaryRedirect, s.Url)
 }
