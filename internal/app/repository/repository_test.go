@@ -6,6 +6,7 @@ import (
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"testing"
+	"time"
 )
 
 func getTestRDB() *redis.Client {
@@ -225,5 +226,22 @@ func TestUserRepository_UpdatePassword(t *testing.T) {
 
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestActiveLinkRepository_Save(t *testing.T) {
+	repo := GetActiveLinkRepo(getTestRDB())
+	repo.Save("a")
+	repo.Save("b")
+	repo.Save("c")
+}
+
+func TestActiveLinkRepository_FindByDateRange(t *testing.T) {
+	repo := GetActiveLinkRepo(getTestRDB())
+	activeLinks := repo.FindByDateRange(time.Now().Add(-time.Minute), time.Now())
+	expected := 3
+
+	if len(activeLinks) != expected {
+		t.Errorf("expected %d but got %d", expected, len(activeLinks))
 	}
 }
