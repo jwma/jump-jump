@@ -8,6 +8,7 @@ import (
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -346,4 +347,18 @@ func (r *activeLinkRepository) Save(linkId string) {
 		Score:  float64(time.Now().Unix()),
 		Member: linkId,
 	})
+}
+
+func (r *activeLinkRepository) FindByDateRange(startTime, endTime time.Time) []*models.ActiveLink {
+	result := make([]*models.ActiveLink, 0)
+	rs, _ := r.db.ZRangeByScoreWithScores(utils.GetActiveLinkKey(), redis.ZRangeBy{
+		Min: strconv.Itoa(int(startTime.Unix())),
+		Max: strconv.Itoa(int(endTime.Unix())),
+	}).Result()
+
+	for _, one := range rs {
+		result = append(result, &models.ActiveLink{Id: one.Member.(string), Time: time.Unix(int64(one.Score), 0)})
+	}
+
+	return result
 }

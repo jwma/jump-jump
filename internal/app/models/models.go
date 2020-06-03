@@ -68,3 +68,8 @@ func (r *RequestHistory) MarshalBinary() (data []byte, err error) {
 func NewRequestHistory(link *ShortLink, IP string, UA string) *RequestHistory {
 	return &RequestHistory{Link: link, IP: IP, UA: UA, Url: link.Url}
 }
+
+type ActiveLink struct {
+	Id   string
+	Time time.Time
+}
