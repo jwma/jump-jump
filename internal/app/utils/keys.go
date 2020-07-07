@@ -27,3 +27,7 @@ func GetRequestHistoryKey(linkId string) string {
 func GetActiveLinkKey() string {
 	return "activelinks"
 }
+
+func GetDailyReportKey(linkId string) string {
+	return fmt.Sprintf("dr:%s", linkId)
+}

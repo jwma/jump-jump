@@ -73,3 +73,13 @@ type ActiveLink struct {
 	Id   string
 	Time time.Time
 }
+
+type DailyReport struct {
+	PV int            `json:"pv"`
+	UV int            `json:"uv"`
+	OS map[string]int `json:"os"`
+}
+
+func (d *DailyReport) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(d)
+}

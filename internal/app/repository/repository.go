@@ -371,3 +371,20 @@ func (r *activeLinkRepository) FindByDateRange(startTime, endTime time.Time) []*
 
 	return result
 }
+
+type dailyReportRepository struct {
+	db *redis.Client
+}
+
+var dailyReportRepo *dailyReportRepository
+
+func GetDailyReportRepo(rdb *redis.Client) *dailyReportRepository {
+	if dailyReportRepo == nil {
+		dailyReportRepo = &dailyReportRepository{rdb}
+	}
+	return dailyReportRepo
+}
+
+func (r *dailyReportRepository) Save(linkId string, reportKey string, report *models.DailyReport) {
+	r.db.HSet(utils.GetDailyReportKey(linkId), reportKey, report)
+}
