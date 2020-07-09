@@ -31,3 +31,7 @@ func GetActiveLinkKey() string {
 func GetDailyReportKey(linkId string) string {
 	return fmt.Sprintf("dr:%s", linkId)
 }
+
+func GetDispatchPastTaskFlagKey() string {
+	return "dispatch_past_task"
+}

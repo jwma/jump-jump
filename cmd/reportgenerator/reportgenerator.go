@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func runDailyMode() {
+func main() {
 	// 每 30 秒运行一次报表生成/更新
 	rg := report.NewGenerator(db.GetRedisClient(), time.Second*30)
 
@@ -26,8 +26,4 @@ func runDailyMode() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func main() {
-	runDailyMode()
 }
