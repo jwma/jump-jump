@@ -10,6 +10,7 @@ import (
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"log"
 	"net/http"
+	"time"
 )
 
 func GetShortLinkAPI() gin.HandlerFunc {
@@ -213,7 +214,65 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 func ShortLinkActionAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 
-		if c.Param("action") == "/latest-request-history" {
+		if c.Param("action") == "/data" {
+			slRepo := repository.GetShortLinkRepo(db.GetRedisClient())
+			s, err := slRepo.Get(c.Param("id"))
+
+			if err != nil {
+				c.JSON(http.StatusOK, gin.H{
+					"msg":  err.Error(),
+					"code": 4999,
+					"data": nil,
+				})
+				return
+			}
+
+			if !user.IsAdmin() && user.Username != s.CreatedBy {
+				c.JSON(http.StatusOK, gin.H{
+					"msg":  "你无权查看",
+					"code": 4999,
+					"data": nil,
+				})
+				return
+			}
+
+			startDate := c.Query("startDate")
+			endDate := c.Query("endDate")
+
+			if startDate == "" || endDate == "" {
+				c.JSON(http.StatusOK, gin.H{
+					"msg":  "参数错误",
+					"code": 4999,
+					"data": nil,
+				})
+				return
+			}
+
+			startTime, err := time.ParseInLocation("2006-01-02", startDate, time.Local)
+			endTime, err := time.ParseInLocation("2006-01-02", endDate, time.Local)
+
+			if err != nil {
+				c.JSON(http.StatusOK, gin.H{
+					"msg":  "日期参数错误",
+					"code": 4999,
+					"data": nil,
+				})
+				return
+			}
+
+			endTime = time.Date(endTime.Year(), endTime.Month(), endTime.Day(), 23, 59, 59, 0, time.Local)
+			rhRepo := repository.GetRequestHistoryRepo(db.GetRedisClient())
+			rhs := rhRepo.FindByDateRange(s.Id, startTime, endTime)
+
+			c.JSON(http.StatusOK, gin.H{
+				"msg":  "ok",
+				"code": 0,
+				"data": gin.H{
+					"histories": rhs,
+				},
+			})
+			return
+		} else if c.Param("action") == "/latest-request-history" {
 			slRepo := repository.GetShortLinkRepo(db.GetRedisClient())
 			s, err := slRepo.Get(c.Param("id"))
 

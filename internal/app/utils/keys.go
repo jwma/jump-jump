@@ -23,3 +23,15 @@ func GetUserShortLinksKey(username string) string {
 func GetRequestHistoryKey(linkId string) string {
 	return fmt.Sprintf("rh:%s", linkId)
 }
+
+func GetActiveLinkKey() string {
+	return "activelinks"
+}
+
+func GetDailyReportKey(linkId string) string {
+	return fmt.Sprintf("dr:%s", linkId)
+}
+
+func GetDispatchPastTaskFlagKey() string {
+	return "dispatch_past_task"
+}

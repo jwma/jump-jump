@@ -6,6 +6,7 @@ import (
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"testing"
+	"time"
 )
 
 func getTestRDB() *redis.Client {
@@ -126,7 +127,18 @@ func TestRequestHistoryRepository_FindLatest(t *testing.T) {
 	}
 
 	if rs.Total != expected {
-		t.Errorf("expected %b but gog %b\n", expected, rs.Total)
+		t.Errorf("expected %b but got %b\n", expected, rs.Total)
+	}
+}
+
+func TestRequestHistoryRepository_FindByDateRange(t *testing.T) {
+	id := "testrh"
+	rhRepo := GetRequestHistoryRepo(getTestRDB())
+	rs := rhRepo.FindByDateRange(id, time.Now().Add(-time.Second*10), time.Now())
+	expected := 1
+
+	if len(rs) != expected {
+		t.Errorf("expected %b but got %b\n", expected, len(rs))
 	}
 }
 
@@ -225,5 +237,62 @@ func TestUserRepository_UpdatePassword(t *testing.T) {
 
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestActiveLinkRepository_Save(t *testing.T) {
+	repo := GetActiveLinkRepo(getTestRDB())
+	repo.Save("a")
+	repo.Save("b")
+	repo.Save("c")
+}
+
+func TestActiveLinkRepository_FindByDateRange(t *testing.T) {
+	repo := GetActiveLinkRepo(getTestRDB())
+	activeLinks := repo.FindByDateRange(time.Now().Add(-time.Minute), time.Now())
+	expected := 3
+
+	if len(activeLinks) != expected {
+		t.Errorf("expected %d but got %d", expected, len(activeLinks))
+	}
+}
+
+func TestDailyReportRepository_Save(t *testing.T) {
+	repo := GetDailyReportRepo(getTestRDB())
+	repo.Save("fake", "2020-01-01", &models.DailyReport{
+		PV: 1,
+		UV: 1,
+		OS: map[string]int{"Mac OS X": 1},
+	})
+}
+
+func TestDailyReportRepository_FindRecent(t *testing.T) {
+	repo := GetDailyReportRepo(getTestRDB())
+
+	sampleKey := time.Now().Format("2006-01-02")
+	sample := &models.DailyReport{
+		PV: 1,
+		UV: 1,
+		OS: map[string]int{"Mac OS X": 1},
+	}
+	repo.Save("fake", sampleKey, sample)
+
+	reports := repo.FindRecent("fake", 3)
+	expected := 3
+
+	if len(reports) != expected {
+		t.Errorf("expected %d but got %d", expected, len(reports))
+	}
+
+	if reports[expected-1].Date != sampleKey {
+		t.Errorf("expected %s but got %s", sampleKey, reports[expected-1].Date)
+	}
+
+	if reports[expected-1].Report.PV != sample.PV {
+		t.Errorf("expected %d but got %d", sample.PV, reports[expected-1].Report.PV)
+	}
+
+	if reports[expected-1].Report.UV != sample.UV {
+		t.Errorf("expected %d but got %d", sample.PV, reports[expected-1].Report.UV)
 	}
 }

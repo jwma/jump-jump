@@ -8,6 +8,7 @@ import (
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -73,6 +74,23 @@ func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*reque
 	}
 
 	return result, nil
+}
+
+func (r *requestHistoryRepository) FindByDateRange(linkId string, startTime, endTime time.Time) []*models.RequestHistory {
+	rs, _ := r.db.ZRangeByScoreWithScores(utils.GetRequestHistoryKey(linkId), redis.ZRangeBy{
+		Min: strconv.Itoa(int(startTime.Unix())),
+		Max: strconv.Itoa(int(endTime.Unix())),
+	}).Result()
+	rhs := make([]*models.RequestHistory, 0)
+
+	for _, one := range rs {
+		rh := &models.RequestHistory{}
+		_ = json.Unmarshal([]byte(one.Member.(string)), rh)
+
+		rhs = append(rhs, rh)
+	}
+
+	return rhs
 }
 
 type userRepository struct {
@@ -224,7 +242,6 @@ func (r *shortLinkRepository) save(s *models.ShortLink, isUpdate bool) error {
 	if err != nil {
 		log.Println(err)
 		return errors.New("服务器繁忙，请稍后再试")
-
 	}
 
 	return nil
@@ -252,8 +269,9 @@ func (r *shortLinkRepository) Delete(s *models.ShortLink) {
 	pipeline.ZRem(utils.GetShortLinksKey(), s.Id)
 	_, _ = pipeline.Exec()
 
-	// 删除访问历史
+	// 删除访问历史和报表
 	r.db.Del(utils.GetRequestHistoryKey(s.Id))
+	r.db.Del(utils.GetDailyReportKey(s.Id))
 }
 
 func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
@@ -326,4 +344,88 @@ func (r *shortLinkRepository) List(key string, start int64, stop int64) (*shortL
 		result.addLink(s)
 	}
 	return result, nil
+}
+
+type activeLinkRepository struct {
+	db *redis.Client
+}
+
+var activeLinkRepo *activeLinkRepository
+
+func GetActiveLinkRepo(rdb *redis.Client) *activeLinkRepository {
+	if activeLinkRepo == nil {
+		activeLinkRepo = &activeLinkRepository{rdb}
+	}
+	return activeLinkRepo
+}
+
+func (r *activeLinkRepository) Save(linkId string) {
+	r.db.ZAdd(utils.GetActiveLinkKey(), redis.Z{
+		Score:  float64(time.Now().Unix()),
+		Member: linkId,
+	})
+}
+
+func (r *activeLinkRepository) FindByDateRange(startTime, endTime time.Time) []*models.ActiveLink {
+	result := make([]*models.ActiveLink, 0)
+	rs, _ := r.db.ZRangeByScoreWithScores(utils.GetActiveLinkKey(), redis.ZRangeBy{
+		Min: strconv.Itoa(int(startTime.Unix())),
+		Max: strconv.Itoa(int(endTime.Unix())),
+	}).Result()
+
+	for _, one := range rs {
+		result = append(result, &models.ActiveLink{Id: one.Member.(string), Time: time.Unix(int64(one.Score), 0)})
+	}
+
+	return result
+}
+
+type dailyReportRepository struct {
+	db *redis.Client
+}
+
+var dailyReportRepo *dailyReportRepository
+
+func GetDailyReportRepo(rdb *redis.Client) *dailyReportRepository {
+	if dailyReportRepo == nil {
+		dailyReportRepo = &dailyReportRepository{rdb}
+	}
+	return dailyReportRepo
+}
+
+func (r *dailyReportRepository) Save(linkId string, reportKey string, report *models.DailyReport) {
+	r.db.HSet(utils.GetDailyReportKey(linkId), reportKey, report)
+}
+
+// 查询指定短链接 days 日内的报表
+func (r *dailyReportRepository) FindRecent(linkId string, days int) []*models.DailyReportItem {
+	if days < 1 {
+		days = 1
+	}
+
+	now := time.Now()
+	d := now.AddDate(0, 0, -days+1)
+	reportKeys := make([]string, 0)
+
+	for d.Before(now) {
+		reportKeys = append(reportKeys, d.Format("2006-01-02"))
+		d = d.AddDate(0, 0, 1)
+	}
+
+	reportKeys = append(reportKeys, now.Format("2006-01-02"))
+	reports := make([]*models.DailyReportItem, days)
+	rs, _ := r.db.HMGet(utils.GetDailyReportKey(linkId), reportKeys...).Result()
+
+	for i := 0; i < days; i++ {
+		r := &models.DailyReport{}
+		if rs[i] != nil {
+			json.Unmarshal([]byte(rs[i].(string)), r)
+		}
+		reports[i] = &models.DailyReportItem{
+			Date:   reportKeys[i],
+			Report: r,
+		}
+	}
+
+	return reports
 }
