@@ -256,3 +256,43 @@ func TestActiveLinkRepository_FindByDateRange(t *testing.T) {
 		t.Errorf("expected %d but got %d", expected, len(activeLinks))
 	}
 }
+
+func TestDailyReportRepository_Save(t *testing.T) {
+	repo := GetDailyReportRepo(getTestRDB())
+	repo.Save("fake", "2020-01-01", &models.DailyReport{
+		PV: 1,
+		UV: 1,
+		OS: map[string]int{"Mac OS X": 1},
+	})
+}
+
+func TestDailyReportRepository_FindRecent(t *testing.T) {
+	repo := GetDailyReportRepo(getTestRDB())
+
+	sampleKey := time.Now().Format("2006-01-02")
+	sample := &models.DailyReport{
+		PV: 1,
+		UV: 1,
+		OS: map[string]int{"Mac OS X": 1},
+	}
+	repo.Save("fake", sampleKey, sample)
+
+	reports := repo.FindRecent("fake", 3)
+	expected := 3
+
+	if len(reports) != expected {
+		t.Errorf("expected %d but got %d", expected, len(reports))
+	}
+
+	if reports[expected-1].Date != sampleKey {
+		t.Errorf("expected %s but got %s", sampleKey, reports[expected-1].Date)
+	}
+
+	if reports[expected-1].Report.PV != sample.PV {
+		t.Errorf("expected %d but got %d", sample.PV, reports[expected-1].Report.PV)
+	}
+
+	if reports[expected-1].Report.UV != sample.UV {
+		t.Errorf("expected %d but got %d", sample.PV, reports[expected-1].Report.UV)
+	}
+}
