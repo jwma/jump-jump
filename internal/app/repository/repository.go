@@ -388,3 +388,36 @@ func GetDailyReportRepo(rdb *redis.Client) *dailyReportRepository {
 func (r *dailyReportRepository) Save(linkId string, reportKey string, report *models.DailyReport) {
 	r.db.HSet(utils.GetDailyReportKey(linkId), reportKey, report)
 }
+
+// 查询指定短链接 days 日内的报表
+func (r *dailyReportRepository) FindRecent(linkId string, days int) []*models.DailyReportItem {
+	if days < 1 {
+		days = 1
+	}
+
+	now := time.Now()
+	d := now.AddDate(0, 0, -days+1)
+	reportKeys := make([]string, 0)
+
+	for d.Before(now) {
+		reportKeys = append(reportKeys, d.Format("2006-01-02"))
+		d = d.AddDate(0, 0, 1)
+	}
+
+	reportKeys = append(reportKeys, now.Format("2006-01-02"))
+	reports := make([]*models.DailyReportItem, days)
+	rs, _ := r.db.HMGet(utils.GetDailyReportKey(linkId), reportKeys...).Result()
+
+	for i := 0; i < days; i++ {
+		r := &models.DailyReport{}
+		if rs[i] != nil {
+			json.Unmarshal([]byte(rs[i].(string)), r)
+		}
+		reports[i] = &models.DailyReportItem{
+			Date:   reportKeys[i],
+			Report: r,
+		}
+	}
+
+	return reports
+}

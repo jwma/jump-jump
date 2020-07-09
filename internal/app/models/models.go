@@ -83,3 +83,8 @@ type DailyReport struct {
 func (d *DailyReport) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(d)
 }
+
+type DailyReportItem struct {
+	Date   string       `json:"date"`
+	Report *DailyReport `json:"report"`
+}
