@@ -234,7 +234,6 @@ func (r *shortLinkRepository) save(s *models.ShortLink, isUpdate bool) error {
 	if err != nil {
 		log.Println(err)
 		return errors.New("服务器繁忙，请稍后再试")
-
 	}
 
 	return nil
@@ -262,8 +261,9 @@ func (r *shortLinkRepository) Delete(s *models.ShortLink) {
 	pipeline.ZRem(utils.GetShortLinksKey(), s.Id)
 	_, _ = pipeline.Exec()
 
-	// 删除访问历史
+	// 删除访问历史和报表
 	r.db.Del(utils.GetRequestHistoryKey(s.Id))
+	r.db.Del(utils.GetDailyReportKey(s.Id))
 }
 
 func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
