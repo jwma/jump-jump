@@ -1,18 +1,15 @@
 package report
 
 import (
-	"encoding/json"
 	"github.com/go-redis/redis"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/mssola/user_agent"
 	"github.com/thoas/go-funk"
-	"log"
 	"time"
 )
 
 func CalcDailyReport(db *redis.Client, activeLink *models.ActiveLink) *dailyReportWrapper {
-	var err error
 	date := activeLink.Time
 	startTime := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 	endTime := startTime.AddDate(0, 0, 1)
@@ -23,15 +20,7 @@ func CalcDailyReport(db *redis.Client, activeLink *models.ActiveLink) *dailyRepo
 	ips := make([]string, 0)
 	operateSystems := make(map[string]int)
 
-	for _, one := range rhRs {
-		rh := &models.RequestHistory{}
-		err = json.Unmarshal([]byte(one.Member.(string)), rh)
-
-		if err != nil {
-			log.Printf("CalcDailyReport failed, error: %v\n", err)
-			continue
-		}
-
+	for _, rh := range rhRs {
 		if !funk.ContainsString(ips, rh.IP) {
 			ips = append(ips, rh.IP)
 		}

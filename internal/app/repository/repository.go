@@ -76,13 +76,21 @@ func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*reque
 	return result, nil
 }
 
-func (r *requestHistoryRepository) FindByDateRange(linkId string, startTime, endTime time.Time) []redis.Z {
+func (r *requestHistoryRepository) FindByDateRange(linkId string, startTime, endTime time.Time) []*models.RequestHistory {
 	rs, _ := r.db.ZRangeByScoreWithScores(utils.GetRequestHistoryKey(linkId), redis.ZRangeBy{
 		Min: strconv.Itoa(int(startTime.Unix())),
 		Max: strconv.Itoa(int(endTime.Unix())),
 	}).Result()
+	rhs := make([]*models.RequestHistory, 0)
 
-	return rs
+	for _, one := range rs {
+		rh := &models.RequestHistory{}
+		_ = json.Unmarshal([]byte(one.Member.(string)), rh)
+
+		rhs = append(rhs, rh)
+	}
+
+	return rhs
 }
 
 type userRepository struct {
