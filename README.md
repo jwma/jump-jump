@@ -16,7 +16,7 @@
 
 * [快速体验](#快速体验)
 * [功能与使用](#功能与使用)
-    * [短链接管理](#短链接管理)
+    * [截图](#截图)
 * [本地启动](#本地启动)
 * [如何访问短链接？](#如何访问短链接)
     * [设置短链接域名](#设置短链接域名)
@@ -28,16 +28,16 @@
 
 ## 快速体验
 
-[访问这里](http://anmuji.com/t/7pcu75)，来体验一下 Jump Jump 吧！
+[访问这里](http://anmuji.com/t/7pcu75)，来体验一下 Jump Jump 吧！（体验账号/密码：guest/guest）
 
 ## 功能与使用
 
 [功能模块](http://rs.majiawei.com/jumpjump/features.png)，后续的功能可以查看[版本规划](http://anmuji.com/t/h7ua8j)：
 
 
-### 短链接管理
+### 截图
 
-![短链接](http://rs.majiawei.com/jumpjump/v1.1.0copyshortlink.png)
+![截图](http://rs.majiawei.com/b/20200711224458.png)
 
 ## 本地启动
 
