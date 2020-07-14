@@ -2,7 +2,7 @@
   <br>Jump Jump<br>
 </h1>
 
-<p align="center"><em>开箱即用，Go 语言开发的一个功能完善的短链接系统。</em></p>
+<p align="center"><em>开箱即用，Golang 开发的一个功能完善的短链接系统。</em></p>
 <p align="center">
   <a href="https://github.com/jwma/jump-jump/workflows/CI/badge.svg?branch=master" target="_blank">
     <img src="https://github.com/jwma/jump-jump/workflows/CI/badge.svg?branch=master">
@@ -22,7 +22,7 @@
     * [设置短链接域名](#设置短链接域名)
     * [获取完整短链接](#获取完整短链接)
 * [部署到服务器](#部署到服务器)
-* [关注我的公众号了解更多](#关注我的公众号了解更多)
+* [感谢](#感谢)
 
 ---
 
@@ -32,7 +32,7 @@
 
 ## 功能与使用
 
-[功能模块](http://rs.majiawei.com/jumpjump/features.png)，后续的功能可以查看[版本规划](http://anmuji.com/t/h7ua8j)：
+[功能模块](http://anmuji.com/t/c6vn)，后续功能的方向/安排可以持续留意 issues：
 
 
 ### 截图
@@ -84,7 +84,7 @@ docker-compose -f deployments/docker-compose.yaml -p jumpjump exec apiserver ./c
 
 ### 设置短链接域名
 
-登入到管理后台之后，你能够看到短链接域名设置（只有管理员有权修改），在这里设置好你部署的域名/IP:Port，如：
+登入到管理后台之后，你能够看到短链接域名设置（只有管理员有权修改），在这里设置好你部署的**域名/IP:Port**，如：
 `http://127.0.0.1:8000/` 或者 `http://anmuji.com/t/`，这里有一点需要注意的是，需要以 `/` 结尾。
 
 ### 获取完整短链接
@@ -96,5 +96,8 @@ docker-compose -f deployments/docker-compose.yaml -p jumpjump exec apiserver ./c
 
 这里提供了使用 docker-compose 的部署方案，[点击查看](http://anmuji.com/t/fk1ta3)。
 
-## 关注我的公众号了解更多
-![码极工作室](http://rs.majiawei.com/mjstudio/qrcode.png)
+## 感谢
+
+在这里感谢所有为 Jump Jump 提供建议和反馈 bug 的朋友们，有你们 Jump Jump 会变得更好！
+
+![MJ_STUDIO](http://rs.majiawei.com/b/20200714210656.png)
