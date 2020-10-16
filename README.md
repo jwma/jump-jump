@@ -37,7 +37,7 @@
 
 ### 截图
 
-![截图](http://rs.majiawei.com/b/20200711224458.png)
+![截图](http://rs.majiawei.com/b/20201016144836.png)
 
 ## 本地启动
 
@@ -91,6 +91,10 @@ docker-compose -f deployments/docker-compose.yaml -p jumpjump exec apiserver ./c
 
 访问短链接列表页面，如果你已经创建了短链接，那么可以在列表的第一个字段，悬停一下，会出现一个带有域名的完整短链接，点击就可以自动拷贝到
 剪切板，你可以到需要使用的地方进行粘贴或者使用浏览器访问。
+
+## Pin
+
+如果你特别关心某个短链接近期的访问情况，不妨试一下在短链接列表中把它 Pin 到 Dashboard 首页，这样你就能方便的观察到它的访问情况啦~
 
 ## 部署到服务器
 
