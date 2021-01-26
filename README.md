@@ -28,11 +28,11 @@
 
 ## 快速体验
 
-[访问这里](http://anmuji.com/t/7pcu75)，来体验一下 Jump Jump 吧！（体验账号/密码：guest/guest）
+[访问这里](http://t.majiawei.com/7pcu75)，来体验一下 Jump Jump 吧！（体验账号/密码：guest/guest）
 
 ## 功能与使用
 
-[功能模块](http://anmuji.com/t/c6vn)，后续功能的方向/安排可以持续留意 issues：
+[功能模块](http://t.majiawei.com/c6vn)，后续功能的方向/安排可以持续留意 issues：
 
 
 ### 截图
@@ -85,7 +85,7 @@ docker-compose -f deployments/docker-compose.yaml -p jumpjump exec apiserver ./c
 ### 设置短链接域名
 
 登入到管理后台之后，你能够看到短链接域名设置（只有管理员有权修改），在这里设置好你部署的**域名/IP:Port**，如：
-`http://127.0.0.1:8000/` 或者 `http://anmuji.com/t/`，这里有一点需要注意的是，需要以 `/` 结尾。
+`http://127.0.0.1:8000/` 或者 `http://yourdomain.com/`，这里有一点需要注意的是，需要以 `/` 结尾。
 
 ### 获取完整短链接
 
@@ -98,7 +98,7 @@ docker-compose -f deployments/docker-compose.yaml -p jumpjump exec apiserver ./c
 
 ## 部署到服务器
 
-这里提供了使用 docker-compose 的部署方案，[点击查看](http://anmuji.com/t/fk1ta3)。
+这里提供了使用 docker-compose 的部署方案，[点击查看](http://t.majiawei.com/fk1ta3)。
 
 ## 感谢
 
