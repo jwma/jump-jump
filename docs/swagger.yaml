@@ -1,0 +1,672 @@
+definitions:
+  ChangePasswordAPIRequest:
+    properties:
+      newPassword:
+        description: 新密码
+        type: string
+      password:
+        description: 原密码
+        type: string
+    type: object
+  CreateShortLinkAPIRequest:
+    properties:
+      description:
+        description: 描述
+        example: Jump Jump project
+        type: string
+      id:
+        description: 只有管理员可以在创建的时候指定 ID
+        example: RANDOM_ID
+        format: string
+        type: string
+      idLength:
+        description: 短链接 ID 长度
+        example: 4
+        format: int
+        type: integer
+      isEnable:
+        description: 是否启用
+        example: true
+        format: boolean
+        type: boolean
+      url:
+        description: 目标链接
+        example: https://github.com/jwma/jump-jump
+        type: string
+    type: object
+  CreateShortLinkAPIResponseData:
+    properties:
+      shortLink:
+        $ref: '#/definitions/ShortLinkData'
+    type: object
+  GetConfigAPIResponseData:
+    properties:
+      config:
+        $ref: '#/definitions/SystemConfig'
+    type: object
+  GetShortLinkAPIResponseData:
+    properties:
+      shortLink:
+        $ref: '#/definitions/ShortLinkData'
+    type: object
+  GetUserInfoAPIResponseData:
+    properties:
+      role:
+        description: 角色，1 普通用户 | 2 管理员
+        enum:
+        - 1
+        - 2
+        example: 1
+        type: integer
+      username:
+        description: 用户名
+        example: admin
+        type: string
+    type: object
+  IdConfig:
+    properties:
+      idLength:
+        description: ID 长度
+        example: 6
+        format: int
+        type: integer
+      idMaximumLength:
+        description: 最大 ID 长度
+        example: 10
+        format: int
+        type: integer
+      idMinimumLength:
+        description: 最小 ID 长度
+        example: 2
+        format: int
+        type: integer
+    type: object
+  ListShortLinksAPIResponseData:
+    properties:
+      shortLinks:
+        items:
+          $ref: '#/definitions/ShortLinkData'
+        type: array
+      total:
+        example: 10
+        format: "10"
+        type: integer
+    type: object
+  LoginAPIRequest:
+    properties:
+      password:
+        description: 密码
+        example: your_password
+        type: string
+      username:
+        description: 用户名
+        example: your_username
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  LoginAPIResponseData:
+    properties:
+      token:
+        description: json web token
+        example: xxx.xxx.xxx
+        type: string
+    type: object
+  RequestHistory:
+    properties:
+      id:
+        type: string
+      ip:
+        type: string
+      time:
+        type: string
+      ua:
+        type: string
+      url:
+        description: 由于短链接的目标连接可能会被修改，可以在访问历史记录中记录一下当前的目标连接
+        type: string
+    type: object
+  Response:
+    properties:
+      code:
+        default: 0
+        example: 0
+        format: int
+        type: integer
+      data:
+        type: object
+      msg:
+        default: ok
+        example: ok
+        type: string
+    type: object
+  ShortLinkData:
+    properties:
+      createTime:
+        description: 创建时间
+        type: string
+      createdBy:
+        description: 创建者
+        example: admin
+        format: string
+        type: string
+      description:
+        description: 描述
+        example: Jump Jump project
+        format: string
+        type: string
+      id:
+        example: RANDOM_ID
+        format: string
+        type: string
+      isEnable:
+        description: 是否启用
+        example: true
+        format: boolean
+        type: boolean
+      updateTime:
+        description: 最后更新时间
+        type: string
+      url:
+        description: 目标链接
+        example: https://github.com/jwma/jump-jump
+        format: string
+        type: string
+    type: object
+  ShortLinkDataAPIResponseData:
+    properties:
+      histories:
+        items:
+          $ref: '#/definitions/RequestHistory'
+        type: array
+    type: object
+  ShortLinkNotFoundConfig:
+    properties:
+      mode:
+        description: 模式
+        enum:
+        - content
+        - redirect
+        example: content
+        type: string
+      value:
+        description: 值
+        example: page not found
+        type: string
+    required:
+    - mode
+    - value
+    type: object
+  SystemConfig:
+    properties:
+      idConfig:
+        $ref: '#/definitions/IdConfig'
+        description: ID 配置
+      landingHosts:
+        description: 落地页 Host 列表
+        example:
+        - https://a.com/
+        - https://b.com/
+        format: array
+        items:
+          type: string
+        type: array
+      shortLinkNotFoundConfig:
+        $ref: '#/definitions/ShortLinkNotFoundConfig'
+        description: 短链接 404 配置
+    type: object
+  UpdateLandingHostsAPIRequest:
+    properties:
+      hosts:
+        example:
+        - https://a.com/
+        - https://b.com/
+        format: array
+        items:
+          type: string
+        type: array
+    type: object
+  UpdateShortLinkAPIRequest:
+    properties:
+      description:
+        description: 描述
+        example: Jump Jump project
+        type: string
+      isEnable:
+        description: 是否启用
+        example: true
+        format: boolean
+        type: boolean
+      url:
+        description: 目标链接
+        example: https://github.com/jwma/jump-jump
+        type: string
+    required:
+    - url
+    type: object
+  UpdateShortLinkAPIResponseData:
+    properties:
+      shortLink:
+        $ref: '#/definitions/ShortLinkData'
+    type: object
+info:
+  contact:
+    email: m.mjw.ma@gmail.com
+    name: MJ Ma
+    url: https://www.linkedin.com/in/mj-profile/
+  license:
+    name: MIT
+    url: https://github.com/jwma/jump-jump/blob/master/LICENSE
+paths:
+  /config:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统配置信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/GetConfigAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 获取系统配置信息
+      tags:
+      - 系统配置
+  /config/id-length:
+    patch:
+      consumes:
+      - application/json
+      description: 更新短链接 ID 设置
+      parameters:
+      - description: 更新短链接 ID 设置请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/IdConfig'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/GetConfigAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 更新短链接 ID 设置
+      tags:
+      - 系统配置
+  /config/landing-hosts:
+    patch:
+      consumes:
+      - application/json
+      description: 更新落地页 Hosts
+      parameters:
+      - description: 更新落地页 Hosts 请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateLandingHostsAPIRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/GetConfigAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 更新落地页 Hosts
+      tags:
+      - 系统配置
+  /config/short-link-404-handling:
+    patch:
+      consumes:
+      - application/json
+      description: 更新短链接 404 设置
+      parameters:
+      - description: 更新短链接 404 设置请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ShortLinkNotFoundConfig'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/GetConfigAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 更新短链接 404 设置
+      tags:
+      - 系统配置
+  /short-link/:
+    get:
+      consumes:
+      - application/json
+      description: 短链接列表
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页条数
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/ListShortLinksAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 短链接列表
+      tags:
+      - 短链接
+    post:
+      consumes:
+      - application/json
+      description: 创建短链接
+      parameters:
+      - description: 创建短链接请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreateShortLinkAPIRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/CreateShortLinkAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 创建短链接
+      tags:
+      - 短链接
+  /short-link/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除短链接
+      parameters:
+      - description: 短链接 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 删除短链接
+      tags:
+      - 短链接
+    get:
+      consumes:
+      - application/json
+      description: 获取系统配置信息
+      parameters:
+      - description: 短链接 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/GetShortLinkAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 获取指定 ID 短链接
+      tags:
+      - 短链接
+    patch:
+      consumes:
+      - application/json
+      description: 更新短链接
+      parameters:
+      - description: 短链接 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新短链接请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateShortLinkAPIRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/UpdateShortLinkAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 更新短链接
+      tags:
+      - 短链接
+  /short-link/{id}/data:
+    get:
+      consumes:
+      - application/json
+      description: 可查询短链接某个日期范围内的访问数据
+      parameters:
+      - description: 短链接 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 开始日期 YYYY-mm-dd
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: 结束日期 YYYY-mm-dd
+        in: query
+        name: endDate
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/ShortLinkDataAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 短链接访问数据
+      tags:
+      - 短链接
+  /user/change-password:
+    post:
+      consumes:
+      - application/json
+      description: 修改账号密码
+      parameters:
+      - description: 修改密码请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ChangePasswordAPIRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 修改账号密码
+      tags:
+      - 账号
+  /user/info:
+    get:
+      consumes:
+      - application/json
+      description: 获取账号信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/GetUserInfoAPIResponseData'
+              type: object
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 获取账号信息
+      tags:
+      - 账号
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: 账号密码登入
+      parameters:
+      - description: 登入请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/LoginAPIRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/LoginAPIResponseData'
+              type: object
+      summary: 账号登入
+      tags:
+      - 账号
+  /user/logout:
+    post:
+      consumes:
+      - application/json
+      description: 登出
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Response'
+        "401":
+          description: ""
+      security:
+      - ApiKeyAuth: []
+      summary: 登出
+      tags:
+      - 账号
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

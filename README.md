@@ -22,6 +22,7 @@
     * [设置短链接域名](#设置短链接域名)
     * [获取完整短链接](#获取完整短链接)
 * [部署到服务器](#部署到服务器)
+* [接口文档](#接口文档)
 * [感谢](#感谢)
 
 ---
@@ -99,6 +100,11 @@ docker-compose -f deployments/docker-compose.yaml -p jumpjump exec apiserver ./c
 ## 部署到服务器
 
 这里提供了使用 docker-compose 的部署方案，[点击查看](http://t.majiawei.com/fk1ta3)。
+
+## 接口文档
+
+使用 Swagger UI 提供了一个可调试文档，具体使用方法查看这个 [PR](https://github.com/jwma/jump-jump/pull/40)，希望这份文档能够帮助
+到大家！
 
 ## 感谢
 
