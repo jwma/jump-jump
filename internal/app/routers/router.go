@@ -22,6 +22,20 @@ import (
 // @license.name MIT
 // @license.url https://github.com/jwma/jump-jump/blob/master/LICENSE
 
+func getAPIDocBasicAccounts() gin.Accounts {
+	defaultUsername := "apidoc"
+	defaultPassword := "showmethedoc"
+
+	u := os.Getenv("API_DOC_USERNAME")
+	p := os.Getenv("API_DOC_PASSWORD")
+
+	if u == "" || p == "" {
+		return gin.Accounts{defaultUsername: defaultPassword}
+	}
+
+	return gin.Accounts{u: p}
+}
+
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
@@ -42,7 +56,7 @@ func SetupRouter() *gin.Engine {
 	docs.SwaggerInfo.BasePath = "/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	url := ginSwagger.URL("/swagger/doc.json")
-	docs := r.Group("/swagger", gin.BasicAuth(gin.Accounts{"apidoc": "showmethedoc"}))
+	docs := r.Group("/swagger", gin.BasicAuth(getAPIDocBasicAccounts()))
 	{
 		docs.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 	}
