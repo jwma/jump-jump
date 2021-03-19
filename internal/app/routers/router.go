@@ -9,6 +9,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
 	"os"
+	"strings"
 )
 
 // @securityDefinitions.apikey ApiKeyAuth
@@ -36,8 +37,36 @@ func getAPIDocBasicAccounts() gin.Accounts {
 	return gin.Accounts{u: p}
 }
 
+func detectAPIDocHost() {
+	// 如果通过该环境变量指明了 API 文档使用的 Host，则直接使用
+	h := os.Getenv("API_DOC_HOST")
+	if h != "" {
+		docs.SwaggerInfo.Host = h
+		return
+	}
+
+	if gin.Mode() == gin.DebugMode {
+		docs.SwaggerInfo.Host = os.Getenv("J2_API_ADDR")
+	} else {
+		docs.SwaggerInfo.Host = strings.Split(os.Getenv("ALLOWED_HOSTS"), ",")[0]
+	}
+}
+
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
+	// Swagger
+	docs.SwaggerInfo.Title = "Jump Jump API Documentation"
+	docs.SwaggerInfo.Description = "🚀🚀🚀"
+	docs.SwaggerInfo.Version = "v1"
+	docs.SwaggerInfo.BasePath = "/v1"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	url := ginSwagger.URL("/swagger/doc.json")
+	detectAPIDocHost()
+	docsR := r.Group("/swagger", gin.BasicAuth(getAPIDocBasicAccounts()))
+	{
+		docsR.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	}
 
 	if gin.Mode() == gin.DebugMode { // 开发环境下，开启 CORS
 		corsCfg := cors.DefaultConfig()
@@ -47,19 +76,6 @@ func SetupRouter() *gin.Engine {
 	}
 
 	r.Use(handlers.AllowedHostsMiddleware())
-
-	// Swagger
-	docs.SwaggerInfo.Title = "Jump Jump API Documentation"
-	docs.SwaggerInfo.Description = "🚀🚀🚀"
-	docs.SwaggerInfo.Version = "v1"
-	docs.SwaggerInfo.Host = os.Getenv("J2_API_ADDR")
-	docs.SwaggerInfo.BasePath = "/v1"
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
-	url := ginSwagger.URL("/swagger/doc.json")
-	docs := r.Group("/swagger", gin.BasicAuth(getAPIDocBasicAccounts()))
-	{
-		docs.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
-	}
 
 	// serve dashboard static resources
 	r.LoadHTMLFiles("./web/admin/index.html")
