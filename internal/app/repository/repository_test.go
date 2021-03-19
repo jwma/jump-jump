@@ -56,7 +56,7 @@ func TestShortLinkRepository_Update(t *testing.T) {
 		t.Error(err)
 	}
 
-	params := &models.UpdateShortLinkParameter{
+	params := &models.UpdateShortLinkAPIRequest{
 		Url:         "http://github.com/jwma",
 		Description: "安木鸡的 Github",
 		IsEnable:    true,
