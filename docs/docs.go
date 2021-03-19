@@ -882,6 +882,27 @@ var doc = `{
                 }
             }
         },
+        "RequestHistory": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "ua": {
+                    "type": "string"
+                },
+                "url": {
+                    "description": "由于短链接的目标连接可能会被修改，可以在访问历史记录中记录一下当前的目标连接",
+                    "type": "string"
+                }
+            }
+        },
         "Response": {
             "type": "object",
             "properties": {
@@ -949,7 +970,7 @@ var doc = `{
                 "histories": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.RequestHistory"
+                        "$ref": "#/definitions/RequestHistory"
                     }
                 }
             }
@@ -1047,27 +1068,6 @@ var doc = `{
             "properties": {
                 "shortLink": {
                     "$ref": "#/definitions/ShortLinkData"
-                }
-            }
-        },
-        "models.RequestHistory": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "ip": {
-                    "type": "string"
-                },
-                "time": {
-                    "type": "string"
-                },
-                "ua": {
-                    "type": "string"
-                },
-                "url": {
-                    "description": "由于短链接的目标连接可能会被修改，可以在访问历史记录中记录一下当前的目标连接",
-                    "type": "string"
                 }
             }
         }

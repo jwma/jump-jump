@@ -41,7 +41,7 @@ func SetupRouter() *gin.Engine {
 	docs.SwaggerInfo.Host = os.Getenv("J2_API_ADDR")
 	docs.SwaggerInfo.BasePath = "/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
-	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definition
+	url := ginSwagger.URL("/swagger/doc.json")
 	docs := r.Group("/swagger", gin.BasicAuth(gin.Accounts{"apidoc": "showmethedoc"}))
 	{
 		docs.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))

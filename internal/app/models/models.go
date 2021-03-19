@@ -199,7 +199,7 @@ type RequestHistory struct {
 	IP   string     `json:"ip"`
 	UA   string     `json:"ua"`
 	Time time.Time  `json:"time"`
-}
+} // @name RequestHistory
 
 func (r *RequestHistory) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(r)
