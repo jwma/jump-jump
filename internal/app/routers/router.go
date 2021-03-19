@@ -3,9 +3,24 @@ package routers
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	docs "github.com/jwma/jump-jump/docs"
 	"github.com/jwma/jump-jump/internal/app/handlers"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
+	"os"
 )
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
+// @contact.name MJ Ma
+// @contact.url https://www.linkedin.com/in/mj-profile/
+// @contact.email m.mjw.ma@gmail.com
+
+// @license.name MIT
+// @license.url https://github.com/jwma/jump-jump/blob/master/LICENSE
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
@@ -19,33 +34,51 @@ func SetupRouter() *gin.Engine {
 
 	r.Use(handlers.AllowedHostsMiddleware())
 
+	// Swagger
+	docs.SwaggerInfo.Title = "Jump Jump API Documentation"
+	docs.SwaggerInfo.Description = "🚀🚀🚀"
+	docs.SwaggerInfo.Version = "v1"
+	docs.SwaggerInfo.Host = os.Getenv("J2_API_ADDR")
+	docs.SwaggerInfo.BasePath = "/v1"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definition
+	docs := r.Group("/swagger", gin.BasicAuth(gin.Accounts{"apidoc": "showmethedoc"}))
+	{
+		docs.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	}
+
+	// serve dashboard static resources
 	r.LoadHTMLFiles("./web/admin/index.html")
 	r.StaticFS("/static", http.Dir("./web/admin/static"))
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
-	r.POST("/v1/user/login", handlers.Login)
-	r.GET("/v1/user/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserInfoAPI())
-	r.POST("/v1/user/logout", handlers.JWTAuthenticatorMiddleware(), handlers.LogoutAPI())
-	r.PATCH("/v1/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
+	// v1 API's
+	v1 := r.Group("/v1")
+	{
+		// account stuff
+		v1.POST("/user/login", handlers.LoginAPI)
+		v1.GET("/user/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserInfoAPI())
+		v1.POST("/user/logout", handlers.JWTAuthenticatorMiddleware(), handlers.LogoutAPI())
+		v1.POST("/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
 
-	r.GET("/v1/config", handlers.GetConfig)
-	r.PATCH("/v1/config/landing-hosts", handlers.JWTAuthenticatorMiddleware(),
-		handlers.UpdateLandingHostsAPI())
-	r.PATCH("/v1/config/id-length", handlers.JWTAuthenticatorMiddleware(),
-		handlers.UpdateIdLengthConfigAPI())
-	r.PATCH("/v1/config/short-link-404-handling", handlers.JWTAuthenticatorMiddleware(),
-		handlers.UpdateShortLinkNotFoundConfigAPI())
+		// system configuration stuff
+		v1.GET("/config", handlers.JWTAuthenticatorMiddleware(), handlers.GetConfigAPI)
+		v1.PATCH("/config/landing-hosts", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateLandingHostsAPI())
+		v1.PATCH("/config/id-length", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateIdLengthConfigAPI())
+		v1.PATCH("/config/short-link-404-handling", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateShortLinkNotFoundConfigAPI())
 
-	shortLinkAPI := r.Group("/v1/short-link")
-	shortLinkAPI.Use(handlers.JWTAuthenticatorMiddleware())
-	shortLinkAPI.GET("/", handlers.ListShortLinksAPI())
-	shortLinkAPI.GET("/:id", handlers.GetShortLinkAPI())
-	shortLinkAPI.POST("/", handlers.CreateShortLinkAPI())
-	shortLinkAPI.PATCH("/:id", handlers.UpdateShortLinkAPI())
-	shortLinkAPI.DELETE("/:id", handlers.DeleteShortLinkAPI())
-	shortLinkAPI.GET("/:id/*action", handlers.ShortLinkActionAPI())
+		// short link stuff
+		shortLinkAPI := v1.Group("/short-link")
+		shortLinkAPI.Use(handlers.JWTAuthenticatorMiddleware())
+		shortLinkAPI.GET("/", handlers.ListShortLinksAPI())
+		shortLinkAPI.GET("/:id", handlers.GetShortLinkAPI())
+		shortLinkAPI.POST("/", handlers.CreateShortLinkAPI())
+		shortLinkAPI.PATCH("/:id", handlers.UpdateShortLinkAPI())
+		shortLinkAPI.DELETE("/:id", handlers.DeleteShortLinkAPI())
+		shortLinkAPI.GET("/:id/*action", handlers.ShortLinkActionAPI())
+	}
 
 	return r
 }

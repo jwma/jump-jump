@@ -251,7 +251,7 @@ func (r *shortLinkRepository) Save(s *models.ShortLink) error {
 	return r.save(s, false)
 }
 
-func (r *shortLinkRepository) Update(s *models.ShortLink, params *models.UpdateShortLinkParameter) error {
+func (r *shortLinkRepository) Update(s *models.ShortLink, params *models.UpdateShortLinkAPIRequest) error {
 	s.Url = params.Url
 	s.Description = params.Description
 	s.IsEnable = params.IsEnable
