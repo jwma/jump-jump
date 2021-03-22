@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/go-redis/redis"
+	"github.com/jwma/jump-jump/internal/app/utils"
 	"github.com/jwma/reborn"
 	"time"
 )
@@ -11,6 +12,9 @@ var config *reborn.Reborn
 const (
 	ShortLinkNotFoundContentMode  = "content"
 	ShortLinkNotFoundRedirectMode = "redirect"
+	DefaultIdLength               = 6
+	DefaultIdMinimumLength        = 2
+	DefaultIdMaximumLength        = 10
 )
 
 type IdConfig struct {
@@ -52,13 +56,13 @@ type SystemConfig struct {
 
 func GetIdConfig() *IdConfig {
 	return &IdConfig{
-		IdLength:        config.GetIntValue("idLength", 6),
-		IdMinimumLength: config.GetIntValue("idMinimumLength", 2),
-		IdMaximumLength: config.GetIntValue("idMaximumLength", 10),
+		IdLength:        config.GetIntValue(utils.GetIdLengthConfigKey(), DefaultIdLength),
+		IdMinimumLength: config.GetIntValue(utils.GetIdMinimumLengthConfigKey(), DefaultIdMinimumLength),
+		IdMaximumLength: config.GetIntValue(utils.GetIdMaximumLengthConfigKey(), DefaultIdMaximumLength),
 	}
 }
 
-func GetDefaultShortLinkNotFoundConfig() map[string]string {
+func getDefaultShortLinkNotFoundConfig() map[string]string {
 	return map[string]string{
 		"mode":  ShortLinkNotFoundContentMode,
 		"value": "你访问的页面不存在哦",
@@ -66,7 +70,7 @@ func GetDefaultShortLinkNotFoundConfig() map[string]string {
 }
 
 func GetShortLinkNotFoundConfig() *ShortLinkNotFoundConfig {
-	c := config.GetStringStringMapValue("shortLinkNotFoundConfig", GetDefaultShortLinkNotFoundConfig())
+	c := config.GetStringStringMapValue(utils.GetShortLinkNotFoundConfigKey(), getDefaultShortLinkNotFoundConfig())
 
 	return &ShortLinkNotFoundConfig{
 		Mode:  c["mode"],
@@ -76,36 +80,36 @@ func GetShortLinkNotFoundConfig() *ShortLinkNotFoundConfig {
 
 func GetSystemConfig() *SystemConfig {
 	return &SystemConfig{
-		LandingHosts:            config.GetStringSliceValue("landingHosts", make([]string, 0)),
+		LandingHosts:            config.GetStringSliceValue(utils.GetLandingHostsConfigKey(), make([]string, 0)),
 		IdConfig:                GetIdConfig(),
 		ShortLinkNotFoundConfig: GetShortLinkNotFoundConfig(),
 	}
 }
 
 func UpdateLandingHosts(hosts []string) {
-	config.SetValue("landingHosts", hosts)
+	config.SetValue(utils.GetLandingHostsConfigKey(), hosts)
 	config.Persist()
 }
 
 func UpdateIdConfig(c *IdConfig) {
-	config.SetValue("idMinimumLength", c.IdMinimumLength)
-	config.SetValue("idLength", c.IdLength)
-	config.SetValue("idMaximumLength", c.IdMaximumLength)
+	config.SetValue(utils.GetIdMinimumLengthConfigKey(), c.IdMinimumLength)
+	config.SetValue(utils.GetIdLengthConfigKey(), c.IdLength)
+	config.SetValue(utils.GetIdMaximumLengthConfigKey(), c.IdMaximumLength)
 	config.Persist()
 }
 
 func UpdateShortLinkNotFoundConfig(s *ShortLinkNotFoundConfig) {
-	config.SetValue("shortLinkNotFoundConfig", s.ToMap())
+	config.SetValue(utils.GetShortLinkNotFoundConfigKey(), s.ToMap())
 	config.Persist()
 }
 
 func getDefaultConfig() *reborn.Config {
 	d := reborn.NewConfig()
-	d.SetValue("landingHosts", []string{"http://127.0.0.1:8081/"})
-	d.SetValue("idMinimumLength", 2)
-	d.SetValue("idLength", 6)
-	d.SetValue("idMaximumLength", 10)
-	d.SetValue("shortLinkNotFoundConfig", GetDefaultShortLinkNotFoundConfig())
+	d.SetValue(utils.GetLandingHostsConfigKey(), []string{"http://127.0.0.1:8081/"})
+	d.SetValue(utils.GetIdMinimumLengthConfigKey(), DefaultIdMinimumLength)
+	d.SetValue(utils.GetIdLengthConfigKey(), DefaultIdLength)
+	d.SetValue(utils.GetIdMaximumLengthConfigKey(), DefaultIdMaximumLength)
+	d.SetValue(utils.GetShortLinkNotFoundConfigKey(), getDefaultShortLinkNotFoundConfig())
 
 	return d
 }
@@ -116,7 +120,7 @@ func GetConfig() *reborn.Reborn {
 
 func SetupConfig(rdb *redis.Client) error {
 	var err error
-	config, err = reborn.NewWithDefaults(rdb, "j2config", getDefaultConfig())
+	config, err = reborn.NewWithDefaults(rdb, utils.GetConfigKey(), getDefaultConfig())
 	if err != nil {
 		return err
 	}
