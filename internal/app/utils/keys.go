@@ -35,3 +35,27 @@ func GetDailyReportKey(linkId string) string {
 func GetDispatchPastTaskFlagKey() string {
 	return "dispatch_past_task"
 }
+
+func GetConfigKey() string {
+	return "j2config"
+}
+
+func GetLandingHostsConfigKey() string {
+	return "landingHosts"
+}
+
+func GetIdLengthConfigKey() string {
+	return "idLength"
+}
+
+func GetIdMinimumLengthConfigKey() string {
+	return "idMinimumLength"
+}
+
+func GetIdMaximumLengthConfigKey() string {
+	return "idMaximumLength"
+}
+
+func GetShortLinkNotFoundConfigKey() string {
+	return "shortLinkNotFoundConfig"
+}

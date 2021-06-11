@@ -25,15 +25,14 @@ func Redirect(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("查找短链接失败，error: %v\n", err)
-		cc := config.GetConfig().GetStringStringMapValue("shortLinkNotFoundConfig",
-			config.GetDefaultShortLinkNotFoundConfig())
+		cc := config.GetShortLinkNotFoundConfig()
 
-		switch cc["mode"] {
+		switch cc.Mode {
 		case config.ShortLinkNotFoundContentMode:
-			c.String(http.StatusOK, cc["value"])
+			c.String(http.StatusOK, cc.Value)
 			break
 		case config.ShortLinkNotFoundRedirectMode:
-			c.Redirect(http.StatusTemporaryRedirect, cc["value"])
+			c.Redirect(http.StatusTemporaryRedirect, cc.Value)
 			break
 		default:
 			c.String(http.StatusOK, "你访问的页面不存在哦")
