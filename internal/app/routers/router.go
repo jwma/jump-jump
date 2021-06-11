@@ -2,6 +2,7 @@ package routers
 
 import (
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	docs "github.com/jwma/jump-jump/docs"
 	"github.com/jwma/jump-jump/internal/app/handlers"
@@ -76,6 +77,7 @@ func SetupRouter() *gin.Engine {
 	}
 
 	r.Use(handlers.AllowedHostsMiddleware())
+	r.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPaths([]string{"/v1/"})))
 
 	// serve dashboard static resources
 	r.LoadHTMLFiles("./web/admin/index.html")
