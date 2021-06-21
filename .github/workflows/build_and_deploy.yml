@@ -1,10 +1,12 @@
-# 构建最新 docker 镜像 - 推送到 Docker hub - 部署最新版本镜像到服务器
+# 构建最新的容器镜像 - 推送到 Docker Hub - 推送到阿里云仓库 - 服务器部署最新版本的镜像
 # 参数说明：
-#   - secrets.DOCKER_USERNAME  Docker hub 用户名
-#   - secrets.DOCKER_PASSWORD  Docker hub 密码
-#   - secrets.SERVER_KEY       登入服务器密钥
-#   - secrets.SERVER_HOST      服务器地址
-#   - secrets.SERVER_USER      服务器用户
+#   - secrets.DOCKER_HUB_USERNAME         Docker Hub 用户名
+#   - secrets.DOCKER_HUB_PASSWORD         Docker Hub 密码
+#   - secrets.ALI_YUN_REGISTRY_USERNAME   阿里云仓库用户名
+#   - secrets.ALI_YUN_REGISTRY_PASSWORD   阿里云仓库用户名
+#   - secrets.SERVER_PRIVATE_KEY          登入服务器密钥
+#   - secrets.SERVER_HOST                 服务器地址
+#   - secrets.SERVER_USERNAME             服务器用户
 
 name: Build and deploy
 
@@ -13,10 +15,15 @@ on:
     types:
       - published
 
+env:
+  DOCKER_HUB_REPOSITORY: studiomj/jump-jump
+  ALI_YUN_REGISTRY: registry.cn-hongkong.aliyuncs.com
+  ALI_YUN_REPOSITORY: registry.cn-hongkong.aliyuncs.com/anmuji/jump-jump
+
 jobs:
 
-  build:
-    name: Build
+  docker-hub:
+    name: Build and push image to Docker Hub
     runs-on: ubuntu-latest
     steps:
 
@@ -26,27 +33,48 @@ jobs:
       - name: Build and push docker image
         uses: docker/build-push-action@v1
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: studiomj/jump-jump
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          repository: ${{ env.DOCKER_HUB_REPOSITORY }}
           tags: latest
           tag_with_ref: true
           dockerfile: ./build/package/Dockerfile
 
-      - name: Deploy
-        env:
-          SERVER_KEY: ${{ secrets.SERVER_KEY }}
-          HOST: ${{ secrets.SERVER_HOST }}
-          USER: ${{ secrets.SERVER_USER }}
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check the release code
+        uses: actions/checkout@v2
+
+      - name: Get tag
+        id: tag
+        uses: dawidd6/action-get-tag@v1
+
+      - name: Build docker image
         run: |
-          SSH_PATH="$HOME/.ssh"
-          mkdir -p $SSH_PATH
-          touch "$SSH_PATH/known_hosts"
-          echo "$SERVER_KEY" > "$SSH_PATH/id_rsa"
-          chmod 700 "$SSH_PATH"
-          chmod 600 "$SSH_PATH/known_hosts"
-          chmod 600 "$SSH_PATH/id_rsa"
-          eval $(ssh-agent)
-          ssh-add "$SSH_PATH/id_rsa"
-          ssh-keyscan -t rsa $HOST >> "$SSH_PATH/known_hosts"
-          ssh -o StrictHostKeyChecking=no -i $SSH_PATH/id_rsa -A -tt $USER@$HOST "./deploy/deploy-jump-jump.sh"
+          docker build \
+            -t $ALI_YUN_REPOSITORY:latest \
+            -t $ALI_YUN_REPOSITORY:${{ steps.tag.outputs.tag }} \
+            -f build/package/Dockerfile .
+
+      - name: Push docker image to aliyun registry
+        run: |
+          docker login \
+            --username=${{ secrets.ALI_YUN_REGISTRY_USERNAME }} \
+            --password=${{ secrets.ALI_YUN_REGISTRY_PASSWORD }} \
+            $ALI_YUN_REGISTRY
+          docker push $ALI_YUN_REPOSITORY:latest
+          docker push $ALI_YUN_REPOSITORY:${{ steps.tag.outputs.tag }}
+          docker logout
+
+      - uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SERVER_PRIVATE_KEY }}
+
+      - name: Run deploy script
+        env:
+          HOST: ${{ secrets.SERVER_HOST }}
+          USERNAME: ${{ secrets.SERVER_USERNAME }}
+        run: ssh -o StrictHostKeyChecking=no -tt $USERNAME@$HOST "./deploy/deploy-jump-jump.sh"
