@@ -93,6 +93,11 @@ func LogoutAPI() gin.HandlerFunc {
 // @Router /user/change-password [post]
 func ChangePasswordAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
+		if user.Username == "guest" {
+			c.JSON(http.StatusOK, models.NewErrorResponse("该账号不支持修改密码"))
+			return
+		}
+
 		p := &models.ChangePasswordAPIRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse("请填写原密码和新密码"))
