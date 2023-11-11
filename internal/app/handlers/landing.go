@@ -8,9 +8,16 @@ import (
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"log"
 	"net/http"
+	"os"
 )
 
 func LandingHome(c *gin.Context) {
+	home := os.Getenv("LANDING_HOME")
+
+	if home != "" {
+		c.Redirect(http.StatusTemporaryRedirect, home)
+	}
+
 	c.Redirect(http.StatusTemporaryRedirect, "https://github.com/jwma/jump-jump")
 }
 
