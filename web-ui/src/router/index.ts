@@ -23,6 +23,12 @@ const router = createRouter({
           meta: { title: 'Dashboard' },
         },
         {
+          path: 'short-links/create',
+          name: 'short-link-create',
+          component: () => import('@/pages/ShortLinksPage.vue'),
+          meta: { title: 'Create Short Link' },
+        },
+        {
           path: 'short-links',
           name: 'short-links',
           component: () => import('@/pages/ShortLinksPage.vue'),

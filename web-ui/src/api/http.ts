@@ -35,6 +35,9 @@ export async function request<T>(method: string, url: string, data?: unknown): P
     data,
     params: method === 'GET' ? data : undefined,
   })
+  if (res.data.code !== 0) {
+    return Promise.reject(new Error(res.data.msg || '请求失败'))
+  }
   return res.data.data
 }
 

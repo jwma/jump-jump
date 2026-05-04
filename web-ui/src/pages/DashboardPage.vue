@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listShortLinks, getShortLinkData } from '@/api/short-link'
-import type { ShortLinkData, DailyStats } from '@/types/api'
+import type { ShortLinkData, DailyStats, RequestHistory } from '@/types/api'
 import {
   Link,
   LinkIcon,
@@ -41,7 +41,7 @@ const loading = ref(true)
 const totalLinks = ref(0)
 const activeLinks = ref(0)
 const todayVisits = ref(0)
-const totalVisits = ref(0)
+const periodVisits = ref(0)
 const recentLinks = ref<ShortLinkData[]>([])
 const topLinks = ref<{ link: ShortLinkData; pv: number; uv: number }[]>([])
 const trendDays = ref<7 | 30>(7)
@@ -71,6 +71,37 @@ function formatDate(daysAgo: number) {
 function formatShortDate(dateStr: string) {
   const d = new Date(dateStr)
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
+function extractDate(isoOrDateStr: string): string {
+  return isoOrDateStr.slice(0, 10)
+}
+
+function aggregateFromHistories(histories: RequestHistory[]): { daily: Record<string, { pv: number; uv: number }>; totalPv: number; todayPv: number } {
+  const daily: Record<string, { pv: number; uv: number }> = {}
+  const uvByDate: Record<string, Set<string>> = {}
+  let totalPv = 0
+  let todayPv = 0
+
+  for (const h of histories) {
+    const date = extractDate(h.time)
+    if (!daily[date]) {
+      daily[date] = { pv: 0, uv: 0 }
+      uvByDate[date] = new Set()
+    }
+    daily[date].pv++
+    uvByDate[date].add(h.ip)
+    totalPv++
+    if (date === todayStr.value) {
+      todayPv++
+    }
+  }
+
+  for (const [date, ips] of Object.entries(uvByDate)) {
+    daily[date].uv = ips.size
+  }
+
+  return { daily, totalPv, todayPv }
 }
 
 const chartOption = computed(() => {
@@ -167,67 +198,78 @@ const chartOption = computed(() => {
   }
 })
 
+async function fetchAllPages() {
+  let allLinks: ShortLinkData[] = []
+  let page = 1
+  let total = 0
+
+  while (true) {
+    const data = await listShortLinks(page, 100)
+    total = data.total
+    allLinks = allLinks.concat(data.shortLinks)
+    if (allLinks.length >= total || data.shortLinks.length === 0) break
+    page++
+  }
+
+  return { links: allLinks, total }
+}
+
 async function fetchDashboardData() {
   loading.value = true
   try {
-    // Fetch links list (first page) for stats and recent links
-    const data = await listShortLinks(1, 50)
-    totalLinks.value = data.total
-    recentLinks.value = data.shortLinks.slice(0, 8)
-    activeLinks.value = data.shortLinks.filter((l) => l.isEnable).length
+    const { links, total } = await fetchAllPages()
+    totalLinks.value = total
+    activeLinks.value = links.filter((l) => l.isEnable).length
 
-    // Fetch analytics for each link to build trend data and top links
-    const startDate = formatDate(trendDays.value)
+    recentLinks.value = [...links]
+      .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())
+      .slice(0, 8)
+
+    const startDate = formatDate(trendDays.value - 1)
     const endDate = formatDate(0)
     const allDaily: Record<string, { pv: number; uv: number }> = {}
     const linkStats: { link: ShortLinkData; pv: number; uv: number }[] = []
 
-    // Fetch analytics for all links (limited to first 50)
     const results = await Promise.allSettled(
-      data.shortLinks.map((link) => getShortLinkData(link.id, startDate, endDate)),
+      links.map((link) => getShortLinkData(link.id, startDate, endDate)),
     )
 
     let todayPv = 0
-    let totalPv = 0
+    let periodPv = 0
 
     for (let i = 0; i < results.length; i++) {
       const result = results[i]
       if (result.status === 'fulfilled' && result.value) {
-        const { daily } = result.value
+        const { daily, totalPv, todayPv: linkTodayPv } = aggregateFromHistories(result.value.histories)
         let linkPv = 0
         let linkUv = 0
 
-        for (const stat of daily) {
-          // Aggregate into trend data
-          if (!allDaily[stat.date]) {
-            allDaily[stat.date] = { pv: 0, uv: 0 }
+        for (const [date, stats] of Object.entries(daily)) {
+          if (!allDaily[date]) {
+            allDaily[date] = { pv: 0, uv: 0 }
           }
-          allDaily[stat.date].pv += stat.pv
-          allDaily[stat.date].uv += stat.uv
-          linkPv += stat.pv
-          linkUv += stat.uv
-          totalPv += stat.pv
-
-          if (stat.date === todayStr.value) {
-            todayPv += stat.pv
-          }
+          allDaily[date].pv += stats.pv
+          allDaily[date].uv += stats.uv
+          linkPv += stats.pv
+          linkUv += stats.uv
         }
 
+        periodPv += totalPv
+        todayPv += linkTodayPv
+
         if (linkPv > 0) {
-          linkStats.push({ link: data.shortLinks[i], pv: linkPv, uv: linkUv })
+          linkStats.push({ link: links[i], pv: linkPv, uv: linkUv })
         }
       }
     }
 
     todayVisits.value = todayPv
-    totalVisits.value = totalPv
+    periodVisits.value = periodPv
 
-    // Build sorted trend data
     trendData.value = Object.entries(allDaily)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, { pv, uv }]) => ({ date, pv, uv }))
 
-    // Top 10 links by PV
     topLinks.value = linkStats.sort((a, b) => b.pv - a.pv).slice(0, 10)
   } catch {
     // error handled by interceptor
@@ -239,25 +281,36 @@ async function fetchDashboardData() {
 async function fetchTrendData() {
   chartLoading.value = true
   try {
-    const startDate = formatDate(trendDays.value)
+    const startDate = formatDate(trendDays.value - 1)
     const endDate = formatDate(0)
 
-    // Fetch all links (we need to aggregate)
-    const data = await listShortLinks(1, 50)
+    const { links } = await fetchAllPages()
     const allDaily: Record<string, { pv: number; uv: number }> = {}
+    const linkStats: { link: ShortLinkData; pv: number; uv: number }[] = []
 
     const results = await Promise.allSettled(
-      data.shortLinks.map((link) => getShortLinkData(link.id, startDate, endDate)),
+      links.map((link) => getShortLinkData(link.id, startDate, endDate)),
     )
 
-    for (const result of results) {
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i]
       if (result.status === 'fulfilled' && result.value) {
-        for (const stat of result.value.daily) {
-          if (!allDaily[stat.date]) {
-            allDaily[stat.date] = { pv: 0, uv: 0 }
+        const { daily } = aggregateFromHistories(result.value.histories)
+        let linkPv = 0
+        let linkUv = 0
+
+        for (const [date, stats] of Object.entries(daily)) {
+          if (!allDaily[date]) {
+            allDaily[date] = { pv: 0, uv: 0 }
           }
-          allDaily[stat.date].pv += stat.pv
-          allDaily[stat.date].uv += stat.uv
+          allDaily[date].pv += stats.pv
+          allDaily[date].uv += stats.uv
+          linkPv += stats.pv
+          linkUv += stats.uv
+        }
+
+        if (linkPv > 0) {
+          linkStats.push({ link: links[i], pv: linkPv, uv: linkUv })
         }
       }
     }
@@ -265,6 +318,8 @@ async function fetchTrendData() {
     trendData.value = Object.entries(allDaily)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, { pv, uv }]) => ({ date, pv, uv }))
+
+    topLinks.value = linkStats.sort((a, b) => b.pv - a.pv).slice(0, 10)
   } catch {
     // error handled by interceptor
   } finally {
@@ -279,8 +334,8 @@ function switchTrend(days: 7 | 30) {
 }
 
 function copyLink(id: string) {
-  const host = window.location.host
-  navigator.clipboard.writeText(`${host}/${id}`).then(() => {
+  const url = `${window.location.origin}/${id}`
+  navigator.clipboard.writeText(url).then(() => {
     copiedId.value = id
     setTimeout(() => {
       copiedId.value = null
@@ -364,12 +419,12 @@ onMounted(fetchDashboardData)
 
       <!-- Total Visits -->
       <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div class="flex items-center justify-center justify-between">
+        <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Total Visits</p>
+            <p class="text-sm font-medium text-gray-500">Period Visits</p>
             <p class="mt-1 text-2xl font-bold text-gray-900">
               <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
-              <template v-else>{{ totalVisits.toLocaleString() }}</template>
+              <template v-else>{{ periodVisits.toLocaleString() }}</template>
             </p>
           </div>
           <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">

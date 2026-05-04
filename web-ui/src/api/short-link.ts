@@ -7,7 +7,6 @@ import type {
   GetShortLinkResponse,
   CreateShortLinkResponse,
   UpdateShortLinkResponse,
-  ShortLinkHistoryResponse,
   ShortLinkDataResponse,
 } from '@/types/api'
 
@@ -35,12 +34,6 @@ export function updateShortLink(id: string, data: UpdateShortLinkRequest) {
 
 export function deleteShortLink(id: string) {
   return http.delete<ApiResponse>(`/short-link/${id}`).then((r) => r.data)
-}
-
-export function getShortLinkHistory(id: string) {
-  return http
-    .get<ApiResponse<ShortLinkHistoryResponse>>(`/short-link/${id}/history`)
-    .then((r) => r.data.data)
 }
 
 export function getShortLinkData(id: string, startDate: string, endDate: string) {

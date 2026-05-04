@@ -120,8 +120,6 @@ export interface DailyStats {
 
 export interface ShortLinkDataResponse {
   histories: RequestHistory[]
-  daily: DailyStats[]
-  osDist: Record<string, number>
 }
 
 export const UserRole = {

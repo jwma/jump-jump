@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLayoutStore } from '@/stores/layout'
 import { UserRole } from '@/types/api'
@@ -19,6 +19,7 @@ import {
 const auth = useAuthStore()
 const layout = useLayoutStore()
 const route = useRoute()
+const router = useRouter()
 
 const menuItems = computed(() => {
   const items = [
@@ -47,6 +48,7 @@ function isActive(to: { name: string }) {
 
 async function handleLogout() {
   await auth.logout()
+  router.push({ name: 'login' })
 }
 </script>
 
