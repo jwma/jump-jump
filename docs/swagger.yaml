@@ -1,254 +1,227 @@
 definitions:
-  ChangePasswordAPIRequest:
+  models.AddDomainRequest:
+    properties:
+      domain:
+        type: string
+      isDefault:
+        type: boolean
+    required:
+    - domain
+    type: object
+  models.ChangePasswordAPIRequest:
     properties:
       newPassword:
-        description: 新密码
         type: string
       password:
-        description: 原密码
         type: string
     type: object
-  CreateShortLinkAPIRequest:
+  models.CreateShortLinkAPIRequest:
     properties:
       description:
-        description: 描述
-        example: Jump Jump project
         type: string
       id:
-        description: 只有管理员可以在创建的时候指定 ID
-        example: RANDOM_ID
-        format: string
         type: string
       idLength:
-        description: 短链接 ID 长度
-        example: 4
-        format: int
         type: integer
       isEnable:
-        description: 是否启用
-        example: true
-        format: boolean
         type: boolean
       url:
-        description: 目标链接
-        example: https://github.com/jwma/jump-jump
         type: string
     type: object
-  CreateShortLinkAPIResponseData:
+  models.CreateShortLinkAPIResponseData:
     properties:
       shortLink:
-        $ref: '#/definitions/ShortLinkData'
+        $ref: '#/definitions/models.ShortLinkData'
     type: object
-  GetConfigAPIResponseData:
+  models.CreateTenantRequest:
     properties:
-      config:
-        $ref: '#/definitions/SystemConfig'
+      name:
+        type: string
+      slug:
+        type: string
+    required:
+    - name
+    - slug
     type: object
-  GetShortLinkAPIResponseData:
+  models.DailyStats:
+    properties:
+      date:
+        type: string
+      pv:
+        type: integer
+      uv:
+        type: integer
+    type: object
+  models.GetConfigAPIResponseData:
+    properties:
+      config: {}
+    type: object
+  models.GetShortLinkAPIResponseData:
     properties:
       shortLink:
-        $ref: '#/definitions/ShortLinkData'
+        $ref: '#/definitions/models.ShortLinkData'
     type: object
-  GetUserInfoAPIResponseData:
+  models.GetUserInfoAPIResponseData:
     properties:
       role:
-        description: 角色，1 普通用户 | 2 管理员
-        enum:
-        - 1
-        - 2
-        example: 1
         type: integer
       username:
-        description: 用户名
-        example: admin
         type: string
     type: object
-  IdConfig:
-    properties:
-      idLength:
-        description: ID 长度
-        example: 6
-        format: int
-        type: integer
-      idMaximumLength:
-        description: 最大 ID 长度
-        example: 10
-        format: int
-        type: integer
-      idMinimumLength:
-        description: 最小 ID 长度
-        example: 2
-        format: int
-        type: integer
-    type: object
-  ListShortLinksAPIResponseData:
+  models.ListShortLinksAPIResponseData:
     properties:
       shortLinks:
         items:
-          $ref: '#/definitions/ShortLinkData'
+          $ref: '#/definitions/models.ShortLinkData'
         type: array
       total:
-        example: 10
-        format: "10"
         type: integer
     type: object
-  LoginAPIRequest:
+  models.LoginAPIRequest:
     properties:
       password:
-        description: 密码
-        example: your_password
         type: string
       username:
-        description: 用户名
-        example: your_username
         type: string
     required:
     - password
     - username
     type: object
-  LoginAPIResponseData:
+  models.LoginAPIResponseData:
     properties:
       token:
-        description: json web token
-        example: xxx.xxx.xxx
         type: string
     type: object
-  RequestHistory:
+  models.RequestHistory:
     properties:
       id:
         type: string
       ip:
+        type: string
+      os:
+        type: string
+      shortLinkId:
+        type: string
+      tenantId:
         type: string
       time:
         type: string
       ua:
         type: string
       url:
-        description: 由于短链接的目标连接可能会被修改，可以在访问历史记录中记录一下当前的目标连接
         type: string
     type: object
-  Response:
+  models.Response:
     properties:
       code:
         default: 0
         example: 0
         format: int
         type: integer
-      data:
-        type: object
+      data: {}
       msg:
         default: ok
         example: ok
         type: string
     type: object
-  ShortLinkData:
+  models.ShortLinkData:
     properties:
       createTime:
-        description: 创建时间
         type: string
       createdBy:
-        description: 创建者
-        example: admin
-        format: string
         type: string
       description:
-        description: 描述
-        example: Jump Jump project
-        format: string
         type: string
       id:
-        example: RANDOM_ID
-        format: string
         type: string
       isEnable:
-        description: 是否启用
-        example: true
-        format: boolean
         type: boolean
       updateTime:
-        description: 最后更新时间
         type: string
       url:
-        description: 目标链接
-        example: https://github.com/jwma/jump-jump
-        format: string
         type: string
     type: object
-  ShortLinkDataAPIResponseData:
+  models.ShortLinkDataAPIResponseData:
     properties:
+      daily:
+        items:
+          $ref: '#/definitions/models.DailyStats'
+        type: array
       histories:
         items:
-          $ref: '#/definitions/RequestHistory'
+          $ref: '#/definitions/models.RequestHistory'
         type: array
+      osDist:
+        additionalProperties:
+          type: integer
+        type: object
     type: object
-  ShortLinkNotFoundConfig:
+  models.Tenant:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      name:
+        type: string
+      slug:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.TenantDomain:
+    properties:
+      createdAt:
+        type: string
+      domain:
+        type: string
+      id:
+        type: string
+      isDefault:
+        type: boolean
+      tenantId:
+        type: string
+    type: object
+  models.UpdateIdLengthRequest:
+    properties:
+      idLength:
+        type: integer
+      idMaximumLength:
+        type: integer
+      idMinimumLength:
+        type: integer
+    required:
+    - idLength
+    - idMaximumLength
+    - idMinimumLength
+    type: object
+  models.UpdateNotFoundConfigRequest:
     properties:
       mode:
-        description: 模式
-        enum:
-        - content
-        - redirect
-        example: content
         type: string
       value:
-        description: 值
-        example: page not found
         type: string
     required:
     - mode
     - value
     type: object
-  SystemConfig:
-    properties:
-      idConfig:
-        $ref: '#/definitions/IdConfig'
-        description: ID 配置
-      landingHosts:
-        description: 落地页 Host 列表
-        example:
-        - https://a.com/
-        - https://b.com/
-        format: array
-        items:
-          type: string
-        type: array
-      shortLinkNotFoundConfig:
-        $ref: '#/definitions/ShortLinkNotFoundConfig'
-        description: 短链接 404 配置
-    type: object
-  UpdateLandingHostsAPIRequest:
-    properties:
-      hosts:
-        example:
-        - https://a.com/
-        - https://b.com/
-        format: array
-        items:
-          type: string
-        type: array
-    type: object
-  UpdateShortLinkAPIRequest:
+  models.UpdateShortLinkAPIRequest:
     properties:
       description:
-        description: 描述
-        example: Jump Jump project
         type: string
       isEnable:
-        description: 是否启用
-        example: true
-        format: boolean
         type: boolean
       url:
-        description: 目标链接
-        example: https://github.com/jwma/jump-jump
         type: string
     required:
     - url
     type: object
-  UpdateShortLinkAPIResponseData:
+  models.UpdateShortLinkAPIResponseData:
     properties:
       shortLink:
-        $ref: '#/definitions/ShortLinkData'
+        $ref: '#/definitions/models.ShortLinkData'
     type: object
 info:
   contact:
@@ -271,13 +244,13 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/GetConfigAPIResponseData'
+                  $ref: '#/definitions/models.GetConfigAPIResponseData'
               type: object
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 获取系统配置信息
@@ -294,7 +267,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/IdConfig'
+          $ref: '#/definitions/models.UpdateIdLengthRequest'
       produces:
       - application/json
       responses:
@@ -302,47 +275,16 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/GetConfigAPIResponseData'
+                  $ref: '#/definitions/models.GetConfigAPIResponseData'
               type: object
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 更新短链接 ID 设置
-      tags:
-      - 系统配置
-  /config/landing-hosts:
-    patch:
-      consumes:
-      - application/json
-      description: 更新落地页 Hosts
-      parameters:
-      - description: 更新落地页 Hosts 请求
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/UpdateLandingHostsAPIRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/GetConfigAPIResponseData'
-              type: object
-        "401":
-          description: ""
-      security:
-      - ApiKeyAuth: []
-      summary: 更新落地页 Hosts
       tags:
       - 系统配置
   /config/short-link-404-handling:
@@ -356,7 +298,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/ShortLinkNotFoundConfig'
+          $ref: '#/definitions/models.UpdateNotFoundConfigRequest'
       produces:
       - application/json
       responses:
@@ -364,13 +306,13 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/GetConfigAPIResponseData'
+                  $ref: '#/definitions/models.GetConfigAPIResponseData'
               type: object
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 更新短链接 404 设置
@@ -397,13 +339,13 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/ListShortLinksAPIResponseData'
+                  $ref: '#/definitions/models.ListShortLinksAPIResponseData'
               type: object
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 短链接列表
@@ -419,7 +361,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/CreateShortLinkAPIRequest'
+          $ref: '#/definitions/models.CreateShortLinkAPIRequest'
       produces:
       - application/json
       responses:
@@ -427,13 +369,13 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/CreateShortLinkAPIResponseData'
+                  $ref: '#/definitions/models.CreateShortLinkAPIResponseData'
               type: object
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 创建短链接
@@ -456,9 +398,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Response'
+            $ref: '#/definitions/models.Response'
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 删除短链接
@@ -467,7 +409,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取系统配置信息
+      description: 获取指定 ID 短链接详情
       parameters:
       - description: 短链接 ID
         in: path
@@ -481,13 +423,13 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/GetShortLinkAPIResponseData'
+                  $ref: '#/definitions/models.GetShortLinkAPIResponseData'
               type: object
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 获取指定 ID 短链接
@@ -508,7 +450,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/UpdateShortLinkAPIRequest'
+          $ref: '#/definitions/models.UpdateShortLinkAPIRequest'
       produces:
       - application/json
       responses:
@@ -516,13 +458,13 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/UpdateShortLinkAPIResponseData'
+                  $ref: '#/definitions/models.UpdateShortLinkAPIResponseData'
               type: object
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 更新短链接
@@ -556,18 +498,209 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/ShortLinkDataAPIResponseData'
+                  $ref: '#/definitions/models.ShortLinkDataAPIResponseData'
               type: object
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 短链接访问数据
       tags:
       - 短链接
+  /tenant/:
+    get:
+      consumes:
+      - application/json
+      description: 获取租户列表（仅管理员）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Tenant'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 租户列表
+      tags:
+      - 租户
+    post:
+      consumes:
+      - application/json
+      description: 创建租户（仅管理员）
+      parameters:
+      - description: 创建租户请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTenantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Tenant'
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 创建租户
+      tags:
+      - 租户
+  /tenant/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取租户详情（仅管理员）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Tenant'
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 获取租户详情
+      tags:
+      - 租户
+  /tenant/{id}/domains:
+    delete:
+      consumes:
+      - application/json
+      description: 删除租户域名（仅管理员）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 域名
+        in: query
+        name: domain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.TenantDomain'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 删除域名
+      tags:
+      - 租户
+    get:
+      consumes:
+      - application/json
+      description: 获取租户域名列表（仅管理员）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.TenantDomain'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 获取租户域名列表
+      tags:
+      - 租户
+    post:
+      consumes:
+      - application/json
+      description: 为租户添加域名（仅管理员）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 添加域名请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddDomainRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.TenantDomain'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 添加域名
+      tags:
+      - 租户
   /user/change-password:
     post:
       consumes:
@@ -579,16 +712,16 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/ChangePasswordAPIRequest'
+          $ref: '#/definitions/models.ChangePasswordAPIRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Response'
+            $ref: '#/definitions/models.Response'
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 修改账号密码
@@ -606,13 +739,13 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/GetUserInfoAPIResponseData'
+                  $ref: '#/definitions/models.GetUserInfoAPIResponseData'
               type: object
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 获取账号信息
@@ -629,7 +762,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/LoginAPIRequest'
+          $ref: '#/definitions/models.LoginAPIRequest'
       produces:
       - application/json
       responses:
@@ -637,10 +770,10 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/Response'
+            - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/LoginAPIResponseData'
+                  $ref: '#/definitions/models.LoginAPIResponseData'
               type: object
       summary: 账号登入
       tags:
@@ -656,12 +789,68 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Response'
+            $ref: '#/definitions/models.Response'
         "401":
-          description: ""
+          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: 登出
+      tags:
+      - 账号
+  /user/preferences:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户偏好设置
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data.preferences 为 []*models.UserPreference
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户偏好设置
+      tags:
+      - 账号
+    put:
+      consumes:
+      - application/json
+      description: 更新用户偏好设置
+      parameters:
+      - description: 更新偏好设置请求
+        in: body
+        name: body
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data.preferences 为 []*models.UserPreference
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 更新用户偏好设置
       tags:
       - 账号
 securityDefinitions:

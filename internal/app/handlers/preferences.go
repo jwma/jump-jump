@@ -9,6 +9,16 @@ import (
 	"github.com/jwma/jump-jump/internal/app/repository"
 )
 
+// GetUserPreferencesAPI godoc
+// @Summary 获取用户偏好设置
+// @Description 获取用户偏好设置
+// @Tags 账号
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} models.Response{data=map[string]interface{}} "data.preferences 为 []*models.UserPreference"
+// @Failure 401 {object} nil
+// @Router /user/preferences [get]
 func GetUserPreferencesAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		repo := repository.GetUserPreferenceRepo(db.GetPostgresPool())
@@ -27,6 +37,17 @@ type updatePreferencesRequest struct {
 	Preferences []*models.UserPreference `json:"preferences" binding:"required"`
 }
 
+// UpdateUserPreferencesAPI godoc
+// @Summary 更新用户偏好设置
+// @Description 更新用户偏好设置
+// @Tags 账号
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param body body object true "更新偏好设置请求" example({"preferences":[{"key":"theme","value":"dark"}]})
+// @Success 200 {object} models.Response{data=map[string]interface{}} "data.preferences 为 []*models.UserPreference"
+// @Failure 401 {object} nil
+// @Router /user/preferences [put]
 func UpdateUserPreferencesAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		req := &updatePreferencesRequest{}

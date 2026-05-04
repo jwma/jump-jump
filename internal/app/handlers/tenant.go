@@ -9,6 +9,17 @@ import (
 	"github.com/jwma/jump-jump/internal/app/repository"
 )
 
+// CreateTenantAPI godoc
+// @Summary 创建租户
+// @Description 创建租户（仅管理员）
+// @Tags 租户
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param body body models.CreateTenantRequest true "创建租户请求"
+// @Success 200 {object} models.Response{data=models.Tenant}
+// @Failure 401 {object} nil
+// @Router /tenant/ [post]
 func CreateTenantAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
@@ -33,6 +44,17 @@ func CreateTenantAPI() gin.HandlerFunc {
 	})
 }
 
+// GetTenantAPI godoc
+// @Summary 获取租户详情
+// @Description 获取租户详情（仅管理员）
+// @Tags 租户
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "租户 ID"
+// @Success 200 {object} models.Response{data=models.Tenant}
+// @Failure 401 {object} nil
+// @Router /tenant/{id} [get]
 func GetTenantAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
@@ -51,6 +73,16 @@ func GetTenantAPI() gin.HandlerFunc {
 	})
 }
 
+// ListTenantsAPI godoc
+// @Summary 租户列表
+// @Description 获取租户列表（仅管理员）
+// @Tags 租户
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} models.Response{data=[]models.Tenant}
+// @Failure 401 {object} nil
+// @Router /tenant/ [get]
 func ListTenantsAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
@@ -69,6 +101,18 @@ func ListTenantsAPI() gin.HandlerFunc {
 	})
 }
 
+// AddDomainAPI godoc
+// @Summary 添加域名
+// @Description 为租户添加域名（仅管理员）
+// @Tags 租户
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "租户 ID"
+// @Param body body models.AddDomainRequest true "添加域名请求"
+// @Success 200 {object} models.Response{data=[]models.TenantDomain}
+// @Failure 401 {object} nil
+// @Router /tenant/{id}/domains [post]
 func AddDomainAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
@@ -93,6 +137,18 @@ func AddDomainAPI() gin.HandlerFunc {
 	})
 }
 
+// RemoveDomainAPI godoc
+// @Summary 删除域名
+// @Description 删除租户域名（仅管理员）
+// @Tags 租户
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "租户 ID"
+// @Param domain query string true "域名"
+// @Success 200 {object} models.Response{data=[]models.TenantDomain}
+// @Failure 401 {object} nil
+// @Router /tenant/{id}/domains [delete]
 func RemoveDomainAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
@@ -117,6 +173,17 @@ func RemoveDomainAPI() gin.HandlerFunc {
 	})
 }
 
+// ListDomainsAPI godoc
+// @Summary 获取租户域名列表
+// @Description 获取租户域名列表（仅管理员）
+// @Tags 租户
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "租户 ID"
+// @Success 200 {object} models.Response{data=[]models.TenantDomain}
+// @Failure 401 {object} nil
+// @Router /tenant/{id}/domains [get]
 func ListDomainsAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {

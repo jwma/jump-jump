@@ -14,6 +14,17 @@ import (
 	"github.com/jwma/jump-jump/internal/app/utils"
 )
 
+// GetShortLinkAPI godoc
+// @Summary 获取指定 ID 短链接
+// @Description 获取指定 ID 短链接详情
+// @Tags 短链接
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "短链接 ID"
+// @Success 200 {object} models.Response{data=models.GetShortLinkAPIResponseData}
+// @Failure 401 {object} nil
+// @Router /short-link/{id} [get]
 func GetShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
@@ -34,6 +45,17 @@ func GetShortLinkAPI() gin.HandlerFunc {
 	})
 }
 
+// CreateShortLinkAPI godoc
+// @Summary 创建短链接
+// @Description 创建短链接
+// @Tags 短链接
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param body body models.CreateShortLinkAPIRequest true "创建短链接请求"
+// @Success 200 {object} models.Response{data=models.CreateShortLinkAPIResponseData}
+// @Failure 401 {object} nil
+// @Router /short-link/ [post]
 func CreateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		params := &models.CreateShortLinkAPIRequest{}
@@ -87,6 +109,18 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 	})
 }
 
+// UpdateShortLinkAPI godoc
+// @Summary 更新短链接
+// @Description 更新短链接
+// @Tags 短链接
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "短链接 ID"
+// @Param body body models.UpdateShortLinkAPIRequest true "更新短链接请求"
+// @Success 200 {object} models.Response{data=models.UpdateShortLinkAPIResponseData}
+// @Failure 401 {object} nil
+// @Router /short-link/{id} [patch]
 func UpdateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
@@ -118,6 +152,17 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 	})
 }
 
+// DeleteShortLinkAPI godoc
+// @Summary 删除短链接
+// @Description 删除短链接
+// @Tags 短链接
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "短链接 ID"
+// @Success 200 {object} models.Response
+// @Failure 401 {object} nil
+// @Router /short-link/{id} [delete]
 func DeleteShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
@@ -137,6 +182,18 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 	})
 }
 
+// ListShortLinksAPI godoc
+// @Summary 短链接列表
+// @Description 短链接列表
+// @Tags 短链接
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param page query int false "页码"
+// @Param pageSize query int false "每页条数"
+// @Success 200 {object} models.Response{data=models.ListShortLinksAPIResponseData}
+// @Failure 401 {object} nil
+// @Router /short-link/ [get]
 func ListShortLinksAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		var page = utils.GetIntQueryValue(c, "page", 1)
@@ -157,6 +214,19 @@ func ListShortLinksAPI() gin.HandlerFunc {
 	})
 }
 
+// ShortLinkActionAPI godoc
+// @Summary 短链接访问数据
+// @Description 可查询短链接某个日期范围内的访问数据
+// @Tags 短链接
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "短链接 ID"
+// @Param startDate query string true "开始日期 YYYY-mm-dd"
+// @Param endDate query string true "结束日期 YYYY-mm-dd"
+// @Success 200 {object} models.Response{data=models.ShortLinkDataAPIResponseData}
+// @Failure 401 {object} nil
+// @Router /short-link/{id}/data [get]
 func ShortLinkActionAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if c.Param("action") == "/data" {
