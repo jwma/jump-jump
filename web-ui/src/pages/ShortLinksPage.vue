@@ -111,10 +111,11 @@ async function handleDelete(id: string) {
     await deleteShortLink(id)
     links.value = links.value.filter((l) => l.id !== id)
     total.value--
-    if (filteredLinks.value.length === 0 && page.value > 1) {
-      page.value--
-    }
     confirmDeleteId.value = null
+    if (links.value.length === 0 && page.value > 1) {
+      page.value--
+      fetchLinks()
+    }
   } catch {
     // error handled by interceptor
   } finally {
@@ -139,12 +140,17 @@ async function handleBatchDelete() {
 
 function copyLink(id: string) {
   const url = `${window.location.origin}/${id}`
-  navigator.clipboard.writeText(url).then(() => {
-    copiedId.value = id
-    setTimeout(() => {
-      copiedId.value = null
-    }, 2000)
-  })
+  navigator.clipboard.writeText(url).then(
+    () => {
+      copiedId.value = id
+      setTimeout(() => {
+        copiedId.value = null
+      }, 2000)
+    },
+    () => {
+      // clipboard not available (non-HTTPS or no permission)
+    },
+  )
 }
 
 function goPage(p: number) {

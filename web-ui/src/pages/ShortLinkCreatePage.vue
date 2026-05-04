@@ -30,7 +30,7 @@ const urlError = computed(() => {
   }
 })
 
-const canSubmit = computed(() => url.value && !urlError.value && !loading.value)
+const canSubmit = computed(() => !!url.value && !urlError.value && !loading.value)
 
 async function handleSubmit() {
   if (!canSubmit.value) return

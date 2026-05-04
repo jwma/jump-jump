@@ -125,11 +125,11 @@ const uniqueIps = computed(() => new Set(histories.value.map((h) => h.ip)).size)
 
 function parseOS(ua: string): string {
   if (ua.includes('Windows')) return 'Windows'
+  if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS'
   if (ua.includes('Mac OS X')) return 'macOS'
   if (ua.includes('Android')) return 'Android'
-  if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS'
-  if (ua.includes('Linux')) return 'Linux'
   if (ua.includes('CrOS')) return 'ChromeOS'
+  if (ua.includes('Linux')) return 'Linux'
   return 'Other'
 }
 
@@ -205,12 +205,17 @@ const osChartOption = computed(() => {
 function copyLink() {
   if (!link.value) return
   const url = `${window.location.origin}/${link.value.id}`
-  navigator.clipboard.writeText(url).then(() => {
-    copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 2000)
-  })
+  navigator.clipboard.writeText(url).then(
+    () => {
+      copied.value = true
+      setTimeout(() => {
+        copied.value = false
+      }, 2000)
+    },
+    () => {
+      // clipboard not available (non-HTTPS or no permission)
+    },
+  )
 }
 
 async function fetchData() {

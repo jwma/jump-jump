@@ -30,7 +30,7 @@ const urlError = computed(() => {
   }
 })
 
-const canSubmit = computed(() => url.value && !urlError.value && !saving.value)
+const canSubmit = computed(() => !!url.value && !urlError.value && !saving.value)
 
 async function fetchData() {
   loading.value = true
@@ -42,8 +42,12 @@ async function fetchData() {
     isEnable.value = sl.isEnable
     createdBy.value = sl.createdBy
     createTime.value = sl.createTime
-  } catch {
-    notFound.value = true
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('不存在')) {
+      notFound.value = true
+    } else {
+      error.value = 'Failed to load short link. Please try again.'
+    }
   } finally {
     loading.value = false
   }
