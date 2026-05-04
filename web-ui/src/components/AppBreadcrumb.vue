@@ -13,11 +13,19 @@ interface BreadcrumbItem {
 const routeTitles: Record<string, string> = {
   dashboard: 'Dashboard',
   'short-links': 'Short Links',
+  'short-link-create': 'Create',
   'short-link-detail': 'Detail',
+  'short-link-edit': 'Edit',
   config: 'System Config',
   tenants: 'Tenants',
   preferences: 'Preferences',
   'change-password': 'Change Password',
+}
+
+const parentRoutes: Record<string, { label: string; to: string }> = {
+  'short-link-create': { label: 'Short Links', to: '/short-links' },
+  'short-link-detail': { label: 'Short Links', to: '/short-links' },
+  'short-link-edit': { label: 'Short Links', to: '/short-links' },
 }
 
 const items = computed<BreadcrumbItem[]>(() => {
@@ -31,6 +39,10 @@ const items = computed<BreadcrumbItem[]>(() => {
     if (i < matched.length - 1) {
       crumbs.push({ label, to: r.path })
     } else {
+      const parent = parentRoutes[r.name as string]
+      if (parent) {
+        crumbs.push({ label: parent.label, to: parent.to })
+      }
       crumbs.push({ label })
     }
   }

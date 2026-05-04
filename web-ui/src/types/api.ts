@@ -72,7 +72,7 @@ export interface RequestHistory {
   time: string
 }
 
-export interface ShortLinkHistoryResponse {
+export interface ShortLinkDataResponse {
   histories: RequestHistory[]
 }
 
