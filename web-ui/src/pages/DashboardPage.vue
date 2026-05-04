@@ -489,14 +489,15 @@ onMounted(fetchDashboardData)
         <div v-if="chartLoading" class="flex h-64 items-center justify-center">
           <Loader2 class="h-6 w-6 animate-spin text-gray-400" />
         </div>
-        <VChart
-          v-else
-          :option="chartOption"
-          :autoresize="true"
-          class="h-64"
-          aria-label="Visit trend chart showing PV and UV over time"
-          role="img"
-        />
+        <div v-else class="h-64">
+          <VChart
+            :option="chartOption"
+            :autoresize="true"
+            class="h-full w-full"
+            aria-label="Visit trend chart showing PV and UV over time"
+            role="img"
+          />
+        </div>
       </div>
 
       <!-- Recent Links -->

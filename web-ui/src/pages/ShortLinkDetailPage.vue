@@ -403,14 +403,15 @@ onMounted(() => {
             >
               No data for this period.
             </div>
-            <VChart
-              v-else
-              :option="visitChartOption"
-              :autoresize="true"
-              class="h-56"
-              role="img"
-              aria-label="Visit trend bar chart"
-            />
+            <div v-else class="h-56">
+              <VChart
+                :option="visitChartOption"
+                :autoresize="true"
+                class="h-full w-full"
+                role="img"
+                aria-label="Visit trend bar chart"
+              />
+            </div>
           </div>
 
           <!-- OS distribution -->
@@ -425,14 +426,15 @@ onMounted(() => {
             >
               No data for this period.
             </div>
-            <VChart
-              v-else
-              :option="osChartOption"
-              :autoresize="true"
-              class="h-56"
-              role="img"
-              aria-label="OS distribution pie chart"
-            />
+            <div v-else class="h-56">
+              <VChart
+                :option="osChartOption"
+                :autoresize="true"
+                class="h-full w-full"
+                role="img"
+                aria-label="OS distribution pie chart"
+              />
+            </div>
           </div>
         </div>
 
