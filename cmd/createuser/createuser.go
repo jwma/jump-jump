@@ -12,10 +12,16 @@ import (
 )
 
 func main() {
+	tenantID := flag.String("tenant-id", "", "tenant ID (UUID).")
 	username := flag.String("username", "", "username.")
 	password := flag.String("password", "", "password.")
 	role := flag.Int("role", models.RoleUser, "role, 1: normal user, 2: administrator.")
 	flag.Parse()
+
+	if *tenantID == "" {
+		fmt.Fprintf(os.Stderr, "tenant-id is required\n")
+		os.Exit(1)
+	}
 
 	if err := db.InitPostgres(); err != nil {
 		fmt.Fprintf(os.Stderr, "DB init failed: %v\n", err)
@@ -29,6 +35,7 @@ func main() {
 	}
 
 	user := &models.User{
+		TenantID:    strings.TrimSpace(*tenantID),
 		Username:    strings.TrimSpace(*username),
 		RawPassword: strings.TrimSpace(*password),
 		Role:        *role,

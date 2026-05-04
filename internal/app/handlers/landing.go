@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
-	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/config"
@@ -13,12 +12,6 @@ import (
 )
 
 func LandingHome(c *gin.Context) {
-	home := os.Getenv("LANDING_HOME")
-
-	if home != "" {
-		c.Redirect(http.StatusTemporaryRedirect, home)
-	}
-
 	c.Redirect(http.StatusTemporaryRedirect, "https://github.com/jwma/jump-jump")
 }
 
@@ -30,11 +23,16 @@ func Redirect(c *gin.Context) {
 
 	slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 	s, err := slRepo.Get(c.Param("id"))
-
 	if err != nil {
-		log.Printf("查找短链接失败，error: %v\n", err)
-		cc := config.GetShortLinkNotFoundConfig()
+		// Resolve tenant for config
+		host := strings.Split(c.Request.Host, ":")[0]
+		tenantID, _ := config.ResolveTenantID(host)
+		if tenantID == "" {
+			c.String(http.StatusOK, "你访问的页面不存在哦")
+			return
+		}
 
+		cc := config.GetShortLinkNotFoundConfig(tenantID)
 		switch cc.Mode {
 		case config.ShortLinkNotFoundContentMode:
 			c.String(http.StatusOK, cc.Value)

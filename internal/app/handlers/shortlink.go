@@ -36,17 +36,16 @@ func GetShortLinkAPI() gin.HandlerFunc {
 
 func CreateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		var err error
 		params := &models.CreateShortLinkAPIRequest{}
-
 		if err := c.ShouldBindJSON(&params); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
 			return
 		}
 
-		s := models.NewShortLink(user.Username, params)
+		tenantID := user.TenantID
+		s := models.NewShortLink(tenantID, user.Username, params)
 		repo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
-		idCfg := config.GetIdConfig()
+		idCfg := config.GetIdConfig(tenantID)
 		idLen := idCfg.IdLength
 
 		if user.Role == models.RoleUser {
@@ -56,31 +55,28 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 		if s.Id != "" {
 			checkShortLink, _ := repo.Get(s.Id)
 			if checkShortLink.Id != "" {
-				c.JSON(http.StatusOK, models.NewErrorResponse(fmt.Sprintf("%s 已被占用，请使用其他 ID。", s.Id)))
+				c.JSON(http.StatusOK, models.NewErrorResponse(fmt.Sprintf("%s 已被占用", s.Id)))
 				return
 			}
 		} else {
 			if idCfg.IdMinimumLength <= params.IdLength && params.IdLength <= idCfg.IdMaximumLength {
 				idLen = params.IdLength
 			}
-
 			id, err := repo.GenerateId(idLen)
 			if err != nil {
-				log.Printf("generate id failed, error: %v\n", err)
+				log.Printf("generate id failed: %v", err)
 				c.JSON(http.StatusOK, models.NewErrorResponse("服务器繁忙，请稍后再试"))
 				return
 			}
-
 			s.Id = utils.TrimShortLinkId(id)
 		}
 
 		if s.Id == "" {
-			log.Println("短链接 ID 为空")
 			c.JSON(http.StatusOK, models.NewErrorResponse("ID 错误"))
+			return
 		}
 
-		err = repo.Save(s)
-		if err != nil {
+		if err := repo.Save(s); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
 		}
@@ -111,9 +107,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		repo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
-		err = repo.Update(s, updateShortLink)
-		if err != nil {
+		if err := slRepo.Update(s, updateShortLink); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
 		}
@@ -138,8 +132,7 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		repo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
-		repo.Delete(s)
+		slRepo.Delete(s)
 		c.JSON(http.StatusOK, models.NewSuccessResponse(nil))
 	})
 }
@@ -151,7 +144,7 @@ func ListShortLinksAPI() gin.HandlerFunc {
 		start := int64((page - 1) * pageSize)
 
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
-		result, err := slRepo.List(user.Username, user.IsAdmin(), start, int64(pageSize))
+		result, err := slRepo.List(user.TenantID, user.Username, user.IsAdmin(), start, int64(pageSize))
 		if err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
@@ -169,7 +162,6 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 		if c.Param("action") == "/data" {
 			slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 			s, err := slRepo.Get(c.Param("id"))
-
 			if err != nil {
 				c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 				return
@@ -182,15 +174,13 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 
 			startDate := c.Query("startDate")
 			endDate := c.Query("endDate")
-
 			if startDate == "" || endDate == "" {
 				c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
 				return
 			}
 
-			startTime, err := time.ParseInLocation("2006-01-02", startDate, time.Local)
+			startTime, _ := time.ParseInLocation("2006-01-02", startDate, time.Local)
 			endTime, err := time.ParseInLocation("2006-01-02", endDate, time.Local)
-
 			if err != nil {
 				c.JSON(http.StatusOK, models.NewErrorResponse("日期参数错误"))
 				return

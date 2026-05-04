@@ -27,18 +27,49 @@ func NewErrorResponse(msg string) *Response {
 	return &Response{Msg: msg, Code: 4999, Data: nil}
 }
 
+// --- Tenant ---
+
+type Tenant struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Slug      string    `json:"slug"`
+	IsActive  bool      `json:"isActive"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type TenantDomain struct {
+	ID        string    `json:"id"`
+	TenantID  string    `json:"tenantId"`
+	Domain    string    `json:"domain"`
+	IsDefault bool      `json:"isDefault"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type CreateTenantRequest struct {
+	Name string `json:"name" binding:"required"`
+	Slug string `json:"slug" binding:"required"`
+}
+
+type AddDomainRequest struct {
+	Domain    string `json:"domain" binding:"required"`
+	IsDefault bool   `json:"isDefault"`
+}
+
+// --- Auth ---
+
 type LoginAPIRequest struct {
-	Username string `json:"username" binding:"required" example:"your_username"`
-	Password string `json:"password" binding:"required" example:"your_password"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 type LoginAPIResponseData struct {
-	Token string `json:"token,omitempty" example:"xxx.xxx.xxx"`
+	Token string `json:"token,omitempty"`
 }
 
 type GetUserInfoAPIResponseData struct {
-	Username string `json:"username" example:"admin"`
-	Role     int    `json:"role" example:"1" enums:"1,2"`
+	Username string `json:"username"`
+	Role     int    `json:"role"`
 }
 
 type ChangePasswordAPIRequest struct {
@@ -46,15 +77,27 @@ type ChangePasswordAPIRequest struct {
 	NewPassword string `json:"newPassword"`
 }
 
+// --- Config ---
+
 type GetConfigAPIResponseData struct {
 	Config interface{} `json:"config"`
 }
 
-type UpdateLandingHostsAPIRequest struct {
-	Hosts []string `json:"hosts" format:"array" example:"https://a.com/,https://b.com/"`
+type UpdateIdLengthRequest struct {
+	IdLength        int `json:"idLength" binding:"required"`
+	IdMinimumLength int `json:"idMinimumLength" binding:"required"`
+	IdMaximumLength int `json:"idMaximumLength" binding:"required"`
 }
 
+type UpdateNotFoundConfigRequest struct {
+	Mode  string `json:"mode" binding:"required"`
+	Value string `json:"value" binding:"required"`
+}
+
+// --- User ---
+
 type User struct {
+	TenantID    string    `json:"tenant_id"`
 	Username    string    `json:"username"`
 	Role        int       `json:"role"`
 	RawPassword string    `json:"-"`
@@ -67,8 +110,11 @@ func (u *User) IsAdmin() bool {
 	return u.Role == RoleAdmin
 }
 
+// --- Short Link ---
+
 type ShortLink struct {
 	Id          string    `json:"id"`
+	TenantID    string    `json:"tenant_id"`
 	Url         string    `json:"url"`
 	Description string    `json:"description"`
 	IsEnable    bool      `json:"is_enable"`
@@ -77,8 +123,9 @@ type ShortLink struct {
 	UpdateTime  time.Time `json:"update_time"`
 }
 
-func NewShortLink(createdBy string, r *CreateShortLinkAPIRequest) *ShortLink {
+func NewShortLink(tenantID string, createdBy string, r *CreateShortLinkAPIRequest) *ShortLink {
 	return &ShortLink{
+		TenantID:    tenantID,
 		Id:          r.Id,
 		Url:         r.Url,
 		Description: r.Description,
@@ -88,11 +135,11 @@ func NewShortLink(createdBy string, r *CreateShortLinkAPIRequest) *ShortLink {
 }
 
 type ShortLinkData struct {
-	Id          string    `json:"id" example:"RANDOM_ID" format:"string"`
-	Url         string    `json:"url" example:"https://github.com/jwma/jump-jump" format:"string"`
-	Description string    `json:"description" example:"Jump Jump project" format:"string"`
-	IsEnable    bool      `json:"isEnable" example:"true" format:"boolean"`
-	CreatedBy   string    `json:"createdBy" example:"admin" format:"string"`
+	Id          string    `json:"id"`
+	Url         string    `json:"url"`
+	Description string    `json:"description"`
+	IsEnable    bool      `json:"isEnable"`
+	CreatedBy   string    `json:"createdBy"`
 	CreateTime  time.Time `json:"createTime"`
 	UpdateTime  time.Time `json:"updateTime"`
 }
@@ -114,11 +161,11 @@ func ToShortLinkDataSlice(s []*ShortLink) []*ShortLinkData {
 }
 
 type CreateShortLinkAPIRequest struct {
-	Id          string `json:"id" format:"string" example:"RANDOM_ID"`
-	Url         string `json:"url" example:"https://github.com/jwma/jump-jump"`
-	Description string `json:"description" example:"Jump Jump project"`
-	IsEnable    bool   `json:"isEnable" example:"true" format:"boolean"`
-	IdLength    int    `json:"idLength" example:"4" format:"int"`
+	Id          string `json:"id"`
+	Url         string `json:"url"`
+	Description string `json:"description"`
+	IsEnable    bool   `json:"isEnable"`
+	IdLength    int    `json:"idLength"`
 }
 
 type GetShortLinkAPIResponseData struct {
@@ -134,15 +181,17 @@ type UpdateShortLinkAPIResponseData struct {
 }
 
 type UpdateShortLinkAPIRequest struct {
-	Url         string `json:"url" binding:"required" example:"https://github.com/jwma/jump-jump"`
-	Description string `json:"description" example:"Jump Jump project"`
-	IsEnable    bool   `json:"isEnable" example:"true" format:"boolean"`
+	Url         string `json:"url" binding:"required"`
+	Description string `json:"description"`
+	IsEnable    bool   `json:"isEnable"`
 }
 
 type ListShortLinksAPIResponseData struct {
 	ShortLinks []*ShortLinkData `json:"shortLinks"`
-	Total      int64            `json:"total" example:"10" format:"10"`
+	Total      int64            `json:"total"`
 }
+
+// --- Request History ---
 
 type RequestHistory struct {
 	Id   string     `json:"id"`

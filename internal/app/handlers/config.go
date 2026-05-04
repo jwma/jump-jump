@@ -9,36 +9,23 @@ import (
 	"github.com/jwma/jump-jump/internal/app/models"
 )
 
-func GetConfigAPI(c *gin.Context) {
-	c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{Config: config.GetSystemConfig()}))
-}
-
-func UpdateLandingHostsAPI() gin.HandlerFunc {
+func GetConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		if user.Role != models.RoleAdmin {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改短链接域名"))
-			return
-		}
-
-		p := &models.UpdateLandingHostsAPIRequest{}
-		if err := c.ShouldBindJSON(p); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
-			return
-		}
-
-		config.UpdateLandingHosts(p.Hosts)
-		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{Config: config.GetSystemConfig()}))
+		tenantID := user.TenantID
+		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
+			Config: config.GetTenantConfig(tenantID),
+		}))
 	})
 }
 
 func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改随机 ID 长度设置"))
+			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改设置"))
 			return
 		}
 
-		p := &config.IdConfig{}
+		p := &models.UpdateIdLengthRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
@@ -46,8 +33,14 @@ func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 
 		if p.IdMinimumLength <= p.IdLength && p.IdLength <= p.IdMaximumLength &&
 			p.IdMinimumLength > 0 && p.IdLength > 0 && p.IdMaximumLength > 0 {
-			config.UpdateIdConfig(p)
-			c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{Config: config.GetSystemConfig()}))
+			config.UpdateIdConfig(user.TenantID, &config.IdConfig{
+				IdLength:        p.IdLength,
+				IdMinimumLength: p.IdMinimumLength,
+				IdMaximumLength: p.IdMaximumLength,
+			})
+			c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
+				Config: config.GetTenantConfig(user.TenantID),
+			}))
 			return
 		}
 
@@ -58,11 +51,11 @@ func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改短链接 404 处理配置"))
+			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改配置"))
 			return
 		}
 
-		p := &config.ShortLinkNotFoundConfig{}
+		p := &models.UpdateNotFoundConfigRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
@@ -73,7 +66,12 @@ func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
 			return
 		}
 
-		config.UpdateShortLinkNotFoundConfig(p)
-		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{Config: config.GetSystemConfig()}))
+		config.UpdateShortLinkNotFoundConfig(user.TenantID, &config.ShortLinkNotFoundConfig{
+			Mode:  p.Mode,
+			Value: p.Value,
+		})
+		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
+			Config: config.GetTenantConfig(user.TenantID),
+		}))
 	})
 }

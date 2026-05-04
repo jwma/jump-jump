@@ -86,14 +86,14 @@ func SetupRouter() *gin.Engine {
 	})
 
 	v1 := r.Group("/v1")
+	v1.Use(handlers.TenantResolverMiddleware())
 	{
 		v1.POST("/user/login", handlers.LoginAPI)
 		v1.GET("/user/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserInfoAPI())
 		v1.POST("/user/logout", handlers.JWTAuthenticatorMiddleware(), handlers.LogoutAPI())
 		v1.POST("/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
 
-		v1.GET("/config", handlers.JWTAuthenticatorMiddleware(), handlers.GetConfigAPI)
-		v1.PATCH("/config/landing-hosts", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateLandingHostsAPI())
+		v1.GET("/config", handlers.JWTAuthenticatorMiddleware(), handlers.GetConfigAPI())
 		v1.PATCH("/config/id-length", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateIdLengthConfigAPI())
 		v1.PATCH("/config/short-link-404-handling", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateShortLinkNotFoundConfigAPI())
 
@@ -105,6 +105,15 @@ func SetupRouter() *gin.Engine {
 		shortLinkAPI.PATCH("/:id", handlers.UpdateShortLinkAPI())
 		shortLinkAPI.DELETE("/:id", handlers.DeleteShortLinkAPI())
 		shortLinkAPI.GET("/:id/*action", handlers.ShortLinkActionAPI())
+
+		tenantAPI := v1.Group("/tenant")
+		tenantAPI.Use(handlers.JWTAuthenticatorMiddleware())
+		tenantAPI.GET("/", handlers.ListTenantsAPI())
+		tenantAPI.GET("/:id", handlers.GetTenantAPI())
+		tenantAPI.POST("/", handlers.CreateTenantAPI())
+		tenantAPI.GET("/:id/domains", handlers.ListDomainsAPI())
+		tenantAPI.POST("/:id/domains", handlers.AddDomainAPI())
+		tenantAPI.DELETE("/:id/domains", handlers.RemoveDomainAPI())
 	}
 
 	return r

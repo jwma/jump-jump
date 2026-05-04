@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
@@ -25,6 +26,22 @@ func parseAuthorizationHeader(a string) (string, error) {
 		return "", fmt.Errorf("authorization 格式不正确")
 	}
 	return t[1], nil
+}
+
+// TenantResolverMiddleware resolves the tenant from the Host header.
+func TenantResolverMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		host := strings.Split(c.Request.Host, ":")[0]
+
+		tenantID, err := config.ResolveTenantID(host)
+		if err != nil || tenantID == "" {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"msg": "unknown domain"})
+			return
+		}
+
+		c.Set("tenant_id", tenantID)
+		c.Next()
+	}
 }
 
 func JWTAuthenticatorMiddleware() gin.HandlerFunc {
@@ -48,8 +65,16 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		tenantID, _ := claims["tenant_id"].(string)
+		username, _ := claims["identifier"].(string)
+		if tenantID == "" || username == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{})
+			c.Abort()
+			return
+		}
+
 		repo := repository.GetUserRepo(db.GetPostgresPool())
-		u, err := repo.FindOneByUsername(claims["identifier"].(string))
+		u, err := repo.FindOneByUsername(tenantID, username)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{})
@@ -58,6 +83,7 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 		}
 
 		c.Set("user", u)
+		c.Set("tenant_id", tenantID)
 	}
 }
 
@@ -67,7 +93,6 @@ func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, exists := c.Get("user")
 		if !exists {
-			log.Println("请求的 API Func 没有经过 JWTAuthenticatorMiddleware 处理，请修改路由设置")
 			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		}
@@ -79,20 +104,10 @@ func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
 func AllowedHostsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		allowedHosts := os.Getenv("ALLOWED_HOSTS")
-
 		if allowedHosts != "" && allowedHosts != "*" {
 			h := strings.Split(c.Request.Host, ":")[0]
-
 			if !slices.Contains(strings.Split(allowedHosts, ","), h) {
-				output := ""
-
-				if gin.Mode() == gin.DebugMode {
-					output = fmt.Sprintf("You can see this message because GIN_MODE=debug.\n"+
-						"Invalid HTTP_HOST header: '%s'. "+
-						"You may need to add '%s' to ALLOWED_HOSTS environment variable.", c.Request.Host, h)
-				}
-
-				c.String(http.StatusBadRequest, output)
+				c.String(http.StatusBadRequest, "")
 				c.Abort()
 				return
 			}

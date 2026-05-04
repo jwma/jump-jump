@@ -5,6 +5,9 @@ import (
 	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
+	"github.com/jwma/jump-jump/internal/app/utils"
+	"time"
 )
 
 const (
@@ -16,115 +19,131 @@ const (
 )
 
 type IdConfig struct {
-	IdLength        int `json:"idLength" format:"int" example:"6"`
-	IdMinimumLength int `json:"idMinimumLength" format:"int" example:"2"`
-	IdMaximumLength int `json:"idMaximumLength" format:"int" example:"10"`
+	IdLength        int `json:"idLength"`
+	IdMinimumLength int `json:"idMinimumLength"`
+	IdMaximumLength int `json:"idMaximumLength"`
 }
 
 type ShortLinkNotFoundConfig struct {
-	Mode  string `json:"mode" binding:"required" example:"content" enums:"content,redirect"`
-	Value string `json:"value" binding:"required" example:"page not found"`
+	Mode  string `json:"mode"`
+	Value string `json:"value"`
 }
 
-func (s *ShortLinkNotFoundConfig) ToMap() map[string]string {
-	return map[string]string{
-		"mode":  s.Mode,
-		"value": s.Value,
-	}
-}
-
-type SystemConfig struct {
-	LandingHosts            []string                `json:"landingHosts" format:"array" example:"https://a.com/,https://b.com/"`
-	IdConfig                *IdConfig               `json:"idConfig"`
+type TenantConfig struct {
+	IdConfig                *IdConfig                `json:"idConfig"`
 	ShortLinkNotFoundConfig *ShortLinkNotFoundConfig `json:"shortLinkNotFoundConfig"`
 }
 
-type dbConfig struct {
-	LandingHosts  []string
-	IdLength      int
-	IdMinLength   int
-	IdMaxLength   int
-	NotFoundMode  string
-	NotFoundValue string
-}
-
 var (
-	pool   *pgxpool.Pool
-	cached *dbConfig
-	mu     sync.RWMutex
+	pool *pgxpool.Pool
+	rdb  *redis.Client
+	mu   sync.RWMutex
+	cache map[string]*TenantConfig
 )
 
-func SetupConfig(p *pgxpool.Pool) error {
+func SetupConfig(p *pgxpool.Pool, r *redis.Client) error {
 	pool = p
-	return reload()
-}
-
-func reload() error {
-	c := &dbConfig{}
-	err := pool.QueryRow(context.Background(),
-		`SELECT landing_hosts, id_length, id_min_length, id_max_length, not_found_mode, not_found_value
-		 FROM system_configs WHERE id = 1`).Scan(
-		&c.LandingHosts, &c.IdLength, &c.IdMinLength, &c.IdMaxLength,
-		&c.NotFoundMode, &c.NotFoundValue)
-	if err != nil {
-		return err
-	}
-
-	mu.Lock()
-	cached = c
-	mu.Unlock()
+	rdb = r
+	cache = make(map[string]*TenantConfig)
 	return nil
 }
 
-func GetIdConfig() *IdConfig {
+func GetTenantConfig(tenantID string) *TenantConfig {
 	mu.RLock()
-	defer mu.RUnlock()
-	return &IdConfig{
-		IdLength:        cached.IdLength,
-		IdMinimumLength: cached.IdMinLength,
-		IdMaximumLength: cached.IdMaxLength,
+	if c, ok := cache[tenantID]; ok {
+		mu.RUnlock()
+		return c
+	}
+	mu.RUnlock()
+
+	// Cache miss, load from PG
+	c := loadTenantConfig(tenantID)
+
+	mu.Lock()
+	cache[tenantID] = c
+	mu.Unlock()
+	return c
+}
+
+func loadTenantConfig(tenantID string) *TenantConfig {
+	c := &TenantConfig{
+		IdConfig: &IdConfig{
+			IdLength:        DefaultIdLength,
+			IdMinimumLength: DefaultIdMinimumLength,
+			IdMaximumLength: DefaultIdMaximumLength,
+		},
+		ShortLinkNotFoundConfig: &ShortLinkNotFoundConfig{
+			Mode:  ShortLinkNotFoundContentMode,
+			Value: "你访问的页面不存在哦",
+		},
+	}
+
+	_ = pool.QueryRow(context.Background(),
+		`SELECT id_length, id_min_length, id_max_length, not_found_mode, not_found_value
+		 FROM tenant_configs WHERE tenant_id = $1`, tenantID).Scan(
+		&c.IdConfig.IdLength, &c.IdConfig.IdMinimumLength, &c.IdConfig.IdMaximumLength,
+		&c.ShortLinkNotFoundConfig.Mode, &c.ShortLinkNotFoundConfig.Value)
+
+	return c
+}
+
+func GetIdConfig(tenantID string) *IdConfig {
+	return GetTenantConfig(tenantID).IdConfig
+}
+
+func GetShortLinkNotFoundConfig(tenantID string) *ShortLinkNotFoundConfig {
+	return GetTenantConfig(tenantID).ShortLinkNotFoundConfig
+}
+
+func UpdateIdConfig(tenantID string, c *IdConfig) {
+	pool.Exec(context.Background(),
+		`INSERT INTO tenant_configs (tenant_id, id_length, id_min_length, id_max_length)
+		 VALUES ($1, $2, $3, $4)
+		 ON CONFLICT (tenant_id) DO UPDATE SET id_length = $2, id_min_length = $3, id_max_length = $4, updated_at = now()`,
+		tenantID, c.IdLength, c.IdMinimumLength, c.IdMaximumLength)
+	invalidateCache(tenantID)
+}
+
+func UpdateShortLinkNotFoundConfig(tenantID string, s *ShortLinkNotFoundConfig) {
+	pool.Exec(context.Background(),
+		`INSERT INTO tenant_configs (tenant_id, not_found_mode, not_found_value)
+		 VALUES ($1, $2, $3)
+		 ON CONFLICT (tenant_id) DO UPDATE SET not_found_mode = $2, not_found_value = $3, updated_at = now()`,
+		tenantID, s.Mode, s.Value)
+	invalidateCache(tenantID)
+}
+
+func invalidateCache(tenantID string) {
+	mu.Lock()
+	delete(cache, tenantID)
+	mu.Unlock()
+	if rdb != nil {
+		rdb.Del(context.Background(), utils.GetTenantConfigCacheKey(tenantID))
 	}
 }
 
-func GetShortLinkNotFoundConfig() *ShortLinkNotFoundConfig {
-	mu.RLock()
-	defer mu.RUnlock()
-	return &ShortLinkNotFoundConfig{
-		Mode:  cached.NotFoundMode,
-		Value: cached.NotFoundValue,
+// ResolveTenantID maps a domain to a tenant_id, using Redis cache
+func ResolveTenantID(domain string) (string, error) {
+	// Try cache
+	if rdb != nil {
+		val, err := rdb.Get(context.Background(), utils.GetDomainCacheKey(domain)).Result()
+		if err == nil && val != "" {
+			return val, nil
+		}
 	}
-}
 
-func GetSystemConfig() *SystemConfig {
-	return &SystemConfig{
-		LandingHosts:            getLandingHosts(),
-		IdConfig:                GetIdConfig(),
-		ShortLinkNotFoundConfig: GetShortLinkNotFoundConfig(),
+	// Query PG
+	var tenantID string
+	err := pool.QueryRow(context.Background(),
+		`SELECT tenant_id FROM tenant_domains WHERE domain = $1`, domain).Scan(&tenantID)
+	if err != nil {
+		return "", err
 	}
-}
 
-func getLandingHosts() []string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return cached.LandingHosts
-}
+	// Cache for 30 min
+	if rdb != nil {
+		rdb.Set(context.Background(), utils.GetDomainCacheKey(domain), tenantID, 30*time.Minute)
+	}
 
-func UpdateLandingHosts(hosts []string) {
-	pool.Exec(context.Background(),
-		`UPDATE system_configs SET landing_hosts = $1 WHERE id = 1`, hosts)
-	reload()
-}
-
-func UpdateIdConfig(c *IdConfig) {
-	pool.Exec(context.Background(),
-		`UPDATE system_configs SET id_min_length = $1, id_length = $2, id_max_length = $3 WHERE id = 1`,
-		c.IdMinimumLength, c.IdLength, c.IdMaximumLength)
-	reload()
-}
-
-func UpdateShortLinkNotFoundConfig(s *ShortLinkNotFoundConfig) {
-	pool.Exec(context.Background(),
-		`UPDATE system_configs SET not_found_mode = $1, not_found_value = $2 WHERE id = 1`,
-		s.Mode, s.Value)
-	reload()
+	return tenantID, nil
 }

@@ -13,14 +13,20 @@ import (
 
 func LoginAPI(c *gin.Context) {
 	f := &models.LoginAPIRequest{}
-	err := c.BindJSON(f)
-	if err != nil {
+	if err := c.BindJSON(f); err != nil {
 		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
 		return
 	}
 
+	tenantID, _ := c.Get("tenant_id")
+	tid, _ := tenantID.(string)
+	if tid == "" {
+		c.JSON(http.StatusOK, models.NewErrorResponse("无法识别租户"))
+		return
+	}
+
 	repo := repository.GetUserRepo(db.GetPostgresPool())
-	u, err := repo.FindOneByUsername(strings.TrimSpace(f.Username))
+	u, err := repo.FindOneByUsername(tid, strings.TrimSpace(f.Username))
 	if err != nil {
 		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
 		return
@@ -33,7 +39,7 @@ func LoginAPI(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.NewSuccessResponse(models.LoginAPIResponseData{
-		Token: utils.GenerateJWT(u.Username),
+		Token: utils.GenerateJWT(u.Username, u.TenantID),
 	}))
 }
 
@@ -54,11 +60,6 @@ func LogoutAPI() gin.HandlerFunc {
 
 func ChangePasswordAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
-		if user.Username == "guest" {
-			c.JSON(http.StatusOK, models.NewErrorResponse("该账号不支持修改密码"))
-			return
-		}
-
 		p := &models.ChangePasswordAPIRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse("请填写原密码和新密码"))
@@ -72,10 +73,8 @@ func ChangePasswordAPI() gin.HandlerFunc {
 		}
 
 		user.RawPassword = p.NewPassword
-
 		repo := repository.GetUserRepo(db.GetPostgresPool())
-		err := repo.UpdatePassword(user)
-		if err != nil {
+		if err := repo.UpdatePassword(user); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
 		}

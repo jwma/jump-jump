@@ -45,7 +45,7 @@ func Run(addr ...string) error {
 	defer db.ClosePostgres()
 	defer db.CloseRedis()
 
-	if err := config.SetupConfig(db.GetPostgresPool()); err != nil {
+	if err := config.SetupConfig(db.GetPostgresPool(), db.GetRedisClient()); err != nil {
 		return err
 	}
 
@@ -60,7 +60,7 @@ func RunLanding(addr ...string) error {
 	defer db.ClosePostgres()
 	defer db.CloseRedis()
 
-	if err := config.SetupConfig(db.GetPostgresPool()); err != nil {
+	if err := config.SetupConfig(db.GetPostgresPool(), db.GetRedisClient()); err != nil {
 		return err
 	}
 

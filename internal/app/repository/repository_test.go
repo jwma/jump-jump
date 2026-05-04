@@ -28,12 +28,13 @@ func init() {
 	rdb.FlushDB(context.Background())
 
 	pool := getTestPool()
-	config.SetupConfig(pool)
+	config.SetupConfig(pool, rdb)
 }
 
 func TestShortLinkRepository_Save(t *testing.T) {
 	l := &models.ShortLink{
 		Id:          "mj",
+		TenantID:    "00000000-0000-0000-0000-000000000001",
 		Url:         "http://anmuji.com",
 		Description: "安木鸡",
 		IsEnable:    true,
@@ -82,7 +83,7 @@ func TestShortLinkRepository_Update(t *testing.T) {
 
 func TestShortLinkRepository_List(t *testing.T) {
 	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	rs, err := repo.List("mj", false, 0, 10)
+	rs, err := repo.List("00000000-0000-0000-0000-000000000001", "mj", false, 0, 10)
 
 	if err != nil {
 		t.Error(err)
@@ -110,6 +111,7 @@ func TestShortLinkRepository_Delete(t *testing.T) {
 func TestRequestHistoryRepository_Save(t *testing.T) {
 	l := &models.ShortLink{
 		Id:          "testrh",
+		TenantID:    "00000000-0000-0000-0000-000000000001",
 		Url:         "http://anmuji.com",
 		Description: "",
 		IsEnable:    true,
@@ -168,6 +170,7 @@ func TestUserRepository_Save(t *testing.T) {
 		t.Errorf("expected error but got nil")
 	}
 
+	u.TenantID = "00000000-0000-0000-0000-000000000001"
 	u.Username = "mj"
 	u.RawPassword = "123456"
 	err = repo.Save(u)
@@ -184,6 +187,7 @@ func TestUserRepository_Save(t *testing.T) {
 	}
 
 	u2 := &models.User{
+		TenantID:    "00000000-0000-0000-0000-000000000001",
 		Username:    "mj",
 		Role:        models.RoleUser,
 		RawPassword: "abcdefg",
@@ -198,20 +202,20 @@ func TestUserRepository_Save(t *testing.T) {
 func TestUserRepository_FindOneByUsername(t *testing.T) {
 	repo := GetUserRepo(getTestPool())
 
-	_, err := repo.FindOneByUsername("")
+	_, err := repo.FindOneByUsername("00000000-0000-0000-0000-000000000001", "")
 
 	if err == nil {
 		t.Errorf("expected error but got nil")
 	}
 
-	_, err = repo.FindOneByUsername("anmuji")
+	_, err = repo.FindOneByUsername("00000000-0000-0000-0000-000000000001", "anmuji")
 
 	if err == nil {
 		t.Errorf("expected error but got nil")
 	}
 
 	expectedUsername := "mj"
-	u, err := repo.FindOneByUsername(expectedUsername)
+	u, err := repo.FindOneByUsername("00000000-0000-0000-0000-000000000001", expectedUsername)
 
 	if err != nil {
 		t.Error(err)
@@ -224,7 +228,7 @@ func TestUserRepository_FindOneByUsername(t *testing.T) {
 func TestUserRepository_UpdatePassword(t *testing.T) {
 	repo := GetUserRepo(getTestPool())
 
-	u, err := repo.FindOneByUsername("mj")
+	u, err := repo.FindOneByUsername("00000000-0000-0000-0000-000000000001", "mj")
 
 	if err != nil {
 		t.Error(err)
