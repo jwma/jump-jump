@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
@@ -19,21 +20,22 @@ type dailyReportWrapper struct {
 
 type Generator struct {
 	isStop               chan bool
-	db                   *redis.Client
+	rdb                  *redis.Client
+	pool                 *pgxpool.Pool
 	tasks                chan *models.ActiveLink
 	reports              chan *dailyReportWrapper
 	taskDispatchTicker   *time.Ticker
 	needDispatchPastTask bool
 }
 
-func NewGenerator(rdb *redis.Client, duration time.Duration) *Generator {
+func NewGenerator(rdb *redis.Client, pool *pgxpool.Pool, duration time.Duration) *Generator {
 	g := &Generator{
-		db: rdb, taskDispatchTicker: time.NewTicker(duration),
+		rdb: rdb, pool: pool, taskDispatchTicker: time.NewTicker(duration),
 		tasks: make(chan *models.ActiveLink, 5), reports: make(chan *dailyReportWrapper, 5),
 		isStop: make(chan bool),
 	}
 
-	exists, _ := g.db.Exists(context.Background(), "dispatch_past_task").Result()
+	exists, _ := g.rdb.Exists(context.Background(), "dispatch_past_task").Result()
 	if exists == 0 {
 		g.needDispatchPastTask = true
 	}
@@ -52,7 +54,7 @@ func (g *Generator) dispatchDailyTask() {
 		startTime = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
 	}
 
-	repo := repository.GetActiveLinkRepo(g.db)
+	repo := repository.GetActiveLinkRepo(g.rdb)
 	activeLinks := repo.FindByDateRange(startTime, now)
 
 	for _, one := range activeLinks {
@@ -70,7 +72,7 @@ func (g *Generator) dispatchPastTask() {
 
 	// Get all link IDs from Redis active links or a tracking set
 	// For P1, we scan through known patterns
-	linkIds, _ := g.db.ZRange(context.Background(), utils.GetActiveLinkKey(), 0, -1).Result()
+	linkIds, _ := g.rdb.ZRange(context.Background(), utils.GetActiveLinkKey(), 0, -1).Result()
 	st, _ := time.ParseInLocation("2006-01-02", "2020-03-01", time.Local)
 	t := time.Now().AddDate(0, 0, 1)
 	endTime := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
@@ -82,16 +84,16 @@ func (g *Generator) dispatchPastTask() {
 		st = st.AddDate(0, 0, 1)
 	}
 
-	g.db.Set(context.Background(), "dispatch_past_task", 1, 0)
+	g.rdb.Set(context.Background(), "dispatch_past_task", 1, 0)
 	g.needDispatchPastTask = false
 }
 
 func (g *Generator) calc(activeLink *models.ActiveLink) {
-	g.reports <- CalcDailyReport(g.db, activeLink)
+	g.reports <- CalcDailyReport(g.rdb, g.pool, activeLink)
 }
 
 func (g *Generator) save(w *dailyReportWrapper) {
-	repo := repository.GetDailyReportRepo(g.db)
+	repo := repository.GetDailyReportRepo(g.rdb)
 	repo.Save(w.LinkId, w.Key, w.Report)
 }
 

@@ -14,6 +14,8 @@ func GetTenantConfigCacheKey(tenantID string) string {
 	return fmt.Sprintf("cache:config:%s", tenantID)
 }
 
+const RequestHistoryBufferKey = "rh:buffer"
+
 func GetRequestHistoryKey(linkId string) string {
 	return fmt.Sprintf("rh:%s", linkId)
 }

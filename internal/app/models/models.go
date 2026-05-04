@@ -194,12 +194,13 @@ type ListShortLinksAPIResponseData struct {
 // --- Request History ---
 
 type RequestHistory struct {
-	Id   string     `json:"id"`
-	Link *ShortLink `json:"-"`
-	Url  string     `json:"url"`
-	IP   string     `json:"ip"`
-	UA   string     `json:"ua"`
-	Time time.Time  `json:"time"`
+	Id          string    `json:"id,omitempty"`
+	ShortLinkID string    `json:"shortLinkId"`
+	TenantID    string    `json:"tenantId,omitempty"`
+	Url         string    `json:"url"`
+	IP          string    `json:"ip"`
+	UA          string    `json:"ua"`
+	Time        time.Time `json:"time"`
 }
 
 func (r *RequestHistory) MarshalBinary() (data []byte, err error) {
@@ -207,7 +208,13 @@ func (r *RequestHistory) MarshalBinary() (data []byte, err error) {
 }
 
 func NewRequestHistory(link *ShortLink, IP string, UA string) *RequestHistory {
-	return &RequestHistory{Link: link, IP: IP, UA: UA, Url: link.Url}
+	return &RequestHistory{
+		ShortLinkID: link.Id,
+		TenantID:    link.TenantID,
+		Url:         link.Url,
+		IP:          IP,
+		UA:          UA,
+	}
 }
 
 type ShortLinkDataAPIResponseData struct {

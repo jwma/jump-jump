@@ -344,76 +344,68 @@ func (r *shortLinkRepository) List(tenantID, username string, isAdmin bool, star
 	return result, nil
 }
 
-// --- Request History Repository (Redis, unchanged) ---
-
-type requestHistoryListResult struct {
-	Histories []*models.RequestHistory `json:"histories"`
-	Total     int                      `json:"total"`
-}
-
-func newEmptyRequestHistoryResult() *requestHistoryListResult {
-	return &requestHistoryListResult{Histories: make([]*models.RequestHistory, 0), Total: 0}
-}
-
-func (r *requestHistoryListResult) addHistory(h ...*models.RequestHistory) {
-	r.Histories = append(r.Histories, h...)
-	r.Total = len(r.Histories)
-}
+// --- Request History Repository (Write-behind: Redis buffer → PG flush) ---
 
 type requestHistoryRepository struct {
-	db *redis.Client
+	rdb *redis.Client
+	db  *pgxpool.Pool
 }
 
 var requestHistoryRepo *requestHistoryRepository
 
-func GetRequestHistoryRepo(rdb *redis.Client) *requestHistoryRepository {
+func GetRequestHistoryRepo(rdb *redis.Client, db *pgxpool.Pool) *requestHistoryRepository {
 	if requestHistoryRepo == nil {
-		requestHistoryRepo = &requestHistoryRepository{rdb}
+		requestHistoryRepo = &requestHistoryRepository{rdb, db}
 	}
 	return requestHistoryRepo
 }
 
 func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
-	rh.Id = utils.RandStringRunes(6)
 	rh.Time = time.Now()
-	key := utils.GetRequestHistoryKey(rh.Link.Id)
 
-	_, err := r.db.ZAdd(context.Background(), key, redis.Z{
-		Score:  float64(rh.Time.Unix()),
-		Member: rh,
-	}).Result()
-	if err != nil {
-		log.Printf("fail to save request history: %v", err)
+	// Try Redis buffer first
+	if r.rdb != nil {
+		_, err := r.rdb.ZAdd(context.Background(), utils.RequestHistoryBufferKey, redis.Z{
+			Score:  float64(rh.Time.Unix()),
+			Member: rh,
+		}).Result()
+		if err == nil {
+			return
+		}
+		log.Printf("request history: redis buffer write failed, falling back to PG: %v", err)
 	}
+
+	// Fallback: direct PG write
+	r.saveDirect(rh)
 }
 
-func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*requestHistoryListResult, error) {
-	key := utils.GetRequestHistoryKey(linkId)
-	rs, err := r.db.ZRangeWithScores(context.Background(), key, -size, -1).Result()
+func (r *requestHistoryRepository) saveDirect(rh *models.RequestHistory) {
+	_, err := r.db.Exec(context.Background(),
+		`INSERT INTO request_histories (short_link_id, tenant_id, url, ip, ua, created_at)
+		 VALUES ($1, $2, $3, $4, $5, $6)`,
+		rh.ShortLinkID, rh.TenantID, rh.Url, rh.IP, rh.UA, rh.Time)
 	if err != nil {
-		log.Printf("failed to find request history: %v", err)
+		log.Printf("request history: direct PG write failed: %v", err)
 	}
-
-	utils.ReverseAny(rs)
-	result := newEmptyRequestHistoryResult()
-	for _, one := range rs {
-		rh := &models.RequestHistory{}
-		_ = json.Unmarshal([]byte(one.Member.(string)), rh)
-		result.addHistory(rh)
-	}
-	return result, nil
 }
 
 func (r *requestHistoryRepository) FindByDateRange(linkId string, startTime, endTime time.Time) []*models.RequestHistory {
-	rs, _ := r.db.ZRangeByScoreWithScores(context.Background(), utils.GetRequestHistoryKey(linkId), &redis.ZRangeBy{
-		Min: strconv.Itoa(int(startTime.Unix())),
-		Max: strconv.Itoa(int(endTime.Unix())),
-	}).Result()
+	rows, err := r.db.Query(context.Background(),
+		`SELECT id, short_link_id, url, ip, ua, created_at
+		 FROM request_histories
+		 WHERE short_link_id = $1 AND created_at BETWEEN $2 AND $3
+		 ORDER BY created_at DESC`,
+		linkId, startTime, endTime)
+	if err != nil {
+		log.Printf("request history query failed: %v", err)
+		return make([]*models.RequestHistory, 0)
+	}
+	defer rows.Close()
 
 	rhs := make([]*models.RequestHistory, 0)
-	for _, one := range rs {
+	for rows.Next() {
 		rh := &models.RequestHistory{}
-		_ = json.Unmarshal([]byte(one.Member.(string)), rh)
+		rows.Scan(&rh.Id, &rh.ShortLinkID, &rh.Url, &rh.IP, &rh.UA, &rh.Time)
 		rhs = append(rhs, rh)
 	}
 	return rhs

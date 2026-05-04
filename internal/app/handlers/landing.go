@@ -49,7 +49,7 @@ func Redirect(c *gin.Context) {
 		return
 	}
 
-	rhRepo := repository.GetRequestHistoryRepo(db.GetRedisClient())
+	rhRepo := repository.GetRequestHistoryRepo(db.GetRedisClient(), db.GetPostgresPool())
 	alRepo := repository.GetActiveLinkRepo(db.GetRedisClient())
 	go func() {
 		rhRepo.Save(models.NewRequestHistory(s, c.ClientIP(), c.Request.UserAgent()))

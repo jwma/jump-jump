@@ -16,7 +16,12 @@ func main() {
 	}
 	defer db.CloseRedis()
 
-	rg := report.NewGenerator(db.GetRedisClient(), time.Second*30)
+	if err := db.InitPostgres(); err != nil {
+		panic(err)
+	}
+	defer db.ClosePostgres()
+
+	rg := report.NewGenerator(db.GetRedisClient(), db.GetPostgresPool(), time.Second*30)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)

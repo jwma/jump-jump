@@ -3,6 +3,7 @@ package report
 import (
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
@@ -10,11 +11,11 @@ import (
 	"slices"
 )
 
-func CalcDailyReport(rdb *redis.Client, activeLink *models.ActiveLink) *dailyReportWrapper {
+func CalcDailyReport(rdb *redis.Client, pool *pgxpool.Pool, activeLink *models.ActiveLink) *dailyReportWrapper {
 	date := activeLink.Time
 	startTime := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 	endTime := startTime.AddDate(0, 0, 1)
-	rhRepo := repository.GetRequestHistoryRepo(rdb)
+	rhRepo := repository.GetRequestHistoryRepo(rdb, pool)
 
 	rhRs := rhRepo.FindByDateRange(activeLink.Id, startTime, endTime)
 	pv := len(rhRs)

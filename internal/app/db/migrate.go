@@ -60,6 +60,19 @@ CREATE INDEX IF NOT EXISTS idx_short_links_tenant ON short_links(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_short_links_tenant_created ON short_links(tenant_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_short_links_created_by ON short_links(created_by);
 CREATE INDEX IF NOT EXISTS idx_tenant_domains_domain ON tenant_domains(domain);
+
+CREATE TABLE IF NOT EXISTS request_histories (
+    id            BIGSERIAL PRIMARY KEY,
+    short_link_id VARCHAR(20) NOT NULL REFERENCES short_links(id) ON DELETE CASCADE,
+    tenant_id     UUID NOT NULL,
+    url           TEXT NOT NULL DEFAULT '',
+    ip            VARCHAR(45) NOT NULL DEFAULT '',
+    ua            TEXT NOT NULL DEFAULT '',
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_request_histories_link_time ON request_histories(short_link_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_request_histories_tenant ON request_histories(tenant_id);
 `
 
 func RunMigrations() error {

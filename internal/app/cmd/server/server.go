@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"slices"
@@ -9,6 +10,7 @@ import (
 	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/routers"
+	"github.com/jwma/jump-jump/internal/app/workers"
 )
 
 func allowHostsChecking() error {
@@ -49,6 +51,10 @@ func Run(addr ...string) error {
 		return err
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go workers.NewHistoryFlushWorker(db.GetRedisClient(), db.GetPostgresPool()).Run(ctx)
+
 	router := routers.SetupRouter()
 	return router.Run(addr...)
 }
@@ -63,6 +69,10 @@ func RunLanding(addr ...string) error {
 	if err := config.SetupConfig(db.GetPostgresPool(), db.GetRedisClient()); err != nil {
 		return err
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go workers.NewHistoryFlushWorker(db.GetRedisClient(), db.GetPostgresPool()).Run(ctx)
 
 	router := routers.SetupLandingRouter()
 	return router.Run(addr...)
