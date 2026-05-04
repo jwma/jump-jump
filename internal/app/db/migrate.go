@@ -110,6 +110,15 @@ func RunMigrations() error {
 		log.Printf("Default tenant config creation skipped: %v", err)
 	}
 
+	// Ensure default tenant has localhost domain for local development
+	_, err = GetPostgresPool().Exec(context.Background(), `
+		INSERT INTO tenant_domains (tenant_id, domain, is_default)
+		VALUES ('00000000-0000-0000-0000-000000000001', 'localhost', true)
+		ON CONFLICT DO NOTHING`)
+	if err != nil {
+		log.Printf("Default tenant domain creation skipped: %v", err)
+	}
+
 	log.Println("Database migrations completed successfully")
 	return nil
 }
