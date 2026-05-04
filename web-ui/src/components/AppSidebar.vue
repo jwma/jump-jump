@@ -43,7 +43,9 @@ const menuItems = computed(() => {
 })
 
 function isActive(to: { name: string }) {
-  return route.name === to.name
+  if (route.name === to.name) return true
+  if (to.name === 'short-links' && String(route.name).startsWith('short-link')) return true
+  return false
 }
 
 async function handleLogout() {

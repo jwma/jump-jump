@@ -76,7 +76,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 
 		if s.Id != "" {
 			checkShortLink, _ := repo.Get(s.Id)
-			if checkShortLink.Id != "" {
+			if checkShortLink != nil && checkShortLink.Id != "" {
 				c.JSON(http.StatusOK, models.NewErrorResponse(fmt.Sprintf("%s 已被占用", s.Id)))
 				return
 			}

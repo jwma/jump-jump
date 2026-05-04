@@ -1,5 +1,4 @@
-import http from './http'
-import type { ApiResponse } from '@/types/api'
+import { request } from './http'
 import type {
   CreateShortLinkRequest,
   UpdateShortLinkRequest,
@@ -11,35 +10,25 @@ import type {
 } from '@/types/api'
 
 export function listShortLinks(page?: number, pageSize?: number) {
-  return http
-    .get<ApiResponse<ListShortLinksResponse>>('/short-link/', { params: { page, pageSize } })
-    .then((r) => r.data.data)
+  return request<ListShortLinksResponse>('GET', '/short-link/', { page, pageSize })
 }
 
 export function getShortLink(id: string) {
-  return http.get<ApiResponse<GetShortLinkResponse>>(`/short-link/${id}`).then((r) => r.data.data)
+  return request<GetShortLinkResponse>('GET', `/short-link/${id}`)
 }
 
 export function createShortLink(data: CreateShortLinkRequest) {
-  return http
-    .post<ApiResponse<CreateShortLinkResponse>>('/short-link/', data)
-    .then((r) => r.data.data)
+  return request<CreateShortLinkResponse>('POST', '/short-link/', data)
 }
 
 export function updateShortLink(id: string, data: UpdateShortLinkRequest) {
-  return http
-    .patch<ApiResponse<UpdateShortLinkResponse>>(`/short-link/${id}`, data)
-    .then((r) => r.data.data)
+  return request<UpdateShortLinkResponse>('PATCH', `/short-link/${id}`, data)
 }
 
 export function deleteShortLink(id: string) {
-  return http.delete<ApiResponse>(`/short-link/${id}`).then((r) => r.data)
+  return request<void>('DELETE', `/short-link/${id}`)
 }
 
 export function getShortLinkData(id: string, startDate: string, endDate: string) {
-  return http
-    .get<ApiResponse<ShortLinkDataResponse>>(`/short-link/${id}/data`, {
-      params: { startDate, endDate },
-    })
-    .then((r) => r.data.data)
+  return request<ShortLinkDataResponse>('GET', `/short-link/${id}/data`, { startDate, endDate })
 }

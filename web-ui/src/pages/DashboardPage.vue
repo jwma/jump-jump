@@ -21,13 +21,17 @@ import {
 import { defineAsyncComponent } from 'vue'
 
 const VChart = defineAsyncComponent(async () => {
-  const [{ use }, { CanvasRenderer }, { LineChart }, { GridComponent, TooltipComponent, LegendComponent }] =
-    await Promise.all([
-      import('echarts/core'),
-      import('echarts/renderers'),
-      import('echarts/charts'),
-      import('echarts/components'),
-    ])
+  const [
+    { use },
+    { CanvasRenderer },
+    { LineChart },
+    { GridComponent, TooltipComponent, LegendComponent },
+  ] = await Promise.all([
+    import('echarts/core'),
+    import('echarts/renderers'),
+    import('echarts/charts'),
+    import('echarts/components'),
+  ])
   use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
   return (await import('vue-echarts')).default
 })
@@ -77,7 +81,11 @@ function extractDate(isoOrDateStr: string): string {
   return isoOrDateStr.slice(0, 10)
 }
 
-function aggregateFromHistories(histories: RequestHistory[]): { daily: Record<string, { pv: number; uv: number }>; totalPv: number; todayPv: number } {
+function aggregateFromHistories(histories: RequestHistory[]): {
+  daily: Record<string, { pv: number; uv: number }>
+  totalPv: number
+  todayPv: number
+} {
   const daily: Record<string, { pv: number; uv: number }> = {}
   const uvByDate: Record<string, Set<string>> = {}
   let totalPv = 0
@@ -240,7 +248,11 @@ async function fetchDashboardData() {
     for (let i = 0; i < results.length; i++) {
       const result = results[i]
       if (result.status === 'fulfilled' && result.value) {
-        const { daily, totalPv, todayPv: linkTodayPv } = aggregateFromHistories(result.value.histories)
+        const {
+          daily,
+          totalPv,
+          todayPv: linkTodayPv,
+        } = aggregateFromHistories(result.value.histories)
         let linkPv = 0
         let linkUv = 0
 
@@ -351,9 +363,7 @@ onMounted(fetchDashboardData)
     <!-- Welcome area -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">
-          {{ greeting }}, {{ auth.username }}
-        </h1>
+        <h1 class="text-2xl font-bold text-gray-900">{{ greeting }}, {{ auth.username }}</h1>
         <p class="mt-1 text-sm text-gray-500">
           Here's an overview of your short links performance.
         </p>
@@ -375,7 +385,10 @@ onMounted(fetchDashboardData)
           <div>
             <p class="text-sm font-medium text-gray-500">Total Links</p>
             <p class="mt-1 text-2xl font-bold text-gray-900">
-              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
+              <span
+                v-if="loading"
+                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+              />
               <template v-else>{{ totalLinks.toLocaleString() }}</template>
             </p>
           </div>
@@ -391,7 +404,10 @@ onMounted(fetchDashboardData)
           <div>
             <p class="text-sm font-medium text-gray-500">Active Links</p>
             <p class="mt-1 text-2xl font-bold text-gray-900">
-              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
+              <span
+                v-if="loading"
+                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+              />
               <template v-else>{{ activeLinks.toLocaleString() }}</template>
             </p>
           </div>
@@ -407,7 +423,10 @@ onMounted(fetchDashboardData)
           <div>
             <p class="text-sm font-medium text-gray-500">Today's Visits</p>
             <p class="mt-1 text-2xl font-bold text-gray-900">
-              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
+              <span
+                v-if="loading"
+                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+              />
               <template v-else>{{ todayVisits.toLocaleString() }}</template>
             </p>
           </div>
@@ -423,7 +442,10 @@ onMounted(fetchDashboardData)
           <div>
             <p class="text-sm font-medium text-gray-500">Period Visits</p>
             <p class="mt-1 text-2xl font-bold text-gray-900">
-              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
+              <span
+                v-if="loading"
+                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+              />
               <template v-else>{{ periodVisits.toLocaleString() }}</template>
             </p>
           </div>
@@ -447,9 +469,7 @@ onMounted(fetchDashboardData)
             <button
               :class="[
                 'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                trendDays === 7
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-500 hover:text-gray-700',
+                trendDays === 7 ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-gray-700',
               ]"
               @click="switchTrend(7)"
             >
@@ -458,9 +478,7 @@ onMounted(fetchDashboardData)
             <button
               :class="[
                 'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                trendDays === 30
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-500 hover:text-gray-700',
+                trendDays === 30 ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-gray-700',
               ]"
               @click="switchTrend(30)"
             >
@@ -471,14 +489,15 @@ onMounted(fetchDashboardData)
         <div v-if="chartLoading" class="flex h-64 items-center justify-center">
           <Loader2 class="h-6 w-6 animate-spin text-gray-400" />
         </div>
-        <VChart
-          v-else
-          :option="chartOption"
-          :autoresize="true"
-          class="h-64"
-          aria-label="Visit trend chart showing PV and UV over time"
-          role="img"
-        />
+        <div v-else class="h-64">
+          <VChart
+            :option="chartOption"
+            :autoresize="true"
+            class="h-full w-full"
+            aria-label="Visit trend chart showing PV and UV over time"
+            role="img"
+          />
+        </div>
       </div>
 
       <!-- Recent Links -->
@@ -522,9 +541,7 @@ onMounted(fetchDashboardData)
                 <span
                   class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium"
                   :class="
-                    link.isEnable
-                      ? 'bg-green-50 text-green-700'
-                      : 'bg-gray-100 text-gray-500'
+                    link.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
                   "
                 >
                   {{ link.isEnable ? 'Active' : 'Inactive' }}
@@ -532,7 +549,9 @@ onMounted(fetchDashboardData)
               </div>
               <p class="mt-0.5 truncate text-xs text-gray-500">{{ link.url }}</p>
             </div>
-            <div class="ml-3 flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <div
+              class="ml-3 flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+            >
               <button
                 class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                 title="Copy short link"
@@ -575,7 +594,9 @@ onMounted(fetchDashboardData)
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <tr
+              class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+            >
               <th class="w-12 px-5 py-3">#</th>
               <th class="px-5 py-3">Short Link</th>
               <th class="hidden px-5 py-3 md:table-cell">Destination URL</th>
@@ -593,9 +614,7 @@ onMounted(fetchDashboardData)
                 <span
                   :class="[
                     'inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold',
-                    index < 3
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'bg-gray-100 text-gray-500',
+                    index < 3 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500',
                   ]"
                 >
                   {{ index + 1 }}
