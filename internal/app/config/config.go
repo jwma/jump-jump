@@ -1,13 +1,11 @@
 package config
 
 import (
-	"github.com/go-redis/redis"
-	"github.com/jwma/jump-jump/internal/app/utils"
-	"github.com/jwma/reborn"
-	"time"
-)
+	"context"
+	"sync"
 
-var config *reborn.Reborn
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 const (
 	ShortLinkNotFoundContentMode  = "content"
@@ -18,23 +16,15 @@ const (
 )
 
 type IdConfig struct {
-	// ID 长度
-	IdLength int `json:"idLength" format:"int" example:"6"`
-
-	// 最小 ID 长度
+	IdLength        int `json:"idLength" format:"int" example:"6"`
 	IdMinimumLength int `json:"idMinimumLength" format:"int" example:"2"`
-
-	// 最大 ID 长度
 	IdMaximumLength int `json:"idMaximumLength" format:"int" example:"10"`
-} // @name IdConfig
+}
 
 type ShortLinkNotFoundConfig struct {
-	// 模式
-	Mode string `json:"mode" binding:"required" example:"content" enums:"content,redirect"`
-
-	// 值
+	Mode  string `json:"mode" binding:"required" example:"content" enums:"content,redirect"`
 	Value string `json:"value" binding:"required" example:"page not found"`
-} // @name ShortLinkNotFoundConfig
+}
 
 func (s *ShortLinkNotFoundConfig) ToMap() map[string]string {
 	return map[string]string{
@@ -44,88 +34,97 @@ func (s *ShortLinkNotFoundConfig) ToMap() map[string]string {
 }
 
 type SystemConfig struct {
-	// 落地页 Host 列表
-	LandingHosts []string `json:"landingHosts" format:"array" example:"https://a.com/,https://b.com/"`
-
-	// ID 配置
-	IdConfig *IdConfig `json:"idConfig"`
-
-	// 短链接 404 配置
+	LandingHosts            []string                `json:"landingHosts" format:"array" example:"https://a.com/,https://b.com/"`
+	IdConfig                *IdConfig               `json:"idConfig"`
 	ShortLinkNotFoundConfig *ShortLinkNotFoundConfig `json:"shortLinkNotFoundConfig"`
-} // @name SystemConfig
-
-func GetIdConfig() *IdConfig {
-	return &IdConfig{
-		IdLength:        config.GetIntValue(utils.GetIdLengthConfigKey(), DefaultIdLength),
-		IdMinimumLength: config.GetIntValue(utils.GetIdMinimumLengthConfigKey(), DefaultIdMinimumLength),
-		IdMaximumLength: config.GetIntValue(utils.GetIdMaximumLengthConfigKey(), DefaultIdMaximumLength),
-	}
 }
 
-func getDefaultShortLinkNotFoundConfig() map[string]string {
-	return map[string]string{
-		"mode":  ShortLinkNotFoundContentMode,
-		"value": "你访问的页面不存在哦",
+type dbConfig struct {
+	LandingHosts  []string
+	IdLength      int
+	IdMinLength   int
+	IdMaxLength   int
+	NotFoundMode  string
+	NotFoundValue string
+}
+
+var (
+	pool   *pgxpool.Pool
+	cached *dbConfig
+	mu     sync.RWMutex
+)
+
+func SetupConfig(p *pgxpool.Pool) error {
+	pool = p
+	return reload()
+}
+
+func reload() error {
+	c := &dbConfig{}
+	err := pool.QueryRow(context.Background(),
+		`SELECT landing_hosts, id_length, id_min_length, id_max_length, not_found_mode, not_found_value
+		 FROM system_configs WHERE id = 1`).Scan(
+		&c.LandingHosts, &c.IdLength, &c.IdMinLength, &c.IdMaxLength,
+		&c.NotFoundMode, &c.NotFoundValue)
+	if err != nil {
+		return err
+	}
+
+	mu.Lock()
+	cached = c
+	mu.Unlock()
+	return nil
+}
+
+func GetIdConfig() *IdConfig {
+	mu.RLock()
+	defer mu.RUnlock()
+	return &IdConfig{
+		IdLength:        cached.IdLength,
+		IdMinimumLength: cached.IdMinLength,
+		IdMaximumLength: cached.IdMaxLength,
 	}
 }
 
 func GetShortLinkNotFoundConfig() *ShortLinkNotFoundConfig {
-	c := config.GetStringStringMapValue(utils.GetShortLinkNotFoundConfigKey(), getDefaultShortLinkNotFoundConfig())
-
+	mu.RLock()
+	defer mu.RUnlock()
 	return &ShortLinkNotFoundConfig{
-		Mode:  c["mode"],
-		Value: c["value"],
+		Mode:  cached.NotFoundMode,
+		Value: cached.NotFoundValue,
 	}
 }
 
 func GetSystemConfig() *SystemConfig {
 	return &SystemConfig{
-		LandingHosts:            config.GetStringSliceValue(utils.GetLandingHostsConfigKey(), make([]string, 0)),
+		LandingHosts:            getLandingHosts(),
 		IdConfig:                GetIdConfig(),
 		ShortLinkNotFoundConfig: GetShortLinkNotFoundConfig(),
 	}
 }
 
+func getLandingHosts() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return cached.LandingHosts
+}
+
 func UpdateLandingHosts(hosts []string) {
-	config.SetValue(utils.GetLandingHostsConfigKey(), hosts)
-	config.Persist()
+	pool.Exec(context.Background(),
+		`UPDATE system_configs SET landing_hosts = $1 WHERE id = 1`, hosts)
+	reload()
 }
 
 func UpdateIdConfig(c *IdConfig) {
-	config.SetValue(utils.GetIdMinimumLengthConfigKey(), c.IdMinimumLength)
-	config.SetValue(utils.GetIdLengthConfigKey(), c.IdLength)
-	config.SetValue(utils.GetIdMaximumLengthConfigKey(), c.IdMaximumLength)
-	config.Persist()
+	pool.Exec(context.Background(),
+		`UPDATE system_configs SET id_min_length = $1, id_length = $2, id_max_length = $3 WHERE id = 1`,
+		c.IdMinimumLength, c.IdLength, c.IdMaximumLength)
+	reload()
 }
 
 func UpdateShortLinkNotFoundConfig(s *ShortLinkNotFoundConfig) {
-	config.SetValue(utils.GetShortLinkNotFoundConfigKey(), s.ToMap())
-	config.Persist()
-}
-
-func getDefaultConfig() *reborn.Config {
-	d := reborn.NewConfig()
-	d.SetValue(utils.GetLandingHostsConfigKey(), []string{"http://127.0.0.1:8081/"})
-	d.SetValue(utils.GetIdMinimumLengthConfigKey(), DefaultIdMinimumLength)
-	d.SetValue(utils.GetIdLengthConfigKey(), DefaultIdLength)
-	d.SetValue(utils.GetIdMaximumLengthConfigKey(), DefaultIdMaximumLength)
-	d.SetValue(utils.GetShortLinkNotFoundConfigKey(), getDefaultShortLinkNotFoundConfig())
-
-	return d
-}
-
-func GetConfig() *reborn.Reborn {
-	return config
-}
-
-func SetupConfig(rdb *redis.Client) error {
-	var err error
-	config, err = reborn.NewWithDefaults(rdb, utils.GetConfigKey(), getDefaultConfig())
-	if err != nil {
-		return err
-	}
-	config.SetAutoReloadDuration(time.Second * 30)
-	config.StartAutoReload()
-
-	return nil
+	pool.Exec(context.Background(),
+		`UPDATE system_configs SET not_found_mode = $1, not_found_value = $2 WHERE id = 1`,
+		s.Mode, s.Value)
+	reload()
 }

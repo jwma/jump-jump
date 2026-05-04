@@ -1,38 +1,18 @@
 package handlers
 
 import (
+	"net/http"
+	"slices"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/models"
-	"github.com/thoas/go-funk"
-	"net/http"
 )
 
-// GetConfigAPI godoc
-// @Security ApiKeyAuth
-// @Summary 获取系统配置信息
-// @Description 获取系统配置信息
-// @Tags 系统配置
-// @Accept json
-// @Produce json
-// @Success 200 {object} models.Response{data=models.GetConfigAPIResponseData}
-// @Failure 401
-// @Router /config [get]
 func GetConfigAPI(c *gin.Context) {
 	c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{Config: config.GetSystemConfig()}))
 }
 
-// UpdateLandingHostsAPI godoc
-// @Security ApiKeyAuth
-// @Summary 更新落地页 Hosts
-// @Description 更新落地页 Hosts
-// @Tags 系统配置
-// @Accept json
-// @Produce json
-// @Param body body models.UpdateLandingHostsAPIRequest true "更新落地页 Hosts 请求"
-// @Success 200 {object} models.Response{data=models.GetConfigAPIResponseData}
-// @Failure 401
-// @Router /config/landing-hosts [patch]
 func UpdateLandingHostsAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
@@ -46,22 +26,11 @@ func UpdateLandingHostsAPI() gin.HandlerFunc {
 			return
 		}
 
-		config.UpdateLandingHosts(p.Hosts) // 更新
+		config.UpdateLandingHosts(p.Hosts)
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{Config: config.GetSystemConfig()}))
 	})
 }
 
-// UpdateIdLengthConfigAPI godoc
-// @Security ApiKeyAuth
-// @Summary 更新短链接 ID 设置
-// @Description 更新短链接 ID 设置
-// @Tags 系统配置
-// @Accept json
-// @Produce json
-// @Param body body config.IdConfig true "更新短链接 ID 设置请求"
-// @Success 200 {object} models.Response{data=models.GetConfigAPIResponseData}
-// @Failure 401
-// @Router /config/id-length [patch]
 func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
@@ -86,17 +55,6 @@ func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 	})
 }
 
-// UpdateShortLinkNotFoundConfigAPI godoc
-// @Security ApiKeyAuth
-// @Summary 更新短链接 404 设置
-// @Description 更新短链接 404 设置
-// @Tags 系统配置
-// @Accept json
-// @Produce json
-// @Param body body config.ShortLinkNotFoundConfig true "更新短链接 404 设置请求"
-// @Success 200 {object} models.Response{data=models.GetConfigAPIResponseData}
-// @Failure 401
-// @Router /config/short-link-404-handling [patch]
 func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
@@ -110,8 +68,7 @@ func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !funk.ContainsString([]string{config.ShortLinkNotFoundContentMode, config.ShortLinkNotFoundRedirectMode},
-			p.Mode) {
+		if !slices.Contains([]string{config.ShortLinkNotFoundContentMode, config.ShortLinkNotFoundRedirectMode}, p.Mode) {
 			c.JSON(http.StatusOK, models.NewErrorResponse("处理模式参数不正确"))
 			return
 		}

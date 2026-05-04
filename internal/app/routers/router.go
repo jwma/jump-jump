@@ -1,6 +1,10 @@
 package routers
 
 import (
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -8,9 +12,6 @@ import (
 	"github.com/jwma/jump-jump/internal/app/handlers"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"net/http"
-	"os"
-	"strings"
 )
 
 // @securityDefinitions.apikey ApiKeyAuth
@@ -39,7 +40,6 @@ func getAPIDocBasicAccounts() gin.Accounts {
 }
 
 func detectAPIDocHost() {
-	// 如果通过该环境变量指明了 API 文档使用的 Host，则直接使用
 	h := os.Getenv("API_DOC_HOST")
 	if h != "" {
 		docs.SwaggerInfo.Host = h
@@ -58,7 +58,7 @@ func SetupRouter() *gin.Engine {
 
 	// Swagger
 	docs.SwaggerInfo.Title = "Jump Jump API Documentation"
-	docs.SwaggerInfo.Description = "🚀🚀🚀"
+	docs.SwaggerInfo.Description = "Jump Jump short link service"
 	docs.SwaggerInfo.Version = "v1"
 	docs.SwaggerInfo.BasePath = "/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
@@ -69,7 +69,7 @@ func SetupRouter() *gin.Engine {
 		docsR.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 	}
 
-	if gin.Mode() == gin.DebugMode { // 开发环境下，开启 CORS
+	if gin.Mode() == gin.DebugMode {
 		corsCfg := cors.DefaultConfig()
 		corsCfg.AllowAllOrigins = true
 		corsCfg.AddAllowHeaders("Authorization")
@@ -79,29 +79,24 @@ func SetupRouter() *gin.Engine {
 	r.Use(handlers.AllowedHostsMiddleware())
 	r.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPaths([]string{"/v1/"})))
 
-	// serve dashboard static resources
 	r.LoadHTMLFiles("./web/admin/index.html")
 	r.StaticFS("/static", http.Dir("./web/admin/static"))
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
-	// v1 API's
 	v1 := r.Group("/v1")
 	{
-		// account stuff
 		v1.POST("/user/login", handlers.LoginAPI)
 		v1.GET("/user/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserInfoAPI())
 		v1.POST("/user/logout", handlers.JWTAuthenticatorMiddleware(), handlers.LogoutAPI())
 		v1.POST("/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
 
-		// system configuration stuff
 		v1.GET("/config", handlers.JWTAuthenticatorMiddleware(), handlers.GetConfigAPI)
 		v1.PATCH("/config/landing-hosts", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateLandingHostsAPI())
 		v1.PATCH("/config/id-length", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateIdLengthConfigAPI())
 		v1.PATCH("/config/short-link-404-handling", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateShortLinkNotFoundConfigAPI())
 
-		// short link stuff
 		shortLinkAPI := v1.Group("/short-link")
 		shortLinkAPI.Use(handlers.JWTAuthenticatorMiddleware())
 		shortLinkAPI.GET("/", handlers.ListShortLinksAPI())

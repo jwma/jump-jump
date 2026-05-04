@@ -1,10 +1,26 @@
 version: '3'
 
 services:
-  db:
-    image: redis:4.0
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: jumpjump
+      POSTGRES_USER: jumpjump
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-jumpjump}
     volumes:
-      - ./data:/data
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jumpjump"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redisdata:/data
     ports:
       - 6379:6379
     command: ["redis-server", "--appendonly", "yes"]
@@ -12,13 +28,17 @@ services:
   apiserver:
     image: studiomj/jump-jump
     depends_on:
-      - db
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - 8080:8080
     entrypoint: ["./apiserver"]
     environment:
+      - DATABASE_URL=postgres://jumpjump:${PG_PASSWORD:-jumpjump}@postgres:5432/jumpjump?sslmode=disable
       - REDIS_DB=0
-      - REDIS_HOST=db:6379
+      - REDIS_HOST=redis:6379
       - J2_API_ADDR=0.0.0.0:8080
       - SECRET_KEY=YOUR_SECRET_KEY
       - GIN_MODE=release
@@ -27,12 +47,20 @@ services:
   landingserver:
     image: studiomj/jump-jump
     depends_on:
-      - db
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - 8081:8081
     entrypoint: ["./landingserver"]
     environment:
+      - DATABASE_URL=postgres://jumpjump:${PG_PASSWORD:-jumpjump}@postgres:5432/jumpjump?sslmode=disable
       - REDIS_DB=0
-      - REDIS_HOST=db:6379
+      - REDIS_HOST=redis:6379
       - J2_LANDING_ADDR=0.0.0.0:8081
       - GIN_MODE=release
+
+volumes:
+  pgdata:
+  redisdata:

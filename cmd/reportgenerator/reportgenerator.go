@@ -1,29 +1,32 @@
 package main
 
 import (
-	"github.com/jwma/jump-jump/internal/app/db"
-	"github.com/jwma/jump-jump/internal/app/report"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/report"
 )
 
 func main() {
-	// 每 30 秒运行一次报表生成/更新
+	if err := db.InitRedis(); err != nil {
+		panic(err)
+	}
+	defer db.CloseRedis()
+
 	rg := report.NewGenerator(db.GetRedisClient(), time.Second*30)
 
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		_ = rg.Stop() // 如果程序中断，停止 report generator
+		_ = rg.Stop()
 		os.Exit(1)
 	}()
 
-	err := rg.Start()
-
-	if err != nil {
+	if err := rg.Start(); err != nil {
 		panic(err)
 	}
 }

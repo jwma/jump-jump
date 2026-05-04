@@ -1,14 +1,15 @@
 package handlers
 
 import (
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
-	"log"
-	"net/http"
-	"os"
 )
 
 func LandingHome(c *gin.Context) {
@@ -27,7 +28,7 @@ func Redirect(c *gin.Context) {
 		return
 	}
 
-	slRepo := repository.GetShortLinkRepo(db.GetRedisClient())
+	slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 	s, err := slRepo.Get(c.Param("id"))
 
 	if err != nil {
@@ -37,14 +38,11 @@ func Redirect(c *gin.Context) {
 		switch cc.Mode {
 		case config.ShortLinkNotFoundContentMode:
 			c.String(http.StatusOK, cc.Value)
-			break
 		case config.ShortLinkNotFoundRedirectMode:
 			c.Redirect(http.StatusTemporaryRedirect, cc.Value)
-			break
 		default:
 			c.String(http.StatusOK, "你访问的页面不存在哦")
 		}
-
 		return
 	}
 
@@ -53,7 +51,6 @@ func Redirect(c *gin.Context) {
 		return
 	}
 
-	// 保存短链接请求记录（IP、User-Agent），保存活跃链接记录
 	rhRepo := repository.GetRequestHistoryRepo(db.GetRedisClient())
 	alRepo := repository.GetActiveLinkRepo(db.GetRedisClient())
 	go func() {

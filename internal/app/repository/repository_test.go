@@ -1,23 +1,34 @@
 package repository
 
 import (
-	"github.com/go-redis/redis"
-	"github.com/jwma/jump-jump/internal/app/config"
-	"github.com/jwma/jump-jump/internal/app/models"
-	"github.com/jwma/jump-jump/internal/app/utils"
+	"context"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jwma/jump-jump/internal/app/config"
+	"github.com/jwma/jump-jump/internal/app/models"
+	"github.com/redis/go-redis/v9"
 )
 
 func getTestRDB() *redis.Client {
 	return redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379", DB: 1})
 }
 
-func init() {
-	// 清空测试使用的数据库，以便后续测试正常运作
-	getTestRDB().FlushDB()
+func getTestPool() *pgxpool.Pool {
+	pool, err := pgxpool.New(context.Background(), "postgres://jumpjump:jumpjump@127.0.0.1:5432/jumpjump_test?sslmode=disable")
+	if err != nil {
+		panic(err)
+	}
+	return pool
+}
 
-	config.SetupConfig(getTestRDB())
+func init() {
+	rdb := getTestRDB()
+	rdb.FlushDB(context.Background())
+
+	pool := getTestPool()
+	config.SetupConfig(pool)
 }
 
 func TestShortLinkRepository_Save(t *testing.T) {
@@ -29,7 +40,7 @@ func TestShortLinkRepository_Save(t *testing.T) {
 		CreatedBy:   "mj",
 	}
 
-	repo := GetShortLinkRepo(getTestRDB())
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
 	err := repo.Save(l)
 
 	if err != nil {
@@ -39,7 +50,7 @@ func TestShortLinkRepository_Save(t *testing.T) {
 
 func TestShortLinkRepository_Get(t *testing.T) {
 	id := "mj"
-	repo := GetShortLinkRepo(getTestRDB())
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
 	_, err := repo.Get(id)
 
 	if err != nil {
@@ -49,7 +60,7 @@ func TestShortLinkRepository_Get(t *testing.T) {
 
 func TestShortLinkRepository_Update(t *testing.T) {
 	id := "mj"
-	repo := GetShortLinkRepo(getTestRDB())
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
 	l, err := repo.Get(id)
 
 	if err != nil {
@@ -70,8 +81,8 @@ func TestShortLinkRepository_Update(t *testing.T) {
 }
 
 func TestShortLinkRepository_List(t *testing.T) {
-	repo := GetShortLinkRepo(getTestRDB())
-	rs, err := repo.List(utils.GetUserShortLinksKey("mj"), 0, 10)
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
+	rs, err := repo.List("mj", false, 0, 10)
 
 	if err != nil {
 		t.Error(err)
@@ -80,13 +91,13 @@ func TestShortLinkRepository_List(t *testing.T) {
 	expected := 1
 
 	if rs.Total != int64(expected) {
-		t.Errorf("expected %b but got %b\n", expected, rs.Total)
+		t.Errorf("expected %d but got %d\n", expected, rs.Total)
 	}
 }
 
 func TestShortLinkRepository_Delete(t *testing.T) {
 	id := "mj"
-	repo := GetShortLinkRepo(getTestRDB())
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
 	l, err := repo.Get(id)
 
 	if err != nil {
@@ -104,7 +115,7 @@ func TestRequestHistoryRepository_Save(t *testing.T) {
 		IsEnable:    true,
 		CreatedBy:   "mj",
 	}
-	slRepo := GetShortLinkRepo(getTestRDB())
+	slRepo := GetShortLinkRepo(getTestPool(), getTestRDB())
 	err := slRepo.Save(l)
 
 	if err != nil {
@@ -127,7 +138,7 @@ func TestRequestHistoryRepository_FindLatest(t *testing.T) {
 	}
 
 	if rs.Total != expected {
-		t.Errorf("expected %b but got %b\n", expected, rs.Total)
+		t.Errorf("expected %d but got %d\n", expected, rs.Total)
 	}
 }
 
@@ -138,12 +149,12 @@ func TestRequestHistoryRepository_FindByDateRange(t *testing.T) {
 	expected := 1
 
 	if len(rs) != expected {
-		t.Errorf("expected %b but got %b\n", expected, len(rs))
+		t.Errorf("expected %d but got %d\n", expected, len(rs))
 	}
 }
 
 func TestUserRepository_Save(t *testing.T) {
-	repo := GetUserRepo(getTestRDB())
+	repo := GetUserRepo(getTestPool())
 
 	u := &models.User{
 		Username:    "",
@@ -151,7 +162,6 @@ func TestUserRepository_Save(t *testing.T) {
 		RawPassword: "",
 	}
 
-	// 测试保存不符合要求的用户数据
 	err := repo.Save(u)
 
 	if err == nil {
@@ -173,7 +183,6 @@ func TestUserRepository_Save(t *testing.T) {
 		t.Error(err)
 	}
 
-	// 尝试使用已存在的用户名创建用户
 	u2 := &models.User{
 		Username:    "mj",
 		Role:        models.RoleUser,
@@ -187,23 +196,20 @@ func TestUserRepository_Save(t *testing.T) {
 }
 
 func TestUserRepository_FindOneByUsername(t *testing.T) {
-	repo := GetUserRepo(getTestRDB())
+	repo := GetUserRepo(getTestPool())
 
-	// 测试 username 空字符
 	_, err := repo.FindOneByUsername("")
 
 	if err == nil {
 		t.Errorf("expected error but got nil")
 	}
 
-	// 测试查找不存在的用户名
 	_, err = repo.FindOneByUsername("anmuji")
 
 	if err == nil {
 		t.Errorf("expected error but got nil")
 	}
 
-	// 正常查找
 	expectedUsername := "mj"
 	u, err := repo.FindOneByUsername(expectedUsername)
 
@@ -216,7 +222,7 @@ func TestUserRepository_FindOneByUsername(t *testing.T) {
 }
 
 func TestUserRepository_UpdatePassword(t *testing.T) {
-	repo := GetUserRepo(getTestRDB())
+	repo := GetUserRepo(getTestPool())
 
 	u, err := repo.FindOneByUsername("mj")
 
@@ -224,14 +230,12 @@ func TestUserRepository_UpdatePassword(t *testing.T) {
 		t.Error(err)
 	}
 
-	//测试更新密码为空字符串
 	err = repo.UpdatePassword(u)
 
 	if err == nil {
 		t.Errorf("expected error but got nil")
 	}
 
-	//测试正常更新密码
 	u.RawPassword = "opqrst"
 	err = repo.UpdatePassword(u)
 

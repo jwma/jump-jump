@@ -2,72 +2,68 @@ package server
 
 import (
 	"fmt"
+	"os"
+	"slices"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/config"
-	_ "github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/routers"
-	"github.com/thoas/go-funk"
-	"os"
 )
 
-func setupDB() error {
-	c := db.GetRedisClient()
-	pong := c.Ping()
-	return pong.Err()
-}
-
-// 检查 ALLOWED_HOSTS 设置正确设置
 func allowHostsChecking() error {
 	if gin.Mode() == gin.ReleaseMode {
-
-		if funk.ContainsString([]string{"", "*"}, os.Getenv("ALLOWED_HOSTS")) {
-			return fmt.Errorf("please set ALLOWED_HOSTS environment variable when GIN_MODE=release.\n")
+		allowedHosts := os.Getenv("ALLOWED_HOSTS")
+		if slices.Contains([]string{"", "*"}, allowedHosts) {
+			return fmt.Errorf("please set ALLOWED_HOSTS environment variable when GIN_MODE=release")
 		}
 	}
+	return nil
+}
 
+func setupDB() error {
+	if err := db.InitRedis(); err != nil {
+		return fmt.Errorf("Redis init failed: %w", err)
+	}
+	if err := db.InitPostgres(); err != nil {
+		return fmt.Errorf("PostgreSQL init failed: %w", err)
+	}
+	if err := db.RunMigrations(); err != nil {
+		return fmt.Errorf("Migration failed: %w", err)
+	}
 	return nil
 }
 
 func Run(addr ...string) error {
-	// security checking
-	err := allowHostsChecking()
-
-	if err != nil {
+	if err := allowHostsChecking(); err != nil {
 		return err
 	}
 
-	err = setupDB()
-
-	if err != nil {
+	if err := setupDB(); err != nil {
 		return err
 	}
+	defer db.ClosePostgres()
+	defer db.CloseRedis()
 
-	err = config.SetupConfig(db.GetRedisClient())
-
-	if err != nil {
+	if err := config.SetupConfig(db.GetPostgresPool()); err != nil {
 		return err
 	}
 
 	router := routers.SetupRouter()
-	err = router.Run(addr...)
-	return err
+	return router.Run(addr...)
 }
 
 func RunLanding(addr ...string) error {
-	err := setupDB()
-
-	if err != nil {
+	if err := setupDB(); err != nil {
 		return err
 	}
+	defer db.ClosePostgres()
+	defer db.CloseRedis()
 
-	err = config.SetupConfig(db.GetRedisClient())
-
-	if err != nil {
+	if err := config.SetupConfig(db.GetPostgresPool()); err != nil {
 		return err
 	}
 
 	router := routers.SetupLandingRouter()
-	err = router.Run(addr...)
-	return err
+	return router.Run(addr...)
 }

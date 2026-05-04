@@ -2,17 +2,18 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
-	"github.com/jwma/jump-jump/internal/app/db"
-	"github.com/jwma/jump-jump/internal/app/models"
-	"github.com/jwma/jump-jump/internal/app/repository"
-	"github.com/jwma/jump-jump/internal/app/utils"
-	"github.com/thoas/go-funk"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/models"
+	"github.com/jwma/jump-jump/internal/app/repository"
+	"github.com/jwma/jump-jump/internal/app/utils"
+	"slices"
 )
 
 func parseAuthorizationHeader(a string) (string, error) {
@@ -28,7 +29,6 @@ func parseAuthorizationHeader(a string) (string, error) {
 
 func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 从 Authorization 提取 JWT
 		jwtStr, err := parseAuthorizationHeader(c.Request.Header.Get("Authorization"))
 		if err != nil {
 			log.Println(err)
@@ -37,7 +37,6 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// 校验 JWT
 		claims := jwt.MapClaims{}
 		_, err = jwt.ParseWithClaims(jwtStr, claims, func(*jwt.Token) (interface{}, error) {
 			return []byte(utils.SecretKey), nil
@@ -49,8 +48,7 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// 获取用户
-		repo := repository.GetUserRepo(db.GetRedisClient())
+		repo := repository.GetUserRepo(db.GetPostgresPool())
 		u, err := repo.FindOneByUsername(claims["identifier"].(string))
 		if err != nil {
 			log.Println(err)
@@ -59,7 +57,6 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// 把当前请求用户保存到请求的上下文中
 		c.Set("user", u)
 	}
 }
@@ -79,8 +76,6 @@ func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
 	}
 }
 
-// 检查当前请求的 Host 是否属于我们所设定的 Host 列表中的其中一个
-// 如果不在设定列表中，则返回 HTTP Code 400 并中断后续逻辑的处理
 func AllowedHostsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		allowedHosts := os.Getenv("ALLOWED_HOSTS")
@@ -88,7 +83,7 @@ func AllowedHostsMiddleware() gin.HandlerFunc {
 		if allowedHosts != "" && allowedHosts != "*" {
 			h := strings.Split(c.Request.Host, ":")[0]
 
-			if !funk.ContainsString(strings.Split(allowedHosts, ","), h) {
+			if !slices.Contains(strings.Split(allowedHosts, ","), h) {
 				output := ""
 
 				if gin.Mode() == gin.DebugMode {

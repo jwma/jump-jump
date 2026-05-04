@@ -1,5 +1,5 @@
 # build stage
-FROM golang:1.13-alpine as builder
+FROM golang:1.24-alpine AS builder
 
 LABEL maintainer="m.mjw.ma@gmail.com"
 
@@ -13,16 +13,15 @@ COPY . .
 RUN go build -o apiserver ./cmd/apiserver \
     && go build -o landingserver ./cmd/landingserver \
     && go build -o createuser ./cmd/createuser \
-    && go build -o migraterequesthistory ./cmd/migraterequesthistory
+    && go build -o reportgenerator ./cmd/reportgenerator
 
 # final stage
-FROM alpine
+FROM alpine:3.21
 
-ARG EXPOSE_PORT=8080
 ENV CGO_ENABLED=0
 
-EXPOSE $EXPOSE_PORT
 WORKDIR /app
-COPY --from=builder /app_src/apiserver /app_src/landingserver /app_src/createuser /app_src/migraterequesthistory ./
+COPY --from=builder /app_src/apiserver /app_src/landingserver /app_src/createuser /app_src/reportgenerator ./
 COPY --from=builder /app_src/web ./web
+EXPOSE 8080
 ENTRYPOINT ["./apiserver"]
