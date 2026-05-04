@@ -82,7 +82,12 @@ func SetupRouter() *gin.Engine {
 	// serve dashboard static resources
 	r.LoadHTMLFiles("./web/admin/index.html")
 	r.StaticFS("/static", http.Dir("./web/admin/static"))
-	r.GET("/", func(c *gin.Context) {
+	r.NoRoute(func(c *gin.Context) {
+		// Skip API paths — let them return the default 404
+		if strings.HasPrefix(c.Request.URL.Path, "/v1/") || strings.HasPrefix(c.Request.URL.Path, "/swagger/") {
+			c.JSON(http.StatusNotFound, gin.H{"msg": "not found", "code": 404})
+			return
+		}
 		c.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
