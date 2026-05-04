@@ -9,6 +9,7 @@ import (
 	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
+	"github.com/mssola/user_agent"
 )
 
 func LandingHome(c *gin.Context) {
@@ -50,10 +51,10 @@ func Redirect(c *gin.Context) {
 	}
 
 	rhRepo := repository.GetRequestHistoryRepo(db.GetRedisClient(), db.GetPostgresPool())
-	alRepo := repository.GetActiveLinkRepo(db.GetRedisClient())
 	go func() {
-		rhRepo.Save(models.NewRequestHistory(s, c.ClientIP(), c.Request.UserAgent()))
-		alRepo.Save(s.Id)
+		ua := user_agent.New(c.Request.UserAgent())
+		osInfo := ua.OSInfo()
+		rhRepo.Save(models.NewRequestHistory(s, c.ClientIP(), c.Request.UserAgent(), osInfo.Name))
 	}()
 
 	c.Redirect(http.StatusTemporaryRedirect, s.Url)

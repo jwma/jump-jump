@@ -15,15 +15,3 @@ func GetTenantConfigCacheKey(tenantID string) string {
 }
 
 const RequestHistoryBufferKey = "rh:buffer"
-
-func GetRequestHistoryKey(linkId string) string {
-	return fmt.Sprintf("rh:%s", linkId)
-}
-
-func GetActiveLinkKey() string {
-	return "activelinks"
-}
-
-func GetDailyReportKey(linkId string) string {
-	return fmt.Sprintf("dr:%s", linkId)
-}

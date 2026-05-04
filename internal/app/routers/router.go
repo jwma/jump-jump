@@ -92,6 +92,8 @@ func SetupRouter() *gin.Engine {
 		v1.GET("/user/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserInfoAPI())
 		v1.POST("/user/logout", handlers.JWTAuthenticatorMiddleware(), handlers.LogoutAPI())
 		v1.POST("/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
+		v1.GET("/user/preferences", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserPreferencesAPI())
+		v1.PUT("/user/preferences", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateUserPreferencesAPI())
 
 		v1.GET("/config", handlers.JWTAuthenticatorMiddleware(), handlers.GetConfigAPI())
 		v1.PATCH("/config/id-length", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateIdLengthConfigAPI())

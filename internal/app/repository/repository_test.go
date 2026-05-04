@@ -124,7 +124,7 @@ func TestRequestHistoryRepository_Save(t *testing.T) {
 		t.Error(err)
 	}
 
-	rh := models.NewRequestHistory(l, "127.0.0.1", "fake user agent")
+	rh := models.NewRequestHistory(l, "127.0.0.1", "fake user agent", "Linux")
 	rhRepo := GetRequestHistoryRepo(getTestRDB(), getTestPool())
 	rhRepo.Save(rh)
 }
@@ -229,62 +229,5 @@ func TestUserRepository_UpdatePassword(t *testing.T) {
 
 	if err != nil {
 		t.Error(err)
-	}
-}
-
-func TestActiveLinkRepository_Save(t *testing.T) {
-	repo := GetActiveLinkRepo(getTestRDB())
-	repo.Save("a")
-	repo.Save("b")
-	repo.Save("c")
-}
-
-func TestActiveLinkRepository_FindByDateRange(t *testing.T) {
-	repo := GetActiveLinkRepo(getTestRDB())
-	activeLinks := repo.FindByDateRange(time.Now().Add(-time.Minute), time.Now())
-	expected := 3
-
-	if len(activeLinks) != expected {
-		t.Errorf("expected %d but got %d", expected, len(activeLinks))
-	}
-}
-
-func TestDailyReportRepository_Save(t *testing.T) {
-	repo := GetDailyReportRepo(getTestRDB())
-	repo.Save("fake", "2020-01-01", &models.DailyReport{
-		PV: 1,
-		UV: 1,
-		OS: map[string]int{"Mac OS X": 1},
-	})
-}
-
-func TestDailyReportRepository_FindRecent(t *testing.T) {
-	repo := GetDailyReportRepo(getTestRDB())
-
-	sampleKey := time.Now().Format("2006-01-02")
-	sample := &models.DailyReport{
-		PV: 1,
-		UV: 1,
-		OS: map[string]int{"Mac OS X": 1},
-	}
-	repo.Save("fake", sampleKey, sample)
-
-	reports := repo.FindRecent("fake", 3)
-	expected := 3
-
-	if len(reports) != expected {
-		t.Errorf("expected %d but got %d", expected, len(reports))
-	}
-
-	if reports[expected-1].Date != sampleKey {
-		t.Errorf("expected %s but got %s", sampleKey, reports[expected-1].Date)
-	}
-
-	if reports[expected-1].Report.PV != sample.PV {
-		t.Errorf("expected %d but got %d", sample.PV, reports[expected-1].Report.PV)
-	}
-
-	if reports[expected-1].Report.UV != sample.UV {
-		t.Errorf("expected %d but got %d", sample.PV, reports[expected-1].Report.UV)
 	}
 }

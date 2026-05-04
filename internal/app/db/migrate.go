@@ -68,11 +68,19 @@ CREATE TABLE IF NOT EXISTS request_histories (
     url           TEXT NOT NULL DEFAULT '',
     ip            VARCHAR(45) NOT NULL DEFAULT '',
     ua            TEXT NOT NULL DEFAULT '',
+    os            VARCHAR(50) NOT NULL DEFAULT '',
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_request_histories_link_time ON request_histories(short_link_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_request_histories_tenant ON request_histories(tenant_id);
+
+CREATE TABLE IF NOT EXISTS user_preferences (
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    key     VARCHAR(100) NOT NULL,
+    value   TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (user_id, key)
+);
 `
 
 func RunMigrations() error {

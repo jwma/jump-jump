@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -262,8 +261,6 @@ func (r *shortLinkRepository) Update(s *models.ShortLink, params *models.UpdateS
 func (r *shortLinkRepository) Delete(s *models.ShortLink) {
 	r.db.Exec(context.Background(), `DELETE FROM short_links WHERE id = $1`, s.Id)
 	r.rdb.Del(context.Background(), utils.GetShortLinkCacheKey(s.Id))
-	r.rdb.Del(context.Background(), utils.GetRequestHistoryKey(s.Id))
-	r.rdb.Del(context.Background(), utils.GetDailyReportKey(s.Id))
 }
 
 func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
@@ -381,9 +378,9 @@ func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 
 func (r *requestHistoryRepository) saveDirect(rh *models.RequestHistory) {
 	_, err := r.db.Exec(context.Background(),
-		`INSERT INTO request_histories (short_link_id, tenant_id, url, ip, ua, created_at)
-		 VALUES ($1, $2, $3, $4, $5, $6)`,
-		rh.ShortLinkID, rh.TenantID, rh.Url, rh.IP, rh.UA, rh.Time)
+		`INSERT INTO request_histories (short_link_id, tenant_id, url, ip, ua, os, created_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		rh.ShortLinkID, rh.TenantID, rh.Url, rh.IP, rh.UA, rh.OS, rh.Time)
 	if err != nil {
 		log.Printf("request history: direct PG write failed: %v", err)
 	}
@@ -391,7 +388,7 @@ func (r *requestHistoryRepository) saveDirect(rh *models.RequestHistory) {
 
 func (r *requestHistoryRepository) FindByDateRange(linkId string, startTime, endTime time.Time) []*models.RequestHistory {
 	rows, err := r.db.Query(context.Background(),
-		`SELECT id, short_link_id, url, ip, ua, created_at
+		`SELECT id, short_link_id, url, ip, ua, os, created_at
 		 FROM request_histories
 		 WHERE short_link_id = $1 AND created_at BETWEEN $2 AND $3
 		 ORDER BY created_at DESC`,
@@ -405,85 +402,109 @@ func (r *requestHistoryRepository) FindByDateRange(linkId string, startTime, end
 	rhs := make([]*models.RequestHistory, 0)
 	for rows.Next() {
 		rh := &models.RequestHistory{}
-		rows.Scan(&rh.Id, &rh.ShortLinkID, &rh.Url, &rh.IP, &rh.UA, &rh.Time)
+		rows.Scan(&rh.Id, &rh.ShortLinkID, &rh.Url, &rh.IP, &rh.UA, &rh.OS, &rh.Time)
 		rhs = append(rhs, rh)
 	}
 	return rhs
 }
 
-// --- Active Link Repository (Redis) ---
-
-type activeLinkRepository struct {
-	db *redis.Client
-}
-
-var activeLinkRepo *activeLinkRepository
-
-func GetActiveLinkRepo(rdb *redis.Client) *activeLinkRepository {
-	if activeLinkRepo == nil {
-		activeLinkRepo = &activeLinkRepository{rdb}
+func (r *requestHistoryRepository) GetAggregatedStats(linkId string, startTime, endTime time.Time) ([]*models.DailyStats, map[string]int) {
+	// Daily PV/UV
+	rows, err := r.db.Query(context.Background(),
+		`SELECT DATE(created_at) AS day, COUNT(*) AS pv, COUNT(DISTINCT ip) AS uv
+		 FROM request_histories
+		 WHERE short_link_id = $1 AND created_at BETWEEN $2 AND $3
+		 GROUP BY day ORDER BY day`,
+		linkId, startTime, endTime)
+	if err != nil {
+		log.Printf("request history aggregation failed: %v", err)
+		return nil, nil
 	}
-	return activeLinkRepo
-}
+	defer rows.Close()
 
-func (r *activeLinkRepository) Save(linkId string) {
-	r.db.ZAdd(context.Background(), utils.GetActiveLinkKey(), redis.Z{
-		Score:  float64(time.Now().Unix()),
-		Member: linkId,
-	})
-}
-
-func (r *activeLinkRepository) FindByDateRange(startTime, endTime time.Time) []*models.ActiveLink {
-	result := make([]*models.ActiveLink, 0)
-	rs, _ := r.db.ZRangeByScoreWithScores(context.Background(), utils.GetActiveLinkKey(), &redis.ZRangeBy{
-		Min: strconv.Itoa(int(startTime.Unix())),
-		Max: strconv.Itoa(int(endTime.Unix())),
-	}).Result()
-	for _, one := range rs {
-		result = append(result, &models.ActiveLink{Id: one.Member.(string), Time: time.Unix(int64(one.Score), 0)})
+	daily := make([]*models.DailyStats, 0)
+	for rows.Next() {
+		ds := &models.DailyStats{}
+		rows.Scan(&ds.Date, &ds.PV, &ds.UV)
+		daily = append(daily, ds)
 	}
-	return result
-}
 
-// --- Daily Report Repository (Redis) ---
-
-type dailyReportRepository struct {
-	db *redis.Client
-}
-
-var dailyReportRepo *dailyReportRepository
-
-func GetDailyReportRepo(rdb *redis.Client) *dailyReportRepository {
-	if dailyReportRepo == nil {
-		dailyReportRepo = &dailyReportRepository{rdb}
+	// OS distribution
+	osRows, err := r.db.Query(context.Background(),
+		`SELECT os, COUNT(*) FROM request_histories
+		 WHERE short_link_id = $1 AND created_at BETWEEN $2 AND $3 AND os != ''
+		 GROUP BY os ORDER BY count DESC`, linkId, startTime, endTime)
+	if err != nil {
+		return daily, nil
 	}
-	return dailyReportRepo
+	defer osRows.Close()
+
+	osDist := make(map[string]int)
+	for osRows.Next() {
+		var osName string
+		var count int
+		osRows.Scan(&osName, &count)
+		osDist[osName] = count
+	}
+
+	return daily, osDist
 }
 
-func (r *dailyReportRepository) Save(linkId string, reportKey string, report *models.DailyReport) {
-	r.db.HSet(context.Background(), utils.GetDailyReportKey(linkId), reportKey, report)
+// --- User Preference Repository (PG) ---
+
+type userPreferenceRepository struct {
+	db *pgxpool.Pool
 }
 
-func (r *dailyReportRepository) FindRecent(linkId string, days int) []*models.DailyReportItem {
-	if days < 1 {
-		days = 1
+var userPrefRepo *userPreferenceRepository
+
+func GetUserPreferenceRepo(p *pgxpool.Pool) *userPreferenceRepository {
+	if userPrefRepo == nil {
+		userPrefRepo = &userPreferenceRepository{p}
 	}
-	now := time.Now()
-	d := now.AddDate(0, 0, -days+1)
-	reportKeys := make([]string, 0)
-	for d.Before(now) {
-		reportKeys = append(reportKeys, d.Format("2006-01-02"))
-		d = d.AddDate(0, 0, 1)
+	return userPrefRepo
+}
+
+func (r *userPreferenceRepository) GetAll(tenantID, username string) ([]*models.UserPreference, error) {
+	var userID string
+	err := r.db.QueryRow(context.Background(),
+		`SELECT id FROM users WHERE tenant_id = $1 AND username = $2`, tenantID, username).Scan(&userID)
+	if err != nil {
+		return nil, fmt.Errorf("用户不存在")
 	}
-	reportKeys = append(reportKeys, now.Format("2006-01-02"))
-	reports := make([]*models.DailyReportItem, days)
-	rs, _ := r.db.HMGet(context.Background(), utils.GetDailyReportKey(linkId), reportKeys...).Result()
-	for i := 0; i < days; i++ {
-		r := &models.DailyReport{}
-		if rs[i] != nil {
-			json.Unmarshal([]byte(rs[i].(string)), r)
+
+	rows, err := r.db.Query(context.Background(),
+		`SELECT key, value FROM user_preferences WHERE user_id = $1 ORDER BY key`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	prefs := make([]*models.UserPreference, 0)
+	for rows.Next() {
+		p := &models.UserPreference{}
+		rows.Scan(&p.Key, &p.Value)
+		prefs = append(prefs, p)
+	}
+	return prefs, nil
+}
+
+func (r *userPreferenceRepository) Upsert(tenantID, username string, prefs []*models.UserPreference) error {
+	var userID string
+	err := r.db.QueryRow(context.Background(),
+		`SELECT id FROM users WHERE tenant_id = $1 AND username = $2`, tenantID, username).Scan(&userID)
+	if err != nil {
+		return fmt.Errorf("用户不存在")
+	}
+
+	for _, p := range prefs {
+		_, err := r.db.Exec(context.Background(),
+			`INSERT INTO user_preferences (user_id, key, value) VALUES ($1, $2, $3)
+			 ON CONFLICT (user_id, key) DO UPDATE SET value = $3`,
+			userID, p.Key, p.Value)
+		if err != nil {
+			return err
 		}
-		reports[i] = &models.DailyReportItem{Date: reportKeys[i], Report: r}
 	}
-	return reports
+	return nil
 }

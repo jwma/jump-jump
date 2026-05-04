@@ -200,6 +200,7 @@ type RequestHistory struct {
 	Url         string    `json:"url"`
 	IP          string    `json:"ip"`
 	UA          string    `json:"ua"`
+	OS          string    `json:"os,omitempty"`
 	Time        time.Time `json:"time"`
 }
 
@@ -207,36 +208,30 @@ func (r *RequestHistory) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(r)
 }
 
-func NewRequestHistory(link *ShortLink, IP string, UA string) *RequestHistory {
+func NewRequestHistory(link *ShortLink, IP string, UA string, OS string) *RequestHistory {
 	return &RequestHistory{
 		ShortLinkID: link.Id,
 		TenantID:    link.TenantID,
 		Url:         link.Url,
 		IP:          IP,
 		UA:          UA,
+		OS:          OS,
 	}
 }
 
 type ShortLinkDataAPIResponseData struct {
 	Histories []*RequestHistory `json:"histories"`
+	Daily     []*DailyStats     `json:"daily"`
+	OSDist    map[string]int    `json:"osDist"`
 }
 
-type ActiveLink struct {
-	Id   string
-	Time time.Time
+type DailyStats struct {
+	Date string `json:"date"`
+	PV   int    `json:"pv"`
+	UV   int    `json:"uv"`
 }
 
-type DailyReport struct {
-	PV int            `json:"pv"`
-	UV int            `json:"uv"`
-	OS map[string]int `json:"os"`
-}
-
-func (d *DailyReport) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(d)
-}
-
-type DailyReportItem struct {
-	Date   string       `json:"date"`
-	Report *DailyReport `json:"report"`
+type UserPreference struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
