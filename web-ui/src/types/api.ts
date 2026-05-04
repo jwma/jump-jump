@@ -112,6 +112,18 @@ export interface DailyReportItem {
   report: DailyReport
 }
 
+export interface DailyStats {
+  date: string
+  pv: number
+  uv: number
+}
+
+export interface ShortLinkDataResponse {
+  histories: RequestHistory[]
+  daily: DailyStats[]
+  osDist: Record<string, number>
+}
+
 export const UserRole = {
   User: 1,
   Admin: 2,
