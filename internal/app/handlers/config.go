@@ -9,6 +9,16 @@ import (
 	"github.com/jwma/jump-jump/internal/app/models"
 )
 
+// GetConfigAPI godoc
+// @Summary 获取系统配置信息
+// @Description 获取系统配置信息
+// @Tags 系统配置
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} models.Response{data=models.GetConfigAPIResponseData}
+// @Failure 401 {object} nil
+// @Router /config [get]
 func GetConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		tenantID := user.TenantID
@@ -18,6 +28,17 @@ func GetConfigAPI() gin.HandlerFunc {
 	})
 }
 
+// UpdateIdLengthConfigAPI godoc
+// @Summary 更新短链接 ID 设置
+// @Description 更新短链接 ID 设置
+// @Tags 系统配置
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param body body models.UpdateIdLengthRequest true "更新短链接 ID 设置请求"
+// @Success 200 {object} models.Response{data=models.GetConfigAPIResponseData}
+// @Failure 401 {object} nil
+// @Router /config/id-length [patch]
 func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
@@ -48,6 +69,17 @@ func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 	})
 }
 
+// UpdateShortLinkNotFoundConfigAPI godoc
+// @Summary 更新短链接 404 设置
+// @Description 更新短链接 404 设置
+// @Tags 系统配置
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param body body models.UpdateNotFoundConfigRequest true "更新短链接 404 设置请求"
+// @Success 200 {object} models.Response{data=models.GetConfigAPIResponseData}
+// @Failure 401 {object} nil
+// @Router /config/short-link-404-handling [patch]
 func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
