@@ -45,6 +45,7 @@ const menuItems = computed(() => {
 function isActive(to: { name: string }) {
   if (route.name === to.name) return true
   if (to.name === 'short-links' && String(route.name).startsWith('short-link')) return true
+  if (to.name === 'tenants' && String(route.name).startsWith('tenant')) return true
   return false
 }
 

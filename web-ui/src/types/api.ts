@@ -122,6 +122,33 @@ export interface ShortLinkDataResponse {
   histories: RequestHistory[]
 }
 
+export interface Tenant {
+  id: string
+  name: string
+  slug: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TenantDomain {
+  id: string
+  tenantId: string
+  domain: string
+  isDefault: boolean
+  createdAt: string
+}
+
+export interface CreateTenantRequest {
+  name: string
+  slug: string
+}
+
+export interface AddDomainRequest {
+  domain: string
+  isDefault: boolean
+}
+
 export const UserRole = {
   User: 1,
   Admin: 2,
