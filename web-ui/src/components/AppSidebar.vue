@@ -74,7 +74,9 @@ async function handleLogout() {
     <div
       :class="[
         'flex h-14 items-center border-b',
-        layout.sidebarCollapsed ? 'justify-center' : 'justify-between px-3',
+        layout.sidebarCollapsed
+          ? 'justify-between px-3 lg:justify-center lg:px-0'
+          : 'justify-between px-3',
       ]"
     >
       <router-link
@@ -115,7 +117,9 @@ async function handleLogout() {
     <!-- Expand toggle (only when collapsed, desktop) -->
     <button
       v-if="layout.sidebarCollapsed"
-      class="absolute -right-3 top-4 hidden h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm text-gray-400 hover:text-gray-600 lg:flex"
+      class="absolute -right-3 top-4 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm text-gray-400 hover:text-gray-600 lg:flex"
+      aria-label="Expand sidebar"
+      title="Expand sidebar"
       @click="layout.toggleSidebar"
     >
       <ChevronLeft class="h-3 w-3 rotate-180" />
