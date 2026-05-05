@@ -16,6 +16,8 @@ button:disabled,
 [type="reset"]:disabled,
 [type="submit"]:disabled,
 [role="button"]:disabled,
+[type="checkbox"]:disabled,
+[type="radio"]:disabled,
 select:disabled {
   cursor: not-allowed;
 }
