@@ -22,5 +22,5 @@ export function addDomain(tenantId: string, data: AddDomainRequest) {
 }
 
 export function removeDomain(tenantId: string, domain: string) {
-  return request<TenantDomain[]>('DELETE', `/tenant/${tenantId}/domains`, { domain })
+  return request<TenantDomain[]>('DELETE', `/tenant/${tenantId}/domains?domain=${encodeURIComponent(domain)}`)
 }

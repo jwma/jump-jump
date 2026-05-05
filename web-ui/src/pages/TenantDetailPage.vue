@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
 import type { Tenant, TenantDomain } from '@/types/api'
@@ -23,6 +23,9 @@ const tenant = ref<Tenant | null>(null)
 const domains = ref<TenantDomain[]>([])
 const loading = ref(false)
 const notFound = ref(false)
+const pageError = ref('')
+
+const domainsLoading = ref(false)
 
 // Add domain form
 const newDomain = ref('')
@@ -32,24 +35,33 @@ const addingDomain = ref(false)
 // Delete domain
 const confirmDeleteDomain = ref<string | null>(null)
 const deleting = ref(false)
+const dialogEl = ref<HTMLElement | null>(null)
 
 async function fetchTenant() {
   loading.value = true
   try {
     tenant.value = await getTenant(tenantId)
-  } catch {
-    notFound.value = true
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : ''
+    if (msg.includes('不存在')) {
+      notFound.value = true
+    } else {
+      pageError.value = msg || 'Failed to load tenant.'
+    }
   } finally {
     loading.value = false
   }
 }
 
 async function fetchDomains() {
+  domainsLoading.value = true
   try {
     const data = await listDomains(tenantId)
     domains.value = data || []
   } catch {
     domains.value = []
+  } finally {
+    domainsLoading.value = false
   }
 }
 
@@ -94,6 +106,23 @@ function formatDate(d: string) {
   })
 }
 
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    confirmDeleteDomain.value = null
+  }
+}
+
+watch(confirmDeleteDomain, (open) => {
+  if (open) {
+    document.addEventListener('keydown', handleKeydown)
+    nextTick(() => {
+      dialogEl.value?.focus()
+    })
+  } else {
+    document.removeEventListener('keydown', handleKeydown)
+  }
+})
+
 onMounted(() => {
   fetchTenant()
   fetchDomains()
@@ -129,6 +158,10 @@ onMounted(() => {
       >
         Back to list
       </button>
+    </div>
+
+    <div v-else-if="pageError" class="mt-6 rounded-lg border border-red-200 bg-red-50 p-4">
+      <p class="text-sm text-red-600">{{ pageError }}</p>
     </div>
 
     <template v-else-if="tenant">
@@ -223,7 +256,10 @@ onMounted(() => {
         </div>
 
         <!-- Domain list -->
-        <div v-if="domains.length > 0" class="mt-4 overflow-hidden rounded-lg border bg-white">
+        <div v-if="domainsLoading" class="mt-4 flex items-center justify-center rounded-lg border bg-white py-8">
+          <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
+        </div>
+        <div v-else-if="domains.length > 0" class="mt-4 overflow-hidden rounded-lg border bg-white">
           <table class="w-full text-sm">
             <thead>
               <tr
@@ -294,8 +330,15 @@ onMounted(() => {
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
         @click.self="confirmDeleteDomain = null"
       >
-        <div class="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
-          <h3 class="text-lg font-semibold text-gray-900">Remove Domain</h3>
+        <div
+          ref="dialogEl"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="remove-domain-title"
+          tabindex="-1"
+          class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
+        >
+          <h3 id="remove-domain-title" class="text-lg font-semibold text-gray-900">Remove Domain</h3>
           <p class="mt-2 text-sm text-gray-500">
             Are you sure you want to remove
             <span class="font-mono font-medium text-gray-700">{{ confirmDeleteDomain }}</span
