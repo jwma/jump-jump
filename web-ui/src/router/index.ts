@@ -59,6 +59,18 @@ const router = createRouter({
           meta: { title: 'Tenants', requiredRole: UserRole.Admin },
         },
         {
+          path: 'tenants/create',
+          name: 'tenant-create',
+          component: () => import('@/pages/TenantCreatePage.vue'),
+          meta: { title: 'Create Tenant', requiredRole: UserRole.Admin },
+        },
+        {
+          path: 'tenants/:id',
+          name: 'tenant-detail',
+          component: () => import('@/pages/TenantDetailPage.vue'),
+          meta: { title: 'Tenant Detail', requiredRole: UserRole.Admin },
+        },
+        {
           path: 'preferences',
           name: 'preferences',
           component: () => import('@/pages/PreferencesPage.vue'),
