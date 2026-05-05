@@ -1,1 +1,23 @@
 @import 'tailwindcss';
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"],
+[role="button"],
+[type="checkbox"],
+[type="radio"],
+select {
+  cursor: pointer;
+}
+
+button:disabled,
+[type="button"]:disabled,
+[type="reset"]:disabled,
+[type="submit"]:disabled,
+[role="button"]:disabled,
+[type="checkbox"]:disabled,
+[type="radio"]:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
