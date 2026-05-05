@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { getConfig, updateIdConfig, updateShortLinkNotFoundConfig } from '@/api/config'
 import type { IdConfig, ShortLinkNotFoundConfig } from '@/types/api'
 import { Settings, Hash, AlertTriangle, Loader2, Save, Check, Eye } from 'lucide-vue-next'
@@ -29,19 +29,28 @@ const confirmOpen = ref(false)
 const confirmTitle = ref('')
 const confirmMessage = ref('')
 const confirmAction = ref<(() => Promise<void>) | null>(null)
+const confirmSaving = ref(false)
+const dialogEl = ref<HTMLElement | null>(null)
+
+function isInteger(v: number): boolean {
+  return Number.isInteger(v)
+}
 
 const idValidationError = computed(() => {
-  if (idMinimumLength.value >= idLength.value) {
-    return 'Minimum length must be less than default length'
-  }
-  if (idLength.value >= idMaximumLength.value) {
-    return 'Default length must be less than maximum length'
+  if (!isInteger(idMinimumLength.value) || !isInteger(idLength.value) || !isInteger(idMaximumLength.value)) {
+    return 'All values must be integers'
   }
   if (idMinimumLength.value < 2) {
     return 'Minimum length must be at least 2'
   }
   if (idMaximumLength.value > 10) {
     return 'Maximum length must be at most 10'
+  }
+  if (idMinimumLength.value >= idLength.value) {
+    return 'Minimum length must be less than default length'
+  }
+  if (idLength.value >= idMaximumLength.value) {
+    return 'Default length must be less than maximum length'
   }
   return ''
 })
@@ -70,9 +79,10 @@ const notFoundCanSave = computed(
 )
 
 const sampleId = computed(() => {
+  const len = Math.max(1, Math.round(idLength.value))
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let result = ''
-  for (let i = 0; i < idLength.value; i++) {
+  for (let i = 0; i < len; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length))
   }
   return result
@@ -106,20 +116,42 @@ function openConfirm(title: string, message: string, action: () => Promise<void>
   confirmTitle.value = title
   confirmMessage.value = message
   confirmAction.value = action
+  confirmSaving.value = false
   confirmOpen.value = true
+  nextTick(() => {
+    dialogEl.value?.focus()
+  })
 }
 
 function closeConfirm() {
   confirmOpen.value = false
   confirmAction.value = null
+  confirmSaving.value = false
 }
 
 async function executeConfirm() {
-  if (confirmAction.value) {
+  if (!confirmAction.value || confirmSaving.value) return
+  confirmSaving.value = true
+  try {
     await confirmAction.value()
+  } finally {
+    closeConfirm()
   }
-  closeConfirm()
 }
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    closeConfirm()
+  }
+}
+
+watch(confirmOpen, (open) => {
+  if (open) {
+    document.addEventListener('keydown', handleKeydown)
+  } else {
+    document.removeEventListener('keydown', handleKeydown)
+  }
+})
 
 function handleSaveIdConfig() {
   openConfirm(
@@ -180,7 +212,6 @@ async function doSaveNotFoundConfig() {
 }
 
 function refreshSampleId() {
-  // Trigger re-computation by toggling a dependency
   const current = idLength.value
   idLength.value = current + 1
   idLength.value = current
@@ -226,6 +257,7 @@ onMounted(fetchConfig)
               <input
                 v-model.number="idLength"
                 type="number"
+                step="1"
                 :min="idMinimumLength + 1"
                 :max="idMaximumLength - 1"
                 class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
@@ -241,6 +273,7 @@ onMounted(fetchConfig)
                 <input
                   v-model.number="idMinimumLength"
                   type="number"
+                  step="1"
                   :min="2"
                   :max="idLength - 1"
                   class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
@@ -253,6 +286,7 @@ onMounted(fetchConfig)
                 <input
                   v-model.number="idMaximumLength"
                   type="number"
+                  step="1"
                   :min="idLength + 1"
                   :max="10"
                   class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
@@ -291,9 +325,11 @@ onMounted(fetchConfig)
         <div class="p-5">
           <div class="max-w-md space-y-4">
             <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700">Handling Mode</label>
-              <div class="flex rounded-lg border border-gray-200 p-0.5">
+              <label id="mode-label" class="mb-1 block text-sm font-medium text-gray-700">Handling Mode</label>
+              <div role="radiogroup" aria-labelledby="mode-label" class="flex rounded-lg border border-gray-200 p-0.5">
                 <button
+                  role="radio"
+                  :aria-checked="notFoundMode === 'content'"
                   :class="[
                     'flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors',
                     notFoundMode === 'content'
@@ -305,6 +341,8 @@ onMounted(fetchConfig)
                   Display Content
                 </button>
                 <button
+                  role="radio"
+                  :aria-checked="notFoundMode === 'redirect'"
                   :class="[
                     'flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors',
                     notFoundMode === 'redirect'
@@ -421,8 +459,15 @@ onMounted(fetchConfig)
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
         @click.self="closeConfirm"
       >
-        <div class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
-          <h3 class="text-lg font-semibold text-gray-900">{{ confirmTitle }}</h3>
+        <div
+          ref="dialogEl"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="'confirm-title'"
+          tabindex="-1"
+          class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
+        >
+          <h3 id="confirm-title" class="text-lg font-semibold text-gray-900">{{ confirmTitle }}</h3>
           <p class="mt-2 text-sm text-gray-600">{{ confirmMessage }}</p>
           <div class="mt-5 flex justify-end gap-3">
             <button
@@ -432,10 +477,11 @@ onMounted(fetchConfig)
               Cancel
             </button>
             <button
-              class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+              :disabled="confirmSaving"
+              class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
               @click="executeConfirm"
             >
-              Confirm
+              {{ confirmSaving ? 'Saving...' : 'Confirm' }}
             </button>
           </div>
         </div>
