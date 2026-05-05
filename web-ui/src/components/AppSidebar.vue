@@ -71,7 +71,12 @@ async function handleLogout() {
     ]"
   >
     <!-- Header -->
-    <div class="flex h-14 items-center justify-between border-b px-3">
+    <div
+      :class="[
+        'flex h-14 items-center border-b',
+        layout.sidebarCollapsed ? 'justify-center' : 'justify-between px-3',
+      ]"
+    >
       <router-link
         to="/"
         class="flex items-center gap-2 overflow-hidden"
@@ -97,16 +102,24 @@ async function handleLogout() {
       >
         <X class="h-5 w-5" />
       </button>
-      <!-- Desktop collapse -->
+      <!-- Desktop collapse (only when expanded) -->
       <button
+        v-show="!layout.sidebarCollapsed"
         class="hidden rounded p-1 text-gray-400 hover:text-gray-600 lg:block"
         @click="layout.toggleSidebar"
       >
-        <ChevronLeft
-          :class="['h-4 w-4 transition-transform', layout.sidebarCollapsed && 'rotate-180']"
-        />
+        <ChevronLeft class="h-4 w-4 transition-transform" />
       </button>
     </div>
+
+    <!-- Expand toggle (only when collapsed, desktop) -->
+    <button
+      v-if="layout.sidebarCollapsed"
+      class="absolute -right-3 top-4 hidden h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm text-gray-400 hover:text-gray-600 lg:flex"
+      @click="layout.toggleSidebar"
+    >
+      <ChevronLeft class="h-3 w-3 rotate-180" />
+    </button>
 
     <!-- Navigation -->
     <nav class="flex-1 overflow-y-auto px-2 py-3">
