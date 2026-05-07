@@ -244,6 +244,12 @@ func SuperListTenantShortLinksAPI(c *gin.Context) {
 	tenantID := c.Param("id")
 	page, _ := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
 	pageSize, _ := strconv.ParseInt(c.DefaultQuery("pageSize", "20"), 10, 64)
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 20
+	}
 	start := (page - 1) * pageSize
 
 	slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())

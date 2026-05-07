@@ -64,13 +64,9 @@ func CreateTenantAPI() gin.HandlerFunc {
 func GetTenantAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
-
-		if !ctx.User.IsSuper {
-			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-			if _, err := memberRepo.Get(tenantID, ctx.User.ID); err != nil {
-				c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看此租户"))
-				return
-			}
+		if getMemberOrNil(ctx.User, tenantID) == nil {
+			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看此租户"))
+			return
 		}
 
 		repo := repository.GetTenantRepo(db.GetPostgresPool())
@@ -122,14 +118,10 @@ func ListTenantsAPI() gin.HandlerFunc {
 func UpdateTenantAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
-
-		if !ctx.User.IsSuper {
-			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-			m, err := memberRepo.Get(tenantID, ctx.User.ID)
-			if err != nil || !m.IsAdmin() {
-				c.JSON(http.StatusOK, models.NewErrorResponse("仅管理员可修改租户信息"))
-				return
-			}
+		member, err := isTenantAdmin(ctx.User, tenantID)
+		if err != nil || !member.IsAdmin() {
+			c.JSON(http.StatusOK, models.NewErrorResponse("仅管理员可修改租户信息"))
+			return
 		}
 
 		p := &models.UpdateTenantRequest{}
@@ -164,14 +156,10 @@ func UpdateTenantAPI() gin.HandlerFunc {
 func AddDomainAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
-
-		if !ctx.User.IsSuper {
-			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-			m, err := memberRepo.Get(tenantID, ctx.User.ID)
-			if err != nil || !m.IsAdmin() {
-				c.JSON(http.StatusOK, models.NewErrorResponse("你无权管理域名"))
-				return
-			}
+		member, err := isTenantAdmin(ctx.User, tenantID)
+		if err != nil || !member.IsAdmin() {
+			c.JSON(http.StatusOK, models.NewErrorResponse("你无权管理域名"))
+			return
 		}
 
 		p := &models.AddDomainRequest{}
@@ -206,14 +194,10 @@ func AddDomainAPI() gin.HandlerFunc {
 func RemoveDomainAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
-
-		if !ctx.User.IsSuper {
-			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-			m, err := memberRepo.Get(tenantID, ctx.User.ID)
-			if err != nil || !m.IsAdmin() {
-				c.JSON(http.StatusOK, models.NewErrorResponse("你无权管理域名"))
-				return
-			}
+		member, err := isTenantAdmin(ctx.User, tenantID)
+		if err != nil || !member.IsAdmin() {
+			c.JSON(http.StatusOK, models.NewErrorResponse("你无权管理域名"))
+			return
 		}
 
 		domain := c.Param("domain")
@@ -247,13 +231,9 @@ func RemoveDomainAPI() gin.HandlerFunc {
 func ListDomainsAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
-
-		if !ctx.User.IsSuper {
-			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-			if _, err := memberRepo.Get(tenantID, ctx.User.ID); err != nil {
-				c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看此租户域名"))
-				return
-			}
+		if getMemberOrNil(ctx.User, tenantID) == nil {
+			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看此租户域名"))
+			return
 		}
 
 		repo := repository.GetTenantRepo(db.GetPostgresPool())
@@ -281,13 +261,9 @@ func ListDomainsAPI() gin.HandlerFunc {
 func GetTenantConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
-
-		if !ctx.User.IsSuper {
-			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-			if _, err := memberRepo.Get(tenantID, ctx.User.ID); err != nil {
-				c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看此租户配置"))
-				return
-			}
+		if getMemberOrNil(ctx.User, tenantID) == nil {
+			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看此租户配置"))
+			return
 		}
 
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
@@ -311,14 +287,10 @@ func GetTenantConfigAPI() gin.HandlerFunc {
 func UpdateTenantConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
-
-		if !ctx.User.IsSuper {
-			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-			m, err := memberRepo.Get(tenantID, ctx.User.ID)
-			if err != nil || !m.IsAdmin() {
-				c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改此租户配置"))
-				return
-			}
+		member, err := isTenantAdmin(ctx.User, tenantID)
+		if err != nil || !member.IsAdmin() {
+			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改此租户配置"))
+			return
 		}
 
 		p := &models.UpdateTenantConfigRequest{}

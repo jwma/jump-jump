@@ -125,7 +125,7 @@ func SetupRouter() *gin.Engine {
 		tenantAPI.GET("/:id", handlers.GetTenantAPI())
 		tenantAPI.PATCH("/:id", handlers.UpdateTenantAPI())
 
-		// Domain management (affects landingserver only, not apiserver)
+		// Domain management — stored here for landingserver redirect resolution
 		tenantAPI.GET("/:id/domains", handlers.ListDomainsAPI())
 		tenantAPI.POST("/:id/domains", handlers.AddDomainAPI())
 		tenantAPI.DELETE("/:id/domains/:domain", handlers.RemoveDomainAPI())

@@ -96,10 +96,7 @@ func TenantContextMiddleware() gin.HandlerFunc {
 
 		tenantID := c.GetHeader("X-Tenant-ID")
 		if tenantID == "" {
-			tenantID = c.Query("tenant_id")
-		}
-		if tenantID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "X-Tenant-ID header is required"})
+			c.JSON(http.StatusOK, models.NewErrorResponse("X-Tenant-ID header is required"))
 			c.Abort()
 			return
 		}
@@ -113,7 +110,7 @@ func TenantContextMiddleware() gin.HandlerFunc {
 			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
 			m, err := memberRepo.Get(tenantID, ctx.User.ID)
 			if err != nil {
-				c.JSON(http.StatusForbidden, gin.H{"msg": "你不是该租户的成员"})
+				c.JSON(http.StatusOK, models.NewErrorResponse("你不是该租户的成员"))
 				c.Abort()
 				return
 			}

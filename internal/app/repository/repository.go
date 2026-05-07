@@ -76,7 +76,7 @@ func (r *TenantRepository) Update(id string, req *models.UpdateTenantRequest) (*
 		 WHERE id = $3 RETURNING id, name, slug, is_active, created_at, updated_at`,
 		req.Name, req.Slug, id).Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("更新租户失败")
+		return nil, fmt.Errorf("更新租户失败: %w", err)
 	}
 	return t, nil
 }
@@ -108,8 +108,13 @@ func (r *TenantRepository) ListByUser(userID string) ([]*models.Tenant, error) {
 	result := make([]*models.Tenant, 0)
 	for rows.Next() {
 		t := &models.Tenant{}
-		rows.Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
+		if err := rows.Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt); err != nil {
+			return nil, err
+		}
 		result = append(result, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 	return result, nil
 }
@@ -124,7 +129,9 @@ func (r *TenantRepository) ListAll(page, pageSize int64) ([]*models.Tenant, int6
 	offset := (page - 1) * pageSize
 
 	var total int64
-	r.db.QueryRow(context.Background(), `SELECT COUNT(*) FROM tenants`).Scan(&total)
+	if err := r.db.QueryRow(context.Background(), `SELECT COUNT(*) FROM tenants`).Scan(&total); err != nil {
+		return nil, 0, err
+	}
 
 	rows, err := r.db.Query(context.Background(),
 		`SELECT id, name, slug, is_active, created_at, updated_at
@@ -137,8 +144,13 @@ func (r *TenantRepository) ListAll(page, pageSize int64) ([]*models.Tenant, int6
 	result := make([]*models.Tenant, 0)
 	for rows.Next() {
 		t := &models.Tenant{}
-		rows.Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
+		if err := rows.Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt); err != nil {
+			return nil, 0, err
+		}
 		result = append(result, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
 	}
 	return result, total, nil
 }
@@ -814,8 +826,13 @@ func (r *shortLinkRepository) ListByTenantID(tenantID string, start, pageSize in
 
 	for rows.Next() {
 		s := &models.ShortLink{}
-		rows.Scan(&s.Id, &s.TenantID, &s.Url, &s.Description, &s.IsEnable, &s.CreatedBy, &s.CreateTime, &s.UpdateTime)
+		if err := rows.Scan(&s.Id, &s.TenantID, &s.Url, &s.Description, &s.IsEnable, &s.CreatedBy, &s.CreateTime, &s.UpdateTime); err != nil {
+			return result, err
+		}
 		result.ShortLinks = append(result.ShortLinks, s)
+	}
+	if err := rows.Err(); err != nil {
+		return result, err
 	}
 	return result, nil
 }
