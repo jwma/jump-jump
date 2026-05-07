@@ -52,6 +52,23 @@ type CreateTenantRequest struct {
 	Slug string `json:"slug" binding:"required"`
 }
 
+type UpdateTenantRequest struct {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
+type UpdateTenantStatusRequest struct {
+	IsActive *bool `json:"isActive" binding:"required"`
+}
+
+type UpdateTenantConfigRequest struct {
+	IdLength        *int    `json:"idLength"`
+	IdMinimumLength *int    `json:"idMinimumLength"`
+	IdMaximumLength *int    `json:"idMaximumLength"`
+	NotFoundMode    *string `json:"notFoundMode"`
+	NotFoundValue   *string `json:"notFoundValue"`
+}
+
 type AddDomainRequest struct {
 	Domain    string `json:"domain" binding:"required"`
 	IsDefault bool   `json:"isDefault"`

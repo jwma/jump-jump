@@ -9,7 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
@@ -34,18 +33,10 @@ func parseAuthorizationHeader(a string) (string, error) {
 	return t[1], nil
 }
 
-// TenantResolverMiddleware resolves the tenant from the Host header.
+// TenantResolverMiddleware is deprecated — kept only for reference.
+// Apiserver no longer resolves tenants by domain. Use TenantContextMiddleware instead.
 func TenantResolverMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		host := strings.Split(c.Request.Host, ":")[0]
-
-		tenantID, err := config.ResolveTenantID(host)
-		if err != nil || tenantID == "" {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"msg": "unknown domain"})
-			return
-		}
-
-		c.Set("tenant_id", tenantID)
 		c.Next()
 	}
 }
@@ -87,31 +78,47 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Resolve tenant context
+		c.Set("auth_context", &AuthContext{User: u, Member: nil})
+		c.Next()
+	}
+}
+
+// TenantContextMiddleware reads X-Tenant-ID, validates membership, sets tenant_id and auth_context.
+func TenantContextMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ac, exists := c.Get("auth_context")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{})
+			c.Abort()
+			return
+		}
+		ctx := ac.(*AuthContext)
+
 		tenantID := c.GetHeader("X-Tenant-ID")
 		if tenantID == "" {
-			tenantID = c.Query("tenant_id")
-		}
-		if tenantID == "" {
-			// Try TenantResolverMiddleware value
-			if tid, exists := c.Get("tenant_id"); exists {
-				if s, ok := tid.(string); ok {
-					tenantID = s
-				}
-			}
+			c.JSON(http.StatusOK, models.NewErrorResponse("X-Tenant-ID header is required"))
+			c.Abort()
+			return
 		}
 
 		var member *models.TenantMember
-		if tenantID != "" && !u.IsSuper {
-			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-			m, err := memberRepo.Get(tenantID, u.ID)
-			if err == nil {
-				member = m
+		if ctx.User.IsSuper {
+			member = &models.TenantMember{
+				TenantID: tenantID, UserID: ctx.User.ID, Role: models.RoleAdmin,
 			}
+		} else {
+			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
+			m, err := memberRepo.Get(tenantID, ctx.User.ID)
+			if err != nil {
+				c.JSON(http.StatusOK, models.NewErrorResponse("你不是该租户的成员"))
+				c.Abort()
+				return
+			}
+			member = m
 		}
 
-		c.Set("auth_context", &AuthContext{User: u, Member: member})
 		c.Set("tenant_id", tenantID)
+		c.Set("auth_context", &AuthContext{User: ctx.User, Member: member})
 		c.Next()
 	}
 }

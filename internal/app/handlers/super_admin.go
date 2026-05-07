@@ -166,3 +166,164 @@ func UpdateUserStatusAPI(c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.NewSuccessResponse(nil))
 }
+
+// --- Super Admin Tenant Management ---
+
+// ListAllTenantsAPI godoc
+// @Summary 租户列表（超管）
+// @Description 超级管理员查看所有租户，支持分页
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param page query int false "页码" default(1)
+// @Param pageSize query int false "每页数量" default(20)
+// @Success 200 {object} models.Response
+// @Failure 401 {object} nil
+// @Router /super/tenants [get]
+func ListAllTenantsAPI(c *gin.Context) {
+	page, _ := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
+	pageSize, _ := strconv.ParseInt(c.DefaultQuery("pageSize", "20"), 10, 64)
+
+	tenantRepo := repository.GetTenantRepo(db.GetPostgresPool())
+	tenants, total, err := tenantRepo.ListAll(page, pageSize)
+	if err != nil {
+		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse(map[string]interface{}{
+		"tenants": tenants,
+		"total":   total,
+	}))
+}
+
+// UpdateTenantStatusAPI godoc
+// @Summary 启用/禁用租户
+// @Description 超级管理员启用或禁用租户
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "租户 ID"
+// @Param body body models.UpdateTenantStatusRequest true "更新租户状态请求"
+// @Success 200 {object} models.Response
+// @Failure 401 {object} nil
+// @Router /super/tenants/{id}/status [patch]
+func UpdateTenantStatusAPI(c *gin.Context) {
+	id := c.Param("id")
+	req := &models.UpdateTenantStatusRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		c.JSON(http.StatusOK, models.NewErrorResponse("请指定租户状态"))
+		return
+	}
+
+	tenantRepo := repository.GetTenantRepo(db.GetPostgresPool())
+	if err := tenantRepo.UpdateStatus(id, *req.IsActive); err != nil {
+		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse(nil))
+}
+
+// SuperListTenantShortLinksAPI godoc
+// @Summary 查看租户短链接（超管）
+// @Description 超级管理员查看指定租户的短链接列表
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "租户 ID"
+// @Param page query int false "页码" default(1)
+// @Param pageSize query int false "每页数量" default(20)
+// @Success 200 {object} models.Response{data=models.ListShortLinksAPIResponseData}
+// @Failure 401 {object} nil
+// @Router /super/tenants/{id}/short-links [get]
+func SuperListTenantShortLinksAPI(c *gin.Context) {
+	tenantID := c.Param("id")
+	page, _ := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
+	pageSize, _ := strconv.ParseInt(c.DefaultQuery("pageSize", "20"), 10, 64)
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 20
+	}
+	start := (page - 1) * pageSize
+
+	slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
+	result, err := slRepo.ListByTenantID(tenantID, start, pageSize)
+	if err != nil {
+		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse(&models.ListShortLinksAPIResponseData{
+		ShortLinks: models.ToShortLinkDataSlice(result.ShortLinks),
+		Total:      result.Total,
+	}))
+}
+
+// SuperListTenantMembersAPI godoc
+// @Summary 查看租户成员（超管）
+// @Description 超级管理员查看指定租户的成员列表
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "租户 ID"
+// @Success 200 {object} models.Response{data=[]models.TenantMemberData}
+// @Failure 401 {object} nil
+// @Router /super/tenants/{id}/members [get]
+func SuperListTenantMembersAPI(c *gin.Context) {
+	tenantID := c.Param("id")
+
+	memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
+	members, err := memberRepo.ListByTenant(tenantID)
+	if err != nil {
+		c.JSON(http.StatusOK, models.NewErrorResponse("查询成员列表失败"))
+		return
+	}
+
+	userRepo := repository.GetUserRepo(db.GetPostgresPool())
+	result := make([]*models.TenantMemberData, 0, len(members))
+	for _, m := range members {
+		u, err := userRepo.FindByID(m.UserID)
+		if err != nil {
+			continue
+		}
+		result = append(result, &models.TenantMemberData{
+			UserID:   m.UserID,
+			Username: u.Username,
+			Role:     m.Role,
+			JoinedAt: m.JoinedAt,
+		})
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse(result))
+}
+
+// SuperListTenantDomainsAPI godoc
+// @Summary 查看租户域名（超管）
+// @Description 超级管理员查看指定租户的域名列表
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "租户 ID"
+// @Success 200 {object} models.Response{data=[]models.TenantDomain}
+// @Failure 401 {object} nil
+// @Router /super/tenants/{id}/domains [get]
+func SuperListTenantDomainsAPI(c *gin.Context) {
+	tenantID := c.Param("id")
+
+	tenantRepo := repository.GetTenantRepo(db.GetPostgresPool())
+	domains, err := tenantRepo.ListDomains(tenantID)
+	if err != nil {
+		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.NewSuccessResponse(domains))
+}
