@@ -12,6 +12,12 @@ const router = createRouter({
       meta: { requiresAuth: false },
     },
     {
+      path: '/select-tenant',
+      name: 'select-tenant',
+      component: () => import('@/pages/SelectTenantPage.vue'),
+      meta: { requiresAuth: true, requiresTenant: false },
+    },
+    {
       path: '/',
       component: () => import('@/layouts/DefaultLayout.vue'),
       meta: { requiresAuth: true },
@@ -20,55 +26,55 @@ const router = createRouter({
           path: '',
           name: 'dashboard',
           component: () => import('@/pages/DashboardPage.vue'),
-          meta: { title: 'Dashboard' },
+          meta: { title: 'Dashboard', requiresTenant: true },
         },
         {
           path: 'short-links',
           name: 'short-links',
           component: () => import('@/pages/ShortLinksPage.vue'),
-          meta: { title: 'Short Links' },
+          meta: { title: 'Short Links', requiresTenant: true },
         },
         {
           path: 'short-links/create',
           name: 'short-link-create',
           component: () => import('@/pages/ShortLinkCreatePage.vue'),
-          meta: { title: 'Create Short Link' },
+          meta: { title: 'Create Short Link', requiresTenant: true },
         },
         {
           path: 'short-links/:id',
           name: 'short-link-detail',
           component: () => import('@/pages/ShortLinkDetailPage.vue'),
-          meta: { title: 'Detail' },
+          meta: { title: 'Detail', requiresTenant: true },
         },
         {
           path: 'short-links/:id/edit',
           name: 'short-link-edit',
           component: () => import('@/pages/ShortLinkEditPage.vue'),
-          meta: { title: 'Edit Short Link' },
+          meta: { title: 'Edit Short Link', requiresTenant: true },
         },
         {
           path: 'config',
           name: 'config',
           component: () => import('@/pages/ConfigPage.vue'),
-          meta: { title: 'System Config', requiredRole: UserRole.Admin },
+          meta: { title: 'System Config', requiredRole: UserRole.Admin, requiresTenant: true },
         },
         {
           path: 'tenants',
           name: 'tenants',
           component: () => import('@/pages/TenantsPage.vue'),
-          meta: { title: 'Tenants', requiredRole: UserRole.Admin },
+          meta: { title: 'Tenants', requiredRole: UserRole.Admin, requiresTenant: true },
         },
         {
           path: 'tenants/create',
           name: 'tenant-create',
           component: () => import('@/pages/TenantCreatePage.vue'),
-          meta: { title: 'Create Tenant', requiredRole: UserRole.Admin },
+          meta: { title: 'Create Tenant', requiredRole: UserRole.Admin, requiresTenant: true },
         },
         {
           path: 'tenants/:id',
           name: 'tenant-detail',
           component: () => import('@/pages/TenantDetailPage.vue'),
-          meta: { title: 'Tenant Detail', requiredRole: UserRole.Admin },
+          meta: { title: 'Tenant Detail', requiredRole: UserRole.Admin, requiresTenant: true },
         },
         {
           path: 'preferences',
@@ -81,6 +87,12 @@ const router = createRouter({
           name: 'change-password',
           component: () => import('@/pages/ChangePasswordPage.vue'),
           meta: { title: 'Change Password' },
+        },
+        {
+          path: 'invitations',
+          name: 'invitations',
+          component: () => import('@/pages/InvitationsPage.vue'),
+          meta: { title: 'Invitations' },
         },
       ],
     },
@@ -103,13 +115,31 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
 
-  if (auth.isLoggedIn && !auth.user) {
+  if (auth.isLoggedIn && !auth.authUser) {
     try {
-      await auth.fetchUser()
+      await auth.fetchAuthInfo()
     } catch {
       auth.clearAuth()
       return { name: 'login', query: { redirect: to.fullPath } }
     }
+  }
+
+  if (auth.isLoggedIn && !auth.user && auth.currentTenantId) {
+    try {
+      await auth.fetchUser()
+    } catch {
+      auth.clearTenant()
+      return { name: 'select-tenant' }
+    }
+  }
+
+  // Fetch invitations once per session
+  if (auth.isLoggedIn && !auth.invitationsLoaded) {
+    auth.fetchInvitations().catch(() => {})
+  }
+
+  if (to.meta.requiresTenant && !auth.currentTenantId && !auth.isSuper) {
+    return { name: 'select-tenant' }
   }
 
   if (to.meta.requiredRole && auth.user?.role !== to.meta.requiredRole) {
@@ -117,7 +147,7 @@ router.beforeEach(async (to) => {
   }
 
   if (to.name === 'login' && auth.isLoggedIn) {
-    return { name: 'dashboard' }
+    return { name: auth.currentTenantId ? 'dashboard' : 'select-tenant' }
   }
 })
 

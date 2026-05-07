@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLayoutStore } from '@/stores/layout'
@@ -14,12 +14,16 @@ import {
   LogOut,
   ChevronLeft,
   X,
+  Bell,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const layout = useLayoutStore()
 const route = useRoute()
 const router = useRouter()
+const tenantDropdownOpen = ref(false)
 
 const menuItems = computed(() => {
   const items = [
@@ -47,6 +51,21 @@ function isActive(to: { name: string }) {
   if (to.name === 'short-links' && String(route.name).startsWith('short-link')) return true
   if (to.name === 'tenants' && String(route.name).startsWith('tenant')) return true
   return false
+}
+
+async function handleTenantSwitch(tenantId: string) {
+  tenantDropdownOpen.value = false
+  if (tenantId !== auth.currentTenantId) {
+    auth.selectTenant(tenantId)
+    try {
+      await auth.fetchUser()
+    } catch {
+      auth.clearTenant()
+      router.push({ name: 'select-tenant' })
+      return
+    }
+    router.push({ name: 'dashboard' })
+  }
 }
 
 async function handleLogout() {
@@ -125,6 +144,43 @@ async function handleLogout() {
       <ChevronLeft class="h-3 w-3 rotate-180" />
     </button>
 
+    <!-- Tenant switcher -->
+    <div v-if="!layout.sidebarCollapsed" class="border-b px-3 py-2">
+      <button
+        class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm hover:bg-gray-100"
+        @click="tenantDropdownOpen = !tenantDropdownOpen"
+      >
+        <div class="min-w-0 flex-1">
+          <div class="truncate text-xs text-gray-400">Current tenant</div>
+          <div class="truncate font-medium text-gray-700">
+            {{ auth.currentTenant?.tenantName || (auth.isSuper ? 'Super Admin' : 'Not selected') }}
+          </div>
+        </div>
+        <ChevronDown class="h-4 w-4 shrink-0 text-gray-400" />
+      </button>
+
+      <div v-if="tenantDropdownOpen" class="mt-1 space-y-0.5">
+        <button
+          v-for="tenant in auth.tenants"
+          :key="tenant.tenantId"
+          class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-gray-100"
+          :class="auth.currentTenantId === tenant.tenantId ? 'bg-blue-50 text-blue-700' : 'text-gray-600'"
+          @click="handleTenantSwitch(tenant.tenantId)"
+        >
+          <span class="truncate">{{ tenant.tenantName }}</span>
+          <span class="text-xs text-gray-400">{{ tenant.role }}</span>
+        </button>
+        <router-link
+          :to="{ name: 'select-tenant' }"
+          class="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+          @click="tenantDropdownOpen = false; layout.closeMobileMenu()"
+        >
+          <ChevronRight class="h-3 w-3" />
+          Manage tenants
+        </router-link>
+      </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="flex-1 overflow-y-auto px-2 py-3">
       <ul class="space-y-1">
@@ -147,8 +203,22 @@ async function handleLogout() {
       </ul>
     </nav>
 
-    <!-- Logout -->
+    <!-- Invitation badge + Logout -->
     <div class="border-t px-2 py-3">
+      <router-link
+        v-if="auth.pendingInvitationCount > 0"
+        :to="{ name: 'invitations' }"
+        class="mb-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-amber-600 transition-colors hover:bg-amber-50"
+        @click="layout.closeMobileMenu"
+      >
+        <span class="relative">
+          <Bell class="h-5 w-5 shrink-0" />
+          <span class="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+            {{ auth.pendingInvitationCount > 9 ? '9+' : auth.pendingInvitationCount }}
+          </span>
+        </span>
+        <span v-show="!layout.sidebarCollapsed">Invitations</span>
+      </router-link>
       <button
         class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
         @click="handleLogout"

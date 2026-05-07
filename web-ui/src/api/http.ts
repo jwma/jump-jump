@@ -13,6 +13,9 @@ http.interceptors.request.use((config) => {
   if (auth.token) {
     config.headers.Authorization = `Bearer ${auth.token}`
   }
+  if (auth.currentTenantId) {
+    config.headers['X-Tenant-ID'] = auth.currentTenantId
+  }
   return config
 })
 

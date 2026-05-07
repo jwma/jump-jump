@@ -17,8 +17,9 @@ async function handleLogin() {
   loading.value = true
   try {
     await auth.login(username.value, password.value)
-    const redirect = (route.query.redirect as string) || '/'
-    router.push(redirect)
+    await auth.fetchAuthInfo()
+    const redirect = (route.query.redirect as string) || ''
+    router.push({ name: 'select-tenant', query: redirect ? { redirect } : undefined })
   } catch {
     error.value = 'Login failed. Please check your credentials.'
   } finally {
