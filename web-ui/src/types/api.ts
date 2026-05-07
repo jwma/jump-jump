@@ -183,6 +183,88 @@ export interface AddDomainRequest {
   isDefault: boolean
 }
 
+// Super Admin types
+export interface SuperUser {
+  id: string
+  username: string
+  isActive: boolean
+  isSuper: boolean
+  createdAt: string
+  updatedAt: string
+  tenants?: { tenantId: string; role: string }[]
+}
+
+export interface SuperUserDetail extends SuperUser {
+  tenants: { tenantId: string; role: string }[]
+}
+
+export interface ListSuperUsersResponse {
+  users: SuperUser[]
+  total: number
+}
+
+export interface CreateSuperUserRequest {
+  username: string
+  password: string
+}
+
+export interface ResetPasswordRequest {
+  newPassword: string
+}
+
+export interface SetStatusRequest {
+  isActive: boolean
+}
+
+export interface SuperTenant {
+  id: string
+  name: string
+  slug: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  memberCount?: number
+  shortLinkCount?: number
+  domainCount?: number
+}
+
+export interface ListSuperTenantsResponse {
+  tenants: SuperTenant[]
+  total: number
+}
+
+export interface SuperTenantMember {
+  userId: string
+  username: string
+  role: string
+  joinedAt: string
+}
+
+export interface SuperTenantShortLink {
+  id: string
+  shortId: string
+  originalURL: string
+  title: string
+  description: string
+  clickCount: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  username: string
+}
+
+export interface ListSuperTenantShortLinksResponse {
+  shortLinks: SuperTenantShortLink[]
+  total: number
+}
+
+export interface SuperTenantDomain {
+  id: string
+  domain: string
+  isDefault: boolean
+  createdAt: string
+}
+
 export const UserRole = {
   Admin: 'admin',
   Member: 'member',
