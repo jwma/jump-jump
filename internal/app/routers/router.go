@@ -95,6 +95,7 @@ func SetupRouter() *gin.Engine {
 	{
 		auth.POST("/login", handlers.LoginAPI)
 		auth.GET("/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetAuthInfoAPI())
+		auth.POST("/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
 	}
 
 	// Super admin routes — JWT + SuperAdmin middleware
@@ -142,15 +143,20 @@ func SetupRouter() *gin.Engine {
 		tenantAPI.POST("/:id/leave", handlers.LeaveTenantAPI())
 	}
 
-	// User routes — JWT + TenantContext (X-Tenant-ID required for role info)
+	// User routes — JWT only (global, no tenant context needed)
 	userAPI := r.Group("/v1/user")
-	userAPI.Use(handlers.JWTAuthenticatorMiddleware(), handlers.TenantContextMiddleware())
+	userAPI.Use(handlers.JWTAuthenticatorMiddleware())
 	{
-		userAPI.GET("/info", handlers.GetUserInfoAPI())
-		userAPI.POST("/logout", handlers.LogoutAPI())
-		userAPI.POST("/change-password", handlers.ChangePasswordAPI())
 		userAPI.GET("/preferences", handlers.GetUserPreferencesAPI())
-		userAPI.PUT("/preferences", handlers.UpdateUserPreferencesAPI())
+		userAPI.PATCH("/preferences", handlers.UpdateUserPreferencesAPI())
+		userAPI.POST("/logout", handlers.LogoutAPI())
+	}
+
+	// User routes — JWT + TenantContext (need role info)
+	userTenantAPI := r.Group("/v1/user")
+	userTenantAPI.Use(handlers.JWTAuthenticatorMiddleware(), handlers.TenantContextMiddleware())
+	{
+		userTenantAPI.GET("/info", handlers.GetUserInfoAPI())
 	}
 
 	// Short link routes — JWT + TenantContext (X-Tenant-ID required)

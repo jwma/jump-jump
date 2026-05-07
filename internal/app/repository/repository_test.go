@@ -32,17 +32,23 @@ func init() {
 }
 
 func TestShortLinkRepository_Save(t *testing.T) {
+	userRepo := GetUserRepo(getTestPool())
+	u, err := userRepo.FindByUsername("mj")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	l := &models.ShortLink{
 		Id:          "mj",
 		TenantID:    "00000000-0000-0000-0000-000000000001",
 		Url:         "http://anmuji.com",
 		Description: "安木鸡",
 		IsEnable:    true,
-		CreatedBy:   "mj",
+		CreatedBy:   u.ID,
 	}
 
 	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	err := repo.Save(l)
+	err = repo.Save(l)
 
 	if err != nil {
 		t.Error(err)
@@ -83,7 +89,7 @@ func TestShortLinkRepository_Update(t *testing.T) {
 
 func TestShortLinkRepository_List(t *testing.T) {
 	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	rs, err := repo.List("00000000-0000-0000-0000-000000000001", "mj", false, 0, 10)
+	rs, err := repo.List("00000000-0000-0000-0000-000000000001", 0, 10)
 
 	if err != nil {
 		t.Error(err)
@@ -109,16 +115,22 @@ func TestShortLinkRepository_Delete(t *testing.T) {
 }
 
 func TestRequestHistoryRepository_Save(t *testing.T) {
+	userRepo := GetUserRepo(getTestPool())
+	u, err := userRepo.FindByUsername("mj")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	l := &models.ShortLink{
 		Id:          "testrh",
 		TenantID:    "00000000-0000-0000-0000-000000000001",
 		Url:         "http://anmuji.com",
 		Description: "",
 		IsEnable:    true,
-		CreatedBy:   "mj",
+		CreatedBy:   u.ID,
 	}
 	slRepo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	err := slRepo.Save(l)
+	err = slRepo.Save(l)
 
 	if err != nil {
 		t.Error(err)
