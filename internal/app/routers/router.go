@@ -139,6 +139,20 @@ func SetupRouter() *gin.Engine {
 		tenantAPI.GET("/:id/domains", handlers.ListDomainsAPI())
 		tenantAPI.POST("/:id/domains", handlers.AddDomainAPI())
 		tenantAPI.DELETE("/:id/domains", handlers.RemoveDomainAPI())
+		tenantAPI.GET("/:id/members", handlers.ListTenantMembersAPI())
+		tenantAPI.POST("/:id/invitations", handlers.InviteUserAPI())
+		tenantAPI.PATCH("/:id/members/:userId/role", handlers.UpdateMemberRoleAPI())
+		tenantAPI.DELETE("/:id/members/:userId", handlers.RemoveMemberAPI())
+		tenantAPI.POST("/:id/leave", handlers.LeaveTenantAPI())
+
+		// Invitation routes (no tenant context in path)
+		invAPI := v1.Group("/invitations")
+		invAPI.Use(handlers.JWTAuthenticatorMiddleware())
+		{
+			invAPI.GET("/", handlers.ListMyInvitationsAPI())
+			invAPI.POST("/:id/accept", handlers.AcceptInvitationAPI())
+			invAPI.POST("/:id/reject", handlers.RejectInvitationAPI())
+		}
 	}
 
 	return r

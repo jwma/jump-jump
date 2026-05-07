@@ -22,11 +22,6 @@ import (
 // @Router /tenant/ [post]
 func CreateTenantAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		if !ctx.User.IsSuper && ctx.Member.Role != models.RoleAdmin {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权创建租户"))
-			return
-		}
-
 		p := &models.CreateTenantRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
@@ -39,6 +34,13 @@ func CreateTenantAPI() gin.HandlerFunc {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
 		}
+
+		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
+		memberRepo.Save(&models.TenantMember{
+			TenantID: t.ID,
+			UserID:   ctx.User.ID,
+			Role:     models.RoleAdmin,
+		})
 
 		c.JSON(http.StatusOK, models.NewSuccessResponse(t))
 	})
