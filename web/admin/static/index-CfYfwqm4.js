@@ -1,0 +1,1 @@
+import{_ as t,h as o,c,b as s,L as n}from"./index-COl9qVDY.js";/* empty css             *//* empty css                 */const a={},r={class:"dashboard-content"};function _(d,p){const e=n;return o(),c("div",r,[s(e,{description:"欢迎使用 Jump Jump 管理后台"})])}const l=t(a,[["render",_],["__scopeId","data-v-db5f1860"]]);export{l as default};
