@@ -21,12 +21,12 @@ func EncodePassword(password []byte, salt []byte) ([]byte, error) {
 	return scrypt.Key(password, salt, 1<<15, 8, 1, 32)
 }
 
-func GenerateJWT(username string, tenantID string) string {
+func GenerateJWT(userID string, isSuper bool) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"identifier": username,
-		"tenant_id":  tenantID,
-		"iat":        time.Now().Unix(),
-		"exp":        time.Now().Add(time.Hour * 2).Unix(),
+		"user_id":  userID,
+		"is_super": isSuper,
+		"iat":      time.Now().Unix(),
+		"exp":      time.Now().Add(time.Hour * 2).Unix(),
 	})
 	t, _ := token.SignedString([]byte(SecretKey))
 	return t

@@ -19,7 +19,7 @@ import (
 // @Produce json
 // @Param body body models.LoginAPIRequest true "登入请求"
 // @Success 200 {object} models.Response{data=models.LoginAPIResponseData}
-// @Router /user/login [post]
+// @Router /auth/login [post]
 func LoginAPI(c *gin.Context) {
 	f := &models.LoginAPIRequest{}
 	if err := c.BindJSON(f); err != nil {
@@ -27,23 +27,8 @@ func LoginAPI(c *gin.Context) {
 		return
 	}
 
-	tenantID, _ := c.Get("tenant_id")
-	tid, _ := tenantID.(string)
-	if tid == "" {
-		c.JSON(http.StatusOK, models.NewErrorResponse("无法识别租户"))
-		return
-	}
-
 	userRepo := repository.GetUserRepo(db.GetPostgresPool())
 	u, err := userRepo.FindByUsername(strings.TrimSpace(f.Username))
-	if err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
-		return
-	}
-
-	// Verify the user is a member of this tenant
-	memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-	m, err := memberRepo.Get(tid, u.ID)
 	if err != nil {
 		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
 		return
@@ -61,8 +46,38 @@ func LoginAPI(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.NewSuccessResponse(models.LoginAPIResponseData{
-		Token: utils.GenerateJWT(u.Username, m.TenantID),
+		Token: utils.GenerateJWT(u.ID, u.IsSuper),
 	}))
+}
+
+// GetAuthInfoAPI godoc
+// @Summary 获取当前用户信息及租户列表
+// @Description 获取当前用户信息及租户列表
+// @Tags 账号
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} models.Response{data=models.AuthInfoResponseData}
+// @Failure 401 {object} nil
+// @Router /auth/info [get]
+func GetAuthInfoAPI() gin.HandlerFunc {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
+		userRepo := repository.GetUserRepo(db.GetPostgresPool())
+		tenants, err := userRepo.GetUserTenants(ctx.User)
+		if err != nil {
+			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			return
+		}
+
+		c.JSON(http.StatusOK, models.NewSuccessResponse(models.AuthInfoResponseData{
+			User: &models.AuthInfoUser{
+				ID:       ctx.User.ID,
+				Username: ctx.User.Username,
+				IsSuper:  ctx.User.IsSuper,
+			},
+			Tenants: tenants,
+		}))
+	})
 }
 
 // GetUserInfoAPI godoc
@@ -77,9 +92,17 @@ func LoginAPI(c *gin.Context) {
 // @Router /user/info [get]
 func GetUserInfoAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
+		role := ""
+		if ctx.Member != nil {
+			role = ctx.Member.Role
+		}
+		if ctx.User.IsSuper {
+			role = models.RoleAdmin
+		}
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetUserInfoAPIResponseData{
 			Username: ctx.User.Username,
-			Role:     ctx.Member.Role,
+			Role:     role,
+			IsSuper:  ctx.User.IsSuper,
 		}))
 	})
 }

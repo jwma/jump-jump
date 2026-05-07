@@ -34,7 +34,7 @@ func GetShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
+		if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看"))
 			return
 		}
@@ -64,13 +64,13 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		tenantID := ctx.Member.TenantID
+		tenantID := getTenantID(c)
 		s := models.NewShortLink(tenantID, ctx.User.Username, params)
 		repo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		idCfg := config.GetIdConfig(tenantID)
 		idLen := idCfg.IdLength
 
-		if ctx.Member.Role == models.RoleMember {
+		if !ctx.User.IsSuper && ctx.Member.Role == models.RoleMember {
 			s.Id = ""
 		}
 
@@ -130,7 +130,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
+		if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改此短链接"))
 			return
 		}
@@ -172,7 +172,7 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
+		if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权删除此短链接"))
 			return
 		}
@@ -201,7 +201,7 @@ func ListShortLinksAPI() gin.HandlerFunc {
 		start := int64((page - 1) * pageSize)
 
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
-		result, err := slRepo.List(ctx.Member.TenantID, ctx.User.Username, ctx.Member.IsAdmin(), start, int64(pageSize))
+		result, err := slRepo.List(getTenantID(c), ctx.User.Username, ctx.User.IsSuper || ctx.Member.IsAdmin(), start, int64(pageSize))
 		if err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
@@ -237,7 +237,7 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 				return
 			}
 
-			if !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
+			if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
 				c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看"))
 				return
 			}

@@ -71,16 +71,15 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		tenantID, _ := claims["tenant_id"].(string)
-		username, _ := claims["identifier"].(string)
-		if tenantID == "" || username == "" {
+		userID, _ := claims["user_id"].(string)
+		if userID == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{})
 			c.Abort()
 			return
 		}
 
 		userRepo := repository.GetUserRepo(db.GetPostgresPool())
-		u, err := userRepo.FindByUsername(username)
+		u, err := userRepo.FindByID(userID)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{})
@@ -88,17 +87,32 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-		m, err := memberRepo.Get(tenantID, u.ID)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusUnauthorized, gin.H{})
-			c.Abort()
-			return
+		// Resolve tenant context
+		tenantID := c.GetHeader("X-Tenant-ID")
+		if tenantID == "" {
+			tenantID = c.Query("tenant_id")
+		}
+		if tenantID == "" {
+			// Try TenantResolverMiddleware value
+			if tid, exists := c.Get("tenant_id"); exists {
+				if s, ok := tid.(string); ok {
+					tenantID = s
+				}
+			}
 		}
 
-		c.Set("auth_context", &AuthContext{User: u, Member: m})
+		var member *models.TenantMember
+		if tenantID != "" && !u.IsSuper {
+			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
+			m, err := memberRepo.Get(tenantID, u.ID)
+			if err == nil {
+				member = m
+			}
+		}
+
+		c.Set("auth_context", &AuthContext{User: u, Member: member})
 		c.Set("tenant_id", tenantID)
+		c.Next()
 	}
 }
 
@@ -113,6 +127,12 @@ func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
 		}
 		f(c, ac.(*AuthContext))
 	}
+}
+
+func getTenantID(c *gin.Context) string {
+	tid, _ := c.Get("tenant_id")
+	s, _ := tid.(string)
+	return s
 }
 
 func AllowedHostsMiddleware() gin.HandlerFunc {

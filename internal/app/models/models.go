@@ -71,6 +71,24 @@ type LoginAPIResponseData struct {
 type GetUserInfoAPIResponseData struct {
 	Username string `json:"username"`
 	Role     string `json:"role"`
+	IsSuper  bool   `json:"isSuper"`
+}
+
+type AuthInfoResponseData struct {
+	User    *AuthInfoUser       `json:"user"`
+	Tenants []*UserTenantEntry  `json:"tenants"`
+}
+
+type AuthInfoUser struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	IsSuper  bool   `json:"isSuper"`
+}
+
+type UserTenantEntry struct {
+	TenantID   string `json:"tenantId"`
+	TenantName string `json:"tenantName"`
+	Role       string `json:"role"`
 }
 
 type ChangePasswordAPIRequest struct {
@@ -104,6 +122,7 @@ type User struct {
 	Password    []byte    `json:"password"`
 	Salt        []byte    `json:"salt"`
 	IsActive    bool      `json:"isActive"`
+	IsSuper     bool      `json:"isSuper"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }

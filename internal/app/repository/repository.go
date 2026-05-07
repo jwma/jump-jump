@@ -148,10 +148,10 @@ func (r *userRepository) Save(u *models.User) error {
 	u.UpdatedAt = u.CreatedAt
 
 	return r.db.QueryRow(context.Background(),
-		`INSERT INTO users (username, password, salt, is_active, created_at, updated_at)
-		 VALUES ($1, $2, $3, $4, $5, $5)
+		`INSERT INTO users (username, password, salt, is_active, is_super, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $6)
 		 RETURNING id`,
-		u.Username, u.Password, u.Salt, u.IsActive, u.CreatedAt).Scan(&u.ID)
+		u.Username, u.Password, u.Salt, u.IsActive, u.IsSuper, u.CreatedAt).Scan(&u.ID)
 }
 
 func (r *userRepository) UpdatePassword(u *models.User) error {
@@ -177,13 +177,69 @@ func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 
 	u := &models.User{}
 	err := r.db.QueryRow(context.Background(),
-		`SELECT id, username, password, salt, is_active, created_at, updated_at
+		`SELECT id, username, password, salt, is_active, is_super, created_at, updated_at
 		 FROM users WHERE username = $1`,
-		username).Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.CreatedAt, &u.UpdatedAt)
+		username).Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("用户不存在")
 	}
 	return u, nil
+}
+
+func (r *userRepository) FindByID(userID string) (*models.User, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("user_id can not be empty string")
+	}
+
+	u := &models.User{}
+	err := r.db.QueryRow(context.Background(),
+		`SELECT id, username, password, salt, is_active, is_super, created_at, updated_at
+		 FROM users WHERE id = $1`,
+		userID).Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("用户不存在")
+	}
+	return u, nil
+}
+
+func (r *userRepository) GetUserTenants(u *models.User) ([]*models.UserTenantEntry, error) {
+	if u.IsSuper {
+		rows, err := r.db.Query(context.Background(),
+			`SELECT id, name FROM tenants ORDER BY created_at`)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		result := make([]*models.UserTenantEntry, 0)
+		for rows.Next() {
+			e := &models.UserTenantEntry{Role: models.RoleAdmin}
+			rows.Scan(&e.TenantID, &e.TenantName)
+			result = append(result, e)
+		}
+		return result, nil
+	}
+
+	memberRepo := GetTenantMemberRepo(r.db)
+	members, err := memberRepo.ListByUser(u.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	tenantRepo := GetTenantRepo(r.db)
+	result := make([]*models.UserTenantEntry, 0, len(members))
+	for _, m := range members {
+		t, err := tenantRepo.GetByID(m.TenantID)
+		if err != nil {
+			continue
+		}
+		result = append(result, &models.UserTenantEntry{
+			TenantID:   m.TenantID,
+			TenantName: t.Name,
+			Role:       m.Role,
+		})
+	}
+	return result, nil
 }
 
 // --- Tenant Member Repository ---

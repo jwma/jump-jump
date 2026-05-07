@@ -22,7 +22,7 @@ import (
 // @Router /tenant/ [post]
 func CreateTenantAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		if ctx.Member.Role != models.RoleAdmin {
+		if !ctx.User.IsSuper && ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权创建租户"))
 			return
 		}
@@ -57,7 +57,7 @@ func CreateTenantAPI() gin.HandlerFunc {
 // @Router /tenant/{id} [get]
 func GetTenantAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		if ctx.Member.Role != models.RoleAdmin {
+		if !ctx.User.IsSuper && ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看租户"))
 			return
 		}
@@ -85,7 +85,7 @@ func GetTenantAPI() gin.HandlerFunc {
 // @Router /tenant/ [get]
 func ListTenantsAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		if ctx.Member.Role != models.RoleAdmin {
+		if !ctx.User.IsSuper && ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看租户列表"))
 			return
 		}
@@ -115,7 +115,7 @@ func ListTenantsAPI() gin.HandlerFunc {
 // @Router /tenant/{id}/domains [post]
 func AddDomainAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		if ctx.Member.Role != models.RoleAdmin {
+		if !ctx.User.IsSuper && ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权管理域名"))
 			return
 		}
@@ -151,7 +151,7 @@ func AddDomainAPI() gin.HandlerFunc {
 // @Router /tenant/{id}/domains [delete]
 func RemoveDomainAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		if ctx.Member.Role != models.RoleAdmin {
+		if !ctx.User.IsSuper && ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权管理域名"))
 			return
 		}
@@ -186,7 +186,7 @@ func RemoveDomainAPI() gin.HandlerFunc {
 // @Router /tenant/{id}/domains [get]
 func ListDomainsAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		if ctx.Member.Role != models.RoleAdmin {
+		if !ctx.User.IsSuper && ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看域名"))
 			return
 		}

@@ -39,6 +39,7 @@ var migrationStmts = []string{
     password    BYTEA NOT NULL,
     salt        BYTEA NOT NULL,
     is_active   BOOLEAN NOT NULL DEFAULT true,
+    is_super    BOOLEAN NOT NULL DEFAULT false,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 )`,

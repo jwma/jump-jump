@@ -21,7 +21,7 @@ import (
 // @Router /config [get]
 func GetConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		tenantID := ctx.Member.TenantID
+		tenantID := getTenantID(c)
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
 			Config: config.GetTenantConfig(tenantID),
 		}))
@@ -41,7 +41,7 @@ func GetConfigAPI() gin.HandlerFunc {
 // @Router /config/id-length [patch]
 func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		if ctx.Member.Role != models.RoleAdmin {
+		if !ctx.User.IsSuper && ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改设置"))
 			return
 		}
@@ -54,13 +54,13 @@ func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 
 		if p.IdMinimumLength <= p.IdLength && p.IdLength <= p.IdMaximumLength &&
 			p.IdMinimumLength > 0 && p.IdLength > 0 && p.IdMaximumLength > 0 {
-			config.UpdateIdConfig(ctx.Member.TenantID, &config.IdConfig{
+			config.UpdateIdConfig(getTenantID(c), &config.IdConfig{
 				IdLength:        p.IdLength,
 				IdMinimumLength: p.IdMinimumLength,
 				IdMaximumLength: p.IdMaximumLength,
 			})
 			c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
-				Config: config.GetTenantConfig(ctx.Member.TenantID),
+				Config: config.GetTenantConfig(getTenantID(c)),
 			}))
 			return
 		}
@@ -82,7 +82,7 @@ func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 // @Router /config/short-link-404-handling [patch]
 func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
-		if ctx.Member.Role != models.RoleAdmin {
+		if !ctx.User.IsSuper && ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改配置"))
 			return
 		}
@@ -98,12 +98,12 @@ func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
 			return
 		}
 
-		config.UpdateShortLinkNotFoundConfig(ctx.Member.TenantID, &config.ShortLinkNotFoundConfig{
+		config.UpdateShortLinkNotFoundConfig(getTenantID(c), &config.ShortLinkNotFoundConfig{
 			Mode:  p.Mode,
 			Value: p.Value,
 		})
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
-			Config: config.GetTenantConfig(ctx.Member.TenantID),
+			Config: config.GetTenantConfig(getTenantID(c)),
 		}))
 	})
 }
