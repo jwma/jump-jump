@@ -10,7 +10,18 @@ import (
 	"github.com/jwma/jump-jump/internal/app/repository"
 )
 
-// CreateUserAPI creates a new user (super admin only).
+// CreateUserAPI godoc
+// @Summary 创建用户
+// @Description 超级管理员创建普通用户
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param body body models.CreateUserRequest true "创建用户请求"
+// @Success 200 {object} models.Response{data=models.UserData}
+// @Failure 401 {object} nil
+// @Failure 403 {object} nil
+// @Router /super/users [post]
 func CreateUserAPI(c *gin.Context) {
 	req := &models.CreateUserRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
@@ -28,7 +39,20 @@ func CreateUserAPI(c *gin.Context) {
 	c.JSON(http.StatusOK, models.NewSuccessResponse(models.ToUserData(u)))
 }
 
-// ListUsersAPI lists all users with pagination and search (super admin only).
+// ListUsersAPI godoc
+// @Summary 用户列表
+// @Description 超级管理员查看所有用户，支持分页和搜索
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param page query int false "页码" default(1)
+// @Param pageSize query int false "每页数量" default(20)
+// @Param query query string false "搜索用户名"
+// @Success 200 {object} models.Response{data=models.ListUsersResponseData}
+// @Failure 401 {object} nil
+// @Failure 403 {object} nil
+// @Router /super/users [get]
 func ListUsersAPI(c *gin.Context) {
 	page, _ := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
 	pageSize, _ := strconv.ParseInt(c.DefaultQuery("pageSize", "20"), 10, 64)
@@ -53,7 +77,18 @@ func ListUsersAPI(c *gin.Context) {
 	}))
 }
 
-// GetUserAPI gets a user's detail including tenants and roles (super admin only).
+// GetUserAPI godoc
+// @Summary 获取用户详情
+// @Description 超级管理员查看用户详情，包括其所属的所有租户和角色
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "用户 ID"
+// @Success 200 {object} models.Response{data=models.UserDetailData}
+// @Failure 401 {object} nil
+// @Failure 403 {object} nil
+// @Router /super/users/{id} [get]
 func GetUserAPI(c *gin.Context) {
 	id := c.Param("id")
 	userRepo := repository.GetUserRepo(db.GetPostgresPool())
@@ -72,7 +107,19 @@ func GetUserAPI(c *gin.Context) {
 	}))
 }
 
-// ResetPasswordAPI resets a user's password (super admin only).
+// ResetPasswordAPI godoc
+// @Summary 重置用户密码
+// @Description 超级管理员重置指定用户的密码
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "用户 ID"
+// @Param body body models.ResetPasswordRequest true "重置密码请求"
+// @Success 200 {object} models.Response
+// @Failure 401 {object} nil
+// @Failure 403 {object} nil
+// @Router /super/users/{id}/reset-password [post]
 func ResetPasswordAPI(c *gin.Context) {
 	id := c.Param("id")
 	req := &models.ResetPasswordRequest{}
@@ -90,7 +137,19 @@ func ResetPasswordAPI(c *gin.Context) {
 	c.JSON(http.StatusOK, models.NewSuccessResponse(nil))
 }
 
-// UpdateUserStatusAPI enables or disables a user (super admin only).
+// UpdateUserStatusAPI godoc
+// @Summary 禁用/启用用户
+// @Description 超级管理员启用或禁用指定用户
+// @Tags 超级管理员
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "用户 ID"
+// @Param body body models.UpdateUserStatusRequest true "更新用户状态请求"
+// @Success 200 {object} models.Response
+// @Failure 401 {object} nil
+// @Failure 403 {object} nil
+// @Router /super/users/{id}/status [patch]
 func UpdateUserStatusAPI(c *gin.Context) {
 	id := c.Param("id")
 	req := &models.UpdateUserStatusRequest{}
