@@ -15,7 +15,41 @@ export interface LoginResponseData {
 
 export interface UserInfo {
   username: string
-  role: number
+  role: string
+  isSuper: boolean
+}
+
+export interface AuthInfoUser {
+  id: string
+  username: string
+  isSuper: boolean
+}
+
+export interface AuthInfoTenant {
+  tenantId: string
+  tenantName: string
+  role: string
+}
+
+export interface AuthInfo {
+  user: AuthInfoUser
+  tenants: AuthInfoTenant[]
+}
+
+export interface Invitation {
+  id: string
+  tenantId: string
+  tenantName: string
+  inviterUsername: string
+  status: string
+  createdAt: string
+}
+
+export interface TenantMember {
+  userId: string
+  username: string
+  role: string
+  joinedAt: string
 }
 
 export interface ChangePasswordRequest {
@@ -150,6 +184,6 @@ export interface AddDomainRequest {
 }
 
 export const UserRole = {
-  User: 1,
-  Admin: 2,
+  Admin: 'admin',
+  Member: 'member',
 } as const

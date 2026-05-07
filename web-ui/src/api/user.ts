@@ -1,8 +1,12 @@
 import { request } from './http'
-import type { LoginRequest, LoginResponseData, UserInfo, ChangePasswordRequest } from '@/types/api'
+import type { LoginRequest, LoginResponseData, UserInfo, AuthInfo, ChangePasswordRequest } from '@/types/api'
 
 export function login(data: LoginRequest) {
-  return request<LoginResponseData>('POST', '/user/login', data)
+  return request<LoginResponseData>('POST', '/auth/login', data)
+}
+
+export function getAuthInfo() {
+  return request<AuthInfo>('GET', '/auth/info')
 }
 
 export function getUserInfo() {
@@ -14,5 +18,5 @@ export function logout() {
 }
 
 export function changePassword(data: ChangePasswordRequest) {
-  return request<void>('POST', '/user/change-password', data)
+  return request<void>('POST', '/auth/change-password', data)
 }

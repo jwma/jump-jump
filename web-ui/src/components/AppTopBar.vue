@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
 import { useLayoutStore } from '@/stores/layout'
-import { Menu } from 'lucide-vue-next'
+import { Menu, Bell } from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const layout = useLayoutStore()
@@ -22,6 +22,20 @@ const layout = useLayoutStore()
     </div>
 
     <div class="flex items-center gap-3">
+      <!-- Invitations -->
+      <router-link
+        :to="{ name: 'invitations' }"
+        class="relative rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+      >
+        <Bell class="h-5 w-5" />
+        <span
+          v-if="auth.pendingInvitationCount > 0"
+          class="absolute -right-0.5 -top-0.5 flex h-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+        >
+          {{ auth.pendingInvitationCount > 9 ? '9+' : auth.pendingInvitationCount }}
+        </span>
+      </router-link>
+
       <div class="flex items-center gap-2">
         <div
           class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-700"
