@@ -35,14 +35,31 @@ var migrationStmts = []string{
 
 	`CREATE TABLE IF NOT EXISTS users (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id   UUID NOT NULL REFERENCES tenants(id),
-    username    VARCHAR(50) NOT NULL,
+    username    VARCHAR(50) NOT NULL UNIQUE,
     password    BYTEA NOT NULL,
     salt        BYTEA NOT NULL,
-    role        SMALLINT NOT NULL DEFAULT 1,
+    is_active   BOOLEAN NOT NULL DEFAULT true,
+    is_super    BOOLEAN NOT NULL DEFAULT false,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE(tenant_id, username)
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+)`,
+
+	`CREATE TABLE IF NOT EXISTS tenant_members (
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    user_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role      VARCHAR(20) NOT NULL DEFAULT 'member',
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (tenant_id, user_id)
+)`,
+
+	`CREATE TABLE IF NOT EXISTS tenant_invitations (
+    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id  UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    inviter_id UUID NOT NULL REFERENCES users(id),
+    invitee_id UUID NOT NULL REFERENCES users(id),
+    status     VARCHAR(20) NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE(tenant_id, invitee_id, status)
 )`,
 
 	`CREATE TABLE IF NOT EXISTS short_links (

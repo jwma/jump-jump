@@ -20,9 +20,9 @@ import (
 // @Failure 401 {object} nil
 // @Router /user/preferences [get]
 func GetUserPreferencesAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		repo := repository.GetUserPreferenceRepo(db.GetPostgresPool())
-		prefs, err := repo.GetAll(user.TenantID, user.Username)
+		prefs, err := repo.GetAll(ctx.User.ID)
 		if err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
@@ -49,7 +49,7 @@ type updatePreferencesRequest struct {
 // @Failure 401 {object} nil
 // @Router /user/preferences [put]
 func UpdateUserPreferencesAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		req := &updatePreferencesRequest{}
 		if err := c.ShouldBindJSON(req); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
@@ -57,12 +57,12 @@ func UpdateUserPreferencesAPI() gin.HandlerFunc {
 		}
 
 		repo := repository.GetUserPreferenceRepo(db.GetPostgresPool())
-		if err := repo.Upsert(user.TenantID, user.Username, req.Preferences); err != nil {
+		if err := repo.Upsert(ctx.User.ID, req.Preferences); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
 		}
 
-		prefs, _ := repo.GetAll(user.TenantID, user.Username)
+		prefs, _ := repo.GetAll(ctx.User.ID)
 		c.JSON(http.StatusOK, models.NewSuccessResponse(map[string]interface{}{
 			"preferences": prefs,
 		}))

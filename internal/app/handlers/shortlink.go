@@ -26,7 +26,7 @@ import (
 // @Failure 401 {object} nil
 // @Router /short-link/{id} [get]
 func GetShortLinkAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
@@ -34,7 +34,7 @@ func GetShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !user.IsAdmin() && user.Username != s.CreatedBy {
+		if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看"))
 			return
 		}
@@ -57,20 +57,20 @@ func GetShortLinkAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /short-link/ [post]
 func CreateShortLinkAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		params := &models.CreateShortLinkAPIRequest{}
 		if err := c.ShouldBindJSON(&params); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
 			return
 		}
 
-		tenantID := user.TenantID
-		s := models.NewShortLink(tenantID, user.Username, params)
+		tenantID := getTenantID(c)
+		s := models.NewShortLink(tenantID, ctx.User.Username, params)
 		repo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		idCfg := config.GetIdConfig(tenantID)
 		idLen := idCfg.IdLength
 
-		if user.Role == models.RoleUser {
+		if !ctx.User.IsSuper && ctx.Member.Role == models.RoleMember {
 			s.Id = ""
 		}
 
@@ -122,7 +122,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /short-link/{id} [patch]
 func UpdateShortLinkAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
@@ -130,7 +130,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !user.IsAdmin() && user.Username != s.CreatedBy {
+		if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改此短链接"))
 			return
 		}
@@ -164,7 +164,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /short-link/{id} [delete]
 func DeleteShortLinkAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
@@ -172,7 +172,7 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !user.IsAdmin() && user.Username != s.CreatedBy {
+		if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权删除此短链接"))
 			return
 		}
@@ -195,13 +195,13 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /short-link/ [get]
 func ListShortLinksAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		var page = utils.GetIntQueryValue(c, "page", 1)
 		var pageSize = utils.GetIntQueryValue(c, "pageSize", 20)
 		start := int64((page - 1) * pageSize)
 
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
-		result, err := slRepo.List(user.TenantID, user.Username, user.IsAdmin(), start, int64(pageSize))
+		result, err := slRepo.List(getTenantID(c), ctx.User.Username, ctx.User.IsSuper || ctx.Member.IsAdmin(), start, int64(pageSize))
 		if err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
@@ -228,7 +228,7 @@ func ListShortLinksAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /short-link/{id}/data [get]
 func ShortLinkActionAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		if c.Param("action") == "/data" {
 			slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 			s, err := slRepo.Get(c.Param("id"))
@@ -237,7 +237,7 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 				return
 			}
 
-			if !user.IsAdmin() && user.Username != s.CreatedBy {
+			if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
 				c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看"))
 				return
 			}

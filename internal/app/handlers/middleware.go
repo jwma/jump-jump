@@ -17,6 +17,12 @@ import (
 	"slices"
 )
 
+// AuthContext carries the authenticated user and their tenant membership for the current request.
+type AuthContext struct {
+	User   *models.User
+	Member *models.TenantMember
+}
+
 func parseAuthorizationHeader(a string) (string, error) {
 	if a == "" {
 		return "", fmt.Errorf("authorization 为空字符串")
@@ -65,16 +71,15 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		tenantID, _ := claims["tenant_id"].(string)
-		username, _ := claims["identifier"].(string)
-		if tenantID == "" || username == "" {
+		userID, _ := claims["user_id"].(string)
+		if userID == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{})
 			c.Abort()
 			return
 		}
 
-		repo := repository.GetUserRepo(db.GetPostgresPool())
-		u, err := repo.FindOneByUsername(tenantID, username)
+		userRepo := repository.GetUserRepo(db.GetPostgresPool())
+		u, err := userRepo.FindByID(userID)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{})
@@ -82,23 +87,52 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user", u)
+		// Resolve tenant context
+		tenantID := c.GetHeader("X-Tenant-ID")
+		if tenantID == "" {
+			tenantID = c.Query("tenant_id")
+		}
+		if tenantID == "" {
+			// Try TenantResolverMiddleware value
+			if tid, exists := c.Get("tenant_id"); exists {
+				if s, ok := tid.(string); ok {
+					tenantID = s
+				}
+			}
+		}
+
+		var member *models.TenantMember
+		if tenantID != "" && !u.IsSuper {
+			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
+			m, err := memberRepo.Get(tenantID, u.ID)
+			if err == nil {
+				member = m
+			}
+		}
+
+		c.Set("auth_context", &AuthContext{User: u, Member: member})
 		c.Set("tenant_id", tenantID)
+		c.Next()
 	}
 }
 
-type AuthAPIFunc func(c *gin.Context, user *models.User)
+type AuthAPIFunc func(c *gin.Context, ctx *AuthContext)
 
 func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		u, exists := c.Get("user")
+		ac, exists := c.Get("auth_context")
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		}
-		user := u.(*models.User)
-		f(c, user)
+		f(c, ac.(*AuthContext))
 	}
+}
+
+func getTenantID(c *gin.Context) string {
+	tid, _ := c.Get("tenant_id")
+	s, _ := tid.(string)
+	return s
 }
 
 func AllowedHostsMiddleware() gin.HandlerFunc {

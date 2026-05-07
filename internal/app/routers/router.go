@@ -72,7 +72,7 @@ func SetupRouter() *gin.Engine {
 	if gin.Mode() == gin.DebugMode {
 		corsCfg := cors.DefaultConfig()
 		corsCfg.AllowAllOrigins = true
-		corsCfg.AddAllowHeaders("Authorization")
+		corsCfg.AddAllowHeaders("Authorization", "X-Tenant-ID")
 		r.Use(cors.New(corsCfg))
 	}
 
@@ -90,10 +90,17 @@ func SetupRouter() *gin.Engine {
 		c.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
+	// Auth routes — no TenantResolverMiddleware
+	auth := r.Group("/v1/auth")
+	{
+		auth.POST("/login", handlers.LoginAPI)
+		auth.GET("/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetAuthInfoAPI())
+	}
+
+	// Tenant-resolved API routes
 	v1 := r.Group("/v1")
 	v1.Use(handlers.TenantResolverMiddleware())
 	{
-		v1.POST("/user/login", handlers.LoginAPI)
 		v1.GET("/user/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserInfoAPI())
 		v1.POST("/user/logout", handlers.JWTAuthenticatorMiddleware(), handlers.LogoutAPI())
 		v1.POST("/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())

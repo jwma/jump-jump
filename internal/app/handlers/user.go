@@ -19,7 +19,7 @@ import (
 // @Produce json
 // @Param body body models.LoginAPIRequest true "登入请求"
 // @Success 200 {object} models.Response{data=models.LoginAPIResponseData}
-// @Router /user/login [post]
+// @Router /auth/login [post]
 func LoginAPI(c *gin.Context) {
 	f := &models.LoginAPIRequest{}
 	if err := c.BindJSON(f); err != nil {
@@ -27,15 +27,8 @@ func LoginAPI(c *gin.Context) {
 		return
 	}
 
-	tenantID, _ := c.Get("tenant_id")
-	tid, _ := tenantID.(string)
-	if tid == "" {
-		c.JSON(http.StatusOK, models.NewErrorResponse("无法识别租户"))
-		return
-	}
-
-	repo := repository.GetUserRepo(db.GetPostgresPool())
-	u, err := repo.FindOneByUsername(tid, strings.TrimSpace(f.Username))
+	userRepo := repository.GetUserRepo(db.GetPostgresPool())
+	u, err := userRepo.FindByUsername(strings.TrimSpace(f.Username))
 	if err != nil {
 		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
 		return
@@ -47,9 +40,44 @@ func LoginAPI(c *gin.Context) {
 		return
 	}
 
+	if !u.IsActive {
+		c.JSON(http.StatusOK, models.NewErrorResponse("账号已被禁用"))
+		return
+	}
+
 	c.JSON(http.StatusOK, models.NewSuccessResponse(models.LoginAPIResponseData{
-		Token: utils.GenerateJWT(u.Username, u.TenantID),
+		Token: utils.GenerateJWT(u.ID, u.IsSuper),
 	}))
+}
+
+// GetAuthInfoAPI godoc
+// @Summary 获取当前用户信息及租户列表
+// @Description 获取当前用户信息及租户列表
+// @Tags 账号
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} models.Response{data=models.AuthInfoResponseData}
+// @Failure 401 {object} nil
+// @Router /auth/info [get]
+func GetAuthInfoAPI() gin.HandlerFunc {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
+		userRepo := repository.GetUserRepo(db.GetPostgresPool())
+		tenants, err := userRepo.GetUserTenants(ctx.User)
+		if err != nil {
+			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			return
+		}
+
+		c.JSON(http.StatusOK, models.NewSuccessResponse(models.AuthInfoResponseData{
+			User: &models.AuthInfoUser{
+				ID:       ctx.User.ID,
+				Username: ctx.User.Username,
+				IsSuper:  ctx.User.IsSuper,
+			},
+			Tenants: tenants,
+		}))
+	})
 }
 
 // GetUserInfoAPI godoc
@@ -63,10 +91,18 @@ func LoginAPI(c *gin.Context) {
 // @Failure 401 {object} nil
 // @Router /user/info [get]
 func GetUserInfoAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
+		role := ""
+		if ctx.Member != nil {
+			role = ctx.Member.Role
+		}
+		if ctx.User.IsSuper {
+			role = models.RoleAdmin
+		}
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetUserInfoAPIResponseData{
-			Username: user.Username,
-			Role:     user.Role,
+			Username: ctx.User.Username,
+			Role:     role,
+			IsSuper:  ctx.User.IsSuper,
 		}))
 	})
 }
@@ -82,7 +118,7 @@ func GetUserInfoAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /user/logout [post]
 func LogoutAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		c.JSON(http.StatusOK, models.NewSuccessResponse(nil))
 	})
 }
@@ -99,22 +135,22 @@ func LogoutAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /user/change-password [post]
 func ChangePasswordAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		p := &models.ChangePasswordAPIRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse("请填写原密码和新密码"))
 			return
 		}
 
-		dk, _ := utils.EncodePassword([]byte(p.Password), user.Salt)
-		if string(user.Password) != string(dk) {
+		dk, _ := utils.EncodePassword([]byte(p.Password), ctx.User.Salt)
+		if string(ctx.User.Password) != string(dk) {
 			c.JSON(http.StatusOK, models.NewErrorResponse("原密码错误"))
 			return
 		}
 
-		user.RawPassword = p.NewPassword
+		ctx.User.RawPassword = p.NewPassword
 		repo := repository.GetUserRepo(db.GetPostgresPool())
-		if err := repo.UpdatePassword(user); err != nil {
+		if err := repo.UpdatePassword(ctx.User); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
 		}

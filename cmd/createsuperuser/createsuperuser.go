@@ -12,14 +12,12 @@ import (
 )
 
 func main() {
-	tenantID := flag.String("tenant-id", "", "tenant ID (UUID).")
 	username := flag.String("username", "", "username.")
 	password := flag.String("password", "", "password.")
-	role := flag.Int("role", models.RoleUser, "role, 1: normal user, 2: administrator.")
 	flag.Parse()
 
-	if *tenantID == "" {
-		fmt.Fprintf(os.Stderr, "tenant-id is required\n")
+	if *username == "" || *password == "" {
+		fmt.Fprintf(os.Stderr, "username and password are required\n")
 		os.Exit(1)
 	}
 
@@ -35,10 +33,9 @@ func main() {
 	}
 
 	user := &models.User{
-		TenantID:    strings.TrimSpace(*tenantID),
 		Username:    strings.TrimSpace(*username),
 		RawPassword: strings.TrimSpace(*password),
-		Role:        *role,
+		IsSuper:     true,
 	}
 
 	repo := repository.GetUserRepo(db.GetPostgresPool())
@@ -47,5 +44,5 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
-	fmt.Fprintf(os.Stdout, "create user %s successfully\n", *username)
+	fmt.Fprintf(os.Stdout, "create super user %s successfully\n", *username)
 }

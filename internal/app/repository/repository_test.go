@@ -144,7 +144,6 @@ func TestUserRepository_Save(t *testing.T) {
 
 	u := &models.User{
 		Username:    "",
-		Role:        0,
 		RawPassword: "",
 	}
 
@@ -154,16 +153,8 @@ func TestUserRepository_Save(t *testing.T) {
 		t.Errorf("expected error but got nil")
 	}
 
-	u.TenantID = "00000000-0000-0000-0000-000000000001"
 	u.Username = "mj"
 	u.RawPassword = "123456"
-	err = repo.Save(u)
-
-	if err == nil {
-		t.Errorf("expected error but got nil")
-	}
-
-	u.Role = models.RoleUser
 	err = repo.Save(u)
 
 	if err != nil {
@@ -171,9 +162,7 @@ func TestUserRepository_Save(t *testing.T) {
 	}
 
 	u2 := &models.User{
-		TenantID:    "00000000-0000-0000-0000-000000000001",
 		Username:    "mj",
-		Role:        models.RoleUser,
 		RawPassword: "abcdefg",
 	}
 	err = repo.Save(u2)
@@ -183,23 +172,23 @@ func TestUserRepository_Save(t *testing.T) {
 	}
 }
 
-func TestUserRepository_FindOneByUsername(t *testing.T) {
+func TestUserRepository_FindByUsername(t *testing.T) {
 	repo := GetUserRepo(getTestPool())
 
-	_, err := repo.FindOneByUsername("00000000-0000-0000-0000-000000000001", "")
+	_, err := repo.FindByUsername("")
 
 	if err == nil {
 		t.Errorf("expected error but got nil")
 	}
 
-	_, err = repo.FindOneByUsername("00000000-0000-0000-0000-000000000001", "anmuji")
+	_, err = repo.FindByUsername("nonexistent")
 
 	if err == nil {
 		t.Errorf("expected error but got nil")
 	}
 
 	expectedUsername := "mj"
-	u, err := repo.FindOneByUsername("00000000-0000-0000-0000-000000000001", expectedUsername)
+	u, err := repo.FindByUsername(expectedUsername)
 
 	if err != nil {
 		t.Error(err)
@@ -207,12 +196,15 @@ func TestUserRepository_FindOneByUsername(t *testing.T) {
 	if u.Username != "mj" {
 		t.Errorf("expected %s but got %s\n", expectedUsername, u.Username)
 	}
+	if u.ID == "" {
+		t.Errorf("expected non-empty user ID")
+	}
 }
 
 func TestUserRepository_UpdatePassword(t *testing.T) {
 	repo := GetUserRepo(getTestPool())
 
-	u, err := repo.FindOneByUsername("00000000-0000-0000-0000-000000000001", "mj")
+	u, err := repo.FindByUsername("mj")
 
 	if err != nil {
 		t.Error(err)
@@ -229,5 +221,71 @@ func TestUserRepository_UpdatePassword(t *testing.T) {
 
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestTenantMemberRepository(t *testing.T) {
+	pool := getTestPool()
+	userRepo := GetUserRepo(pool)
+	memberRepo := GetTenantMemberRepo(pool)
+
+	// Create a test user
+	u := &models.User{
+		Username:    "testmember",
+		RawPassword: "testpass",
+	}
+	err := userRepo.Save(u)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add membership
+	m := &models.TenantMember{
+		TenantID: "00000000-0000-0000-0000-000000000001",
+		UserID:   u.ID,
+		Role:     models.RoleAdmin,
+	}
+	err = memberRepo.Save(m)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Get membership
+	m2, err := memberRepo.Get(m.TenantID, u.ID)
+	if err != nil {
+		t.Error(err)
+	}
+	if m2.Role != models.RoleAdmin {
+		t.Errorf("expected role %s but got %s", models.RoleAdmin, m2.Role)
+	}
+
+	// List by tenant
+	members, err := memberRepo.ListByTenant(m.TenantID)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(members) == 0 {
+		t.Error("expected at least one member")
+	}
+
+	// List by user
+	members, err = memberRepo.ListByUser(u.ID)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(members) == 0 {
+		t.Error("expected at least one membership")
+	}
+
+	// Delete membership
+	err = memberRepo.Delete(m.TenantID, u.ID)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Verify deleted
+	_, err = memberRepo.Get(m.TenantID, u.ID)
+	if err == nil {
+		t.Error("expected error after deletion")
 	}
 }

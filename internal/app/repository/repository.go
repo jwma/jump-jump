@@ -37,7 +37,6 @@ func (r *TenantRepository) Create(req *models.CreateTenantRequest) (*models.Tena
 	if err != nil {
 		return nil, fmt.Errorf("创建租户失败: %w", err)
 	}
-	// Create default config
 	r.db.Exec(context.Background(), `INSERT INTO tenant_configs (tenant_id) VALUES ($1)`, t.ID)
 	return t, nil
 }
@@ -103,7 +102,7 @@ func (r *TenantRepository) ListDomains(tenantID string) ([]*models.TenantDomain,
 	return result, nil
 }
 
-// --- User Repository (PG, tenant-scoped) ---
+// --- User Repository (PG, globally unique username) ---
 
 type userRepository struct {
 	db *pgxpool.Pool
@@ -118,22 +117,19 @@ func GetUserRepo(p *pgxpool.Pool) *userRepository {
 	return userRepo
 }
 
-func (r *userRepository) IsExists(tenantID, username string) bool {
+func (r *userRepository) IsExists(username string) bool {
 	var exists bool
 	r.db.QueryRow(context.Background(),
-		`SELECT EXISTS(SELECT 1 FROM users WHERE tenant_id = $1 AND username = $2)`,
-		tenantID, username).Scan(&exists)
+		`SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`,
+		username).Scan(&exists)
 	return exists
 }
 
 func (r *userRepository) Save(u *models.User) error {
-	if u.TenantID == "" || u.Username == "" || u.RawPassword == "" {
-		return fmt.Errorf("tenant_id, username and password are required")
+	if u.Username == "" || u.RawPassword == "" {
+		return fmt.Errorf("username and password are required")
 	}
-	if _, exists := models.Roles[u.Role]; !exists {
-		return fmt.Errorf("invalid user role: %d", u.Role)
-	}
-	if r.IsExists(u.TenantID, u.Username) {
+	if r.IsExists(u.Username) {
 		return fmt.Errorf("%s already exists", u.Username)
 	}
 
@@ -147,13 +143,15 @@ func (r *userRepository) Save(u *models.User) error {
 	}
 	u.Password = dk
 	u.Salt = salt
-	u.CreateTime = time.Now()
+	u.IsActive = true
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = u.CreatedAt
 
-	_, err = r.db.Exec(context.Background(),
-		`INSERT INTO users (tenant_id, username, password, salt, role, created_at, updated_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $6)`,
-		u.TenantID, u.Username, u.Password, u.Salt, u.Role, u.CreateTime)
-	return err
+	return r.db.QueryRow(context.Background(),
+		`INSERT INTO users (username, password, salt, is_active, is_super, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $6)
+		 RETURNING id`,
+		u.Username, u.Password, u.Salt, u.IsActive, u.IsSuper, u.CreatedAt).Scan(&u.ID)
 }
 
 func (r *userRepository) UpdatePassword(u *models.User) error {
@@ -167,25 +165,251 @@ func (r *userRepository) UpdatePassword(u *models.User) error {
 	u.Salt = salt
 
 	_, err := r.db.Exec(context.Background(),
-		`UPDATE users SET password = $1, salt = $2, updated_at = now() WHERE tenant_id = $3 AND username = $4`,
-		dk, salt, u.TenantID, u.Username)
+		`UPDATE users SET password = $1, salt = $2, updated_at = now() WHERE id = $3`,
+		dk, salt, u.ID)
 	return err
 }
 
-func (r *userRepository) FindOneByUsername(tenantID, username string) (*models.User, error) {
+func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 	if username == "" {
 		return nil, fmt.Errorf("username can not be empty string")
 	}
 
 	u := &models.User{}
 	err := r.db.QueryRow(context.Background(),
-		`SELECT tenant_id, username, password, salt, role, created_at
-		 FROM users WHERE tenant_id = $1 AND username = $2`,
-		tenantID, username).Scan(&u.TenantID, &u.Username, &u.Password, &u.Salt, &u.Role, &u.CreateTime)
+		`SELECT id, username, password, salt, is_active, is_super, created_at, updated_at
+		 FROM users WHERE username = $1`,
+		username).Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("用户不存在")
 	}
 	return u, nil
+}
+
+func (r *userRepository) FindByID(userID string) (*models.User, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("user_id can not be empty string")
+	}
+
+	u := &models.User{}
+	err := r.db.QueryRow(context.Background(),
+		`SELECT id, username, password, salt, is_active, is_super, created_at, updated_at
+		 FROM users WHERE id = $1`,
+		userID).Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("用户不存在")
+	}
+	return u, nil
+}
+
+func (r *userRepository) GetUserTenants(u *models.User) ([]*models.UserTenantEntry, error) {
+	if u.IsSuper {
+		rows, err := r.db.Query(context.Background(),
+			`SELECT id, name FROM tenants ORDER BY created_at`)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		result := make([]*models.UserTenantEntry, 0)
+		for rows.Next() {
+			e := &models.UserTenantEntry{Role: models.RoleAdmin}
+			rows.Scan(&e.TenantID, &e.TenantName)
+			result = append(result, e)
+		}
+		return result, nil
+	}
+
+	memberRepo := GetTenantMemberRepo(r.db)
+	members, err := memberRepo.ListByUser(u.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	tenantRepo := GetTenantRepo(r.db)
+	result := make([]*models.UserTenantEntry, 0, len(members))
+	for _, m := range members {
+		t, err := tenantRepo.GetByID(m.TenantID)
+		if err != nil {
+			continue
+		}
+		result = append(result, &models.UserTenantEntry{
+			TenantID:   m.TenantID,
+			TenantName: t.Name,
+			Role:       m.Role,
+		})
+	}
+	return result, nil
+}
+
+// --- Tenant Member Repository ---
+
+type TenantMemberRepository struct {
+	db *pgxpool.Pool
+}
+
+var tenantMemberRepo *TenantMemberRepository
+
+func GetTenantMemberRepo(p *pgxpool.Pool) *TenantMemberRepository {
+	if tenantMemberRepo == nil {
+		tenantMemberRepo = &TenantMemberRepository{p}
+	}
+	return tenantMemberRepo
+}
+
+func (r *TenantMemberRepository) Save(m *models.TenantMember) error {
+	if m.TenantID == "" || m.UserID == "" {
+		return fmt.Errorf("tenant_id and user_id are required")
+	}
+	if m.Role == "" {
+		m.Role = models.RoleMember
+	}
+	_, err := r.db.Exec(context.Background(),
+		`INSERT INTO tenant_members (tenant_id, user_id, role, joined_at)
+		 VALUES ($1, $2, $3, now())
+		 ON CONFLICT (tenant_id, user_id) DO NOTHING`,
+		m.TenantID, m.UserID, m.Role)
+	return err
+}
+
+func (r *TenantMemberRepository) Get(tenantID, userID string) (*models.TenantMember, error) {
+	m := &models.TenantMember{}
+	err := r.db.QueryRow(context.Background(),
+		`SELECT tenant_id, user_id, role, joined_at
+		 FROM tenant_members WHERE tenant_id = $1 AND user_id = $2`,
+		tenantID, userID).Scan(&m.TenantID, &m.UserID, &m.Role, &m.JoinedAt)
+	if err != nil {
+		return nil, fmt.Errorf("成员关系不存在")
+	}
+	return m, nil
+}
+
+func (r *TenantMemberRepository) Delete(tenantID, userID string) error {
+	_, err := r.db.Exec(context.Background(),
+		`DELETE FROM tenant_members WHERE tenant_id = $1 AND user_id = $2`,
+		tenantID, userID)
+	return err
+}
+
+func (r *TenantMemberRepository) ListByTenant(tenantID string) ([]*models.TenantMember, error) {
+	rows, err := r.db.Query(context.Background(),
+		`SELECT tenant_id, user_id, role, joined_at
+		 FROM tenant_members WHERE tenant_id = $1 ORDER BY joined_at`,
+		tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]*models.TenantMember, 0)
+	for rows.Next() {
+		m := &models.TenantMember{}
+		rows.Scan(&m.TenantID, &m.UserID, &m.Role, &m.JoinedAt)
+		result = append(result, m)
+	}
+	return result, nil
+}
+
+func (r *TenantMemberRepository) ListByUser(userID string) ([]*models.TenantMember, error) {
+	rows, err := r.db.Query(context.Background(),
+		`SELECT tenant_id, user_id, role, joined_at
+		 FROM tenant_members WHERE user_id = $1 ORDER BY joined_at`,
+		userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]*models.TenantMember, 0)
+	for rows.Next() {
+		m := &models.TenantMember{}
+		rows.Scan(&m.TenantID, &m.UserID, &m.Role, &m.JoinedAt)
+		result = append(result, m)
+	}
+	return result, nil
+}
+
+// --- Tenant Invitation Repository ---
+
+type TenantInvitationRepository struct {
+	db *pgxpool.Pool
+}
+
+var tenantInvitationRepo *TenantInvitationRepository
+
+func GetTenantInvitationRepo(p *pgxpool.Pool) *TenantInvitationRepository {
+	if tenantInvitationRepo == nil {
+		tenantInvitationRepo = &TenantInvitationRepository{p}
+	}
+	return tenantInvitationRepo
+}
+
+func (r *TenantInvitationRepository) Create(inv *models.TenantInvitation) error {
+	if inv.TenantID == "" || inv.InviterID == "" || inv.InviteeID == "" {
+		return fmt.Errorf("tenant_id, inviter_id and invitee_id are required")
+	}
+	inv.Status = models.InvitationStatusPending
+	return r.db.QueryRow(context.Background(),
+		`INSERT INTO tenant_invitations (tenant_id, inviter_id, invitee_id, status, created_at)
+		 VALUES ($1, $2, $3, $4, now())
+		 RETURNING id, created_at`,
+		inv.TenantID, inv.InviterID, inv.InviteeID, inv.Status).Scan(&inv.ID, &inv.CreatedAt)
+}
+
+func (r *TenantInvitationRepository) Get(id string) (*models.TenantInvitation, error) {
+	inv := &models.TenantInvitation{}
+	err := r.db.QueryRow(context.Background(),
+		`SELECT id, tenant_id, inviter_id, invitee_id, status, created_at
+		 FROM tenant_invitations WHERE id = $1`, id).
+		Scan(&inv.ID, &inv.TenantID, &inv.InviterID, &inv.InviteeID, &inv.Status, &inv.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("邀请不存在")
+	}
+	return inv, nil
+}
+
+func (r *TenantInvitationRepository) UpdateStatus(id, status string) error {
+	_, err := r.db.Exec(context.Background(),
+		`UPDATE tenant_invitations SET status = $1 WHERE id = $2`, status, id)
+	return err
+}
+
+func (r *TenantInvitationRepository) ListByTenant(tenantID string) ([]*models.TenantInvitation, error) {
+	rows, err := r.db.Query(context.Background(),
+		`SELECT id, tenant_id, inviter_id, invitee_id, status, created_at
+		 FROM tenant_invitations WHERE tenant_id = $1 ORDER BY created_at DESC`,
+		tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]*models.TenantInvitation, 0)
+	for rows.Next() {
+		inv := &models.TenantInvitation{}
+		rows.Scan(&inv.ID, &inv.TenantID, &inv.InviterID, &inv.InviteeID, &inv.Status, &inv.CreatedAt)
+		result = append(result, inv)
+	}
+	return result, nil
+}
+
+func (r *TenantInvitationRepository) ListByInvitee(inviteeID string) ([]*models.TenantInvitation, error) {
+	rows, err := r.db.Query(context.Background(),
+		`SELECT id, tenant_id, inviter_id, invitee_id, status, created_at
+		 FROM tenant_invitations WHERE invitee_id = $1 ORDER BY created_at DESC`,
+		inviteeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]*models.TenantInvitation, 0)
+	for rows.Next() {
+		inv := &models.TenantInvitation{}
+		rows.Scan(&inv.ID, &inv.TenantID, &inv.InviterID, &inv.InviteeID, &inv.Status, &inv.CreatedAt)
+		result = append(result, inv)
+	}
+	return result, nil
 }
 
 // --- Short Link Repository (PG + Redis cache, tenant-scoped) ---
@@ -465,14 +689,7 @@ func GetUserPreferenceRepo(p *pgxpool.Pool) *userPreferenceRepository {
 	return userPrefRepo
 }
 
-func (r *userPreferenceRepository) GetAll(tenantID, username string) ([]*models.UserPreference, error) {
-	var userID string
-	err := r.db.QueryRow(context.Background(),
-		`SELECT id FROM users WHERE tenant_id = $1 AND username = $2`, tenantID, username).Scan(&userID)
-	if err != nil {
-		return nil, fmt.Errorf("用户不存在")
-	}
-
+func (r *userPreferenceRepository) GetAll(userID string) ([]*models.UserPreference, error) {
 	rows, err := r.db.Query(context.Background(),
 		`SELECT key, value FROM user_preferences WHERE user_id = $1 ORDER BY key`, userID)
 	if err != nil {
@@ -489,14 +706,7 @@ func (r *userPreferenceRepository) GetAll(tenantID, username string) ([]*models.
 	return prefs, nil
 }
 
-func (r *userPreferenceRepository) Upsert(tenantID, username string, prefs []*models.UserPreference) error {
-	var userID string
-	err := r.db.QueryRow(context.Background(),
-		`SELECT id FROM users WHERE tenant_id = $1 AND username = $2`, tenantID, username).Scan(&userID)
-	if err != nil {
-		return fmt.Errorf("用户不存在")
-	}
-
+func (r *userPreferenceRepository) Upsert(userID string, prefs []*models.UserPreference) error {
 	for _, p := range prefs {
 		_, err := r.db.Exec(context.Background(),
 			`INSERT INTO user_preferences (user_id, key, value) VALUES ($1, $2, $3)
