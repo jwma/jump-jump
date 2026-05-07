@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
@@ -32,7 +32,6 @@ import { useUserStore } from '@/store/user'
 import { getRememberedUsername, setRememberedUsername, removeRememberedUsername } from '@/utils/auth'
 
 const router = useRouter()
-const route = useRoute()
 const userStore = useUserStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -69,6 +68,7 @@ async function handleLogin() {
   loading.value = true
   try {
     await userStore.login({ username: form.username, password: form.password })
+    await userStore.fetchAuthInfo()
 
     if (rememberMe.value) {
       setRememberedUsername(form.username)
@@ -77,8 +77,7 @@ async function handleLogin() {
     }
 
     ElMessage.success('登录成功')
-    const redirect = (route.query.redirect as string) || '/'
-    router.push(redirect)
+    router.push('/select-tenant')
   } catch {
     // Error handled by axios interceptor
   } finally {

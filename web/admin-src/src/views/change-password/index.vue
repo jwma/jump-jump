@@ -28,7 +28,6 @@
           <el-button type="primary" :loading="loading" class="submit-button" @click="handleSubmit">
             确认修改
           </el-button>
-          <el-button @click="router.back()">返回</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -120,9 +119,8 @@ async function handleSubmit() {
 .change-pwd-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: #f0f2f5;
+  align-items: flex-start;
+  padding-top: 60px;
 }
 
 .change-pwd-card {

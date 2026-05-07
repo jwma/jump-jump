@@ -9,9 +9,27 @@ export interface LoginResult {
   token: string
 }
 
+export interface AuthInfoUser {
+  id: string
+  username: string
+  isSuper: boolean
+}
+
+export interface AuthInfoTenant {
+  tenantId: string
+  tenantName: string
+  role: string
+}
+
+export interface AuthInfo {
+  user: AuthInfoUser
+  tenants: AuthInfoTenant[]
+}
+
 export interface UserInfo {
   username: string
-  role: number
+  role: string
+  isSuper: boolean
 }
 
 export interface ChangePasswordParams {
@@ -20,7 +38,11 @@ export interface ChangePasswordParams {
 }
 
 export function login(params: LoginParams) {
-  return request.post<any, { data: LoginResult }>('/user/login', params)
+  return request.post<any, { data: LoginResult }>('/auth/login', params)
+}
+
+export function getAuthInfo() {
+  return request.get<any, { data: AuthInfo }>('/auth/info')
 }
 
 export function getUserInfo() {
@@ -32,5 +54,5 @@ export function logout() {
 }
 
 export function changePassword(params: ChangePasswordParams) {
-  return request.post('/user/change-password', params)
+  return request.post('/auth/change-password', params)
 }

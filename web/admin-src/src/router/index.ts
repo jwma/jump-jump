@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getToken } from '@/utils/auth'
+import { getToken, getTenantId } from '@/utils/auth'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -11,16 +11,33 @@ const router = createRouter({
       meta: { requiresAuth: false },
     },
     {
-      path: '/change-password',
-      name: 'ChangePassword',
-      component: () => import('@/views/change-password/index.vue'),
-      meta: { requiresAuth: true },
+      path: '/select-tenant',
+      name: 'SelectTenant',
+      component: () => import('@/views/select-tenant/index.vue'),
+      meta: { requiresAuth: true, requiresTenant: false },
+    },
+    {
+      path: '/invitations',
+      name: 'Invitations',
+      component: () => import('@/views/invitations/index.vue'),
+      meta: { requiresAuth: true, requiresTenant: false },
     },
     {
       path: '/',
-      name: 'Dashboard',
-      component: () => import('@/views/dashboard/index.vue'),
-      meta: { requiresAuth: true },
+      component: () => import('@/components/layout/AppLayout.vue'),
+      meta: { requiresAuth: true, requiresTenant: true },
+      children: [
+        {
+          path: '',
+          name: 'Dashboard',
+          component: () => import('@/views/dashboard/index.vue'),
+        },
+        {
+          path: 'change-password',
+          name: 'ChangePassword',
+          component: () => import('@/views/change-password/index.vue'),
+        },
+      ],
     },
     {
       path: '/:pathMatch(.*)*',
@@ -31,11 +48,17 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const token = getToken()
+
   if (to.meta.requiresAuth && !token) {
     return { name: 'Login', query: { redirect: to.fullPath } }
   }
+
   if (to.name === 'Login' && token) {
-    return { name: 'Dashboard' }
+    return { name: 'SelectTenant' }
+  }
+
+  if (to.meta.requiresTenant && token && !getTenantId()) {
+    return { name: 'SelectTenant' }
   }
 })
 

@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import { getToken, removeToken } from '@/utils/auth'
+import { getToken, removeToken, getTenantId } from '@/utils/auth'
 import router from '@/router'
 
 const request = axios.create({
@@ -13,6 +13,10 @@ request.interceptors.request.use(
     const token = getToken()
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    const tenantId = getTenantId()
+    if (tenantId) {
+      config.headers['X-Tenant-ID'] = tenantId
     }
     return config
   },
