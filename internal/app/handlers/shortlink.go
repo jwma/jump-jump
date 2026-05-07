@@ -14,6 +14,53 @@ import (
 	"github.com/jwma/jump-jump/internal/app/utils"
 )
 
+// resolveUsernames batch-resolves user IDs to usernames.
+func resolveUsernames(userIDs []string) map[string]string {
+	userRepo := repository.GetUserRepo(db.GetPostgresPool())
+	m, err := userRepo.FindUsernamesByIDs(userIDs)
+	if err != nil {
+		return make(map[string]string)
+	}
+	return m
+}
+
+func collectCreatedByIDs(links []*models.ShortLink) []string {
+	seen := make(map[string]bool)
+	ids := make([]string, 0, len(links))
+	for _, l := range links {
+		if !seen[l.CreatedBy] {
+			seen[l.CreatedBy] = true
+			ids = append(ids, l.CreatedBy)
+		}
+	}
+	return ids
+}
+
+func toShortLinkDataSliceWithUsernames(links []*models.ShortLink) []*models.ShortLinkData {
+	if len(links) == 0 {
+		return make([]*models.ShortLinkData, 0)
+	}
+	usernameMap := resolveUsernames(collectCreatedByIDs(links))
+	result := make([]*models.ShortLinkData, 0, len(links))
+	for _, s := range links {
+		d := models.ToShortLinkData(s)
+		if username, ok := usernameMap[s.CreatedBy]; ok {
+			d.CreatedBy = username
+		}
+		result = append(result, d)
+	}
+	return result
+}
+
+func toShortLinkDataWithUsername(s *models.ShortLink) *models.ShortLinkData {
+	usernameMap := resolveUsernames([]string{s.CreatedBy})
+	d := models.ToShortLinkData(s)
+	if username, ok := usernameMap[s.CreatedBy]; ok {
+		d.CreatedBy = username
+	}
+	return d
+}
+
 // GetShortLinkAPI godoc
 // @Summary 获取指定 ID 短链接
 // @Description 获取指定 ID 短链接详情
@@ -34,13 +81,8 @@ func GetShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看"))
-			return
-		}
-
 		c.JSON(http.StatusOK, models.NewSuccessResponse(&models.GetShortLinkAPIResponseData{
-			ShortLinkData: models.ToShortLinkData(s),
+			ShortLinkData: toShortLinkDataWithUsername(s),
 		}))
 	})
 }
@@ -65,14 +107,10 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 		}
 
 		tenantID := getTenantID(c)
-		s := models.NewShortLink(tenantID, ctx.User.Username, params)
+		s := models.NewShortLink(tenantID, ctx.User.ID, params)
 		repo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		idCfg := config.GetIdConfig(tenantID)
 		idLen := idCfg.IdLength
-
-		if !ctx.User.IsSuper && ctx.Member.Role == models.RoleMember {
-			s.Id = ""
-		}
 
 		if s.Id != "" {
 			checkShortLink, _ := repo.Get(s.Id)
@@ -104,7 +142,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.CreateShortLinkAPIResponseData{
-			ShortLinkData: models.ToShortLinkData(s),
+			ShortLinkData: toShortLinkDataWithUsername(s),
 		}))
 	})
 }
@@ -130,11 +168,6 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
-		if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改此短链接"))
-			return
-		}
-
 		updateShortLink := &models.UpdateShortLinkAPIRequest{}
 		if err := c.ShouldBindJSON(updateShortLink); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
@@ -147,7 +180,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.UpdateShortLinkAPIResponseData{
-			ShortLinkData: models.ToShortLinkData(s),
+			ShortLinkData: toShortLinkDataWithUsername(s),
 		}))
 	})
 }
@@ -169,11 +202,6 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
-			return
-		}
-
-		if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权删除此短链接"))
 			return
 		}
 
@@ -201,14 +229,14 @@ func ListShortLinksAPI() gin.HandlerFunc {
 		start := int64((page - 1) * pageSize)
 
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
-		result, err := slRepo.List(getTenantID(c), ctx.User.Username, ctx.User.IsSuper || ctx.Member.IsAdmin(), start, int64(pageSize))
+		result, err := slRepo.List(getTenantID(c), start, int64(pageSize))
 		if err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
 		}
 
 		c.JSON(http.StatusOK, models.NewSuccessResponse(&models.ListShortLinksAPIResponseData{
-			ShortLinks: models.ToShortLinkDataSlice(result.ShortLinks),
+			ShortLinks: toShortLinkDataSliceWithUsernames(result.ShortLinks),
 			Total:      result.Total,
 		}))
 	})
@@ -234,11 +262,6 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			s, err := slRepo.Get(c.Param("id"))
 			if err != nil {
 				c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
-				return
-			}
-
-			if !ctx.User.IsSuper && !ctx.Member.IsAdmin() && ctx.User.Username != s.CreatedBy {
-				c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看"))
 				return
 			}
 

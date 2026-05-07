@@ -386,6 +386,37 @@ func (r *userRepository) UpdateStatus(userID string, isActive bool) error {
 	return nil
 }
 
+func (r *userRepository) FindUsernamesByIDs(userIDs []string) (map[string]string, error) {
+	if len(userIDs) == 0 {
+		return make(map[string]string), nil
+	}
+	seen := make(map[string]bool)
+	unique := make([]string, 0, len(userIDs))
+	for _, id := range userIDs {
+		if !seen[id] {
+			seen[id] = true
+			unique = append(unique, id)
+		}
+	}
+
+	rows, err := r.db.Query(context.Background(),
+		`SELECT id, username FROM users WHERE id = ANY($1)`, unique)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[string]string, len(unique))
+	for rows.Next() {
+		var id, username string
+		if err := rows.Scan(&id, &username); err != nil {
+			return nil, err
+		}
+		result[id] = username
+	}
+	return result, rows.Err()
+}
+
 func (r *userRepository) GetUserTenants(u *models.User) ([]*models.UserTenantEntry, error) {
 	if u.IsSuper {
 		rows, err := r.db.Query(context.Background(),
@@ -767,32 +798,19 @@ func makeEmptyShortLinkListResult() *shortLinkListResult {
 	return &shortLinkListResult{ShortLinks: make([]*models.ShortLink, 0), Total: 0}
 }
 
-func (r *shortLinkRepository) List(tenantID, username string, isAdmin bool, start, pageSize int64) (*shortLinkListResult, error) {
+func (r *shortLinkRepository) List(tenantID string, start, pageSize int64) (*shortLinkListResult, error) {
 	result := makeEmptyShortLinkListResult()
 
-	var countQuery, dataQuery string
-	var args []interface{}
-
-	args = append(args, tenantID)
-
-	if isAdmin {
-		countQuery = `SELECT COUNT(*) FROM short_links WHERE tenant_id = $1`
-		dataQuery = `SELECT id, tenant_id, url, description, is_enabled, created_by, created_at, updated_at
-					 FROM short_links WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
-	} else {
-		countQuery = `SELECT COUNT(*) FROM short_links WHERE tenant_id = $1 AND created_by = $2`
-		dataQuery = `SELECT id, tenant_id, url, description, is_enabled, created_by, created_at, updated_at
-					 FROM short_links WHERE tenant_id = $1 AND created_by = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4`
-		args = append(args, username)
-	}
-
-	err := r.db.QueryRow(context.Background(), countQuery, args...).Scan(&result.Total)
+	err := r.db.QueryRow(context.Background(),
+		`SELECT COUNT(*) FROM short_links WHERE tenant_id = $1`, tenantID).Scan(&result.Total)
 	if err != nil || result.Total == 0 {
 		return result, nil
 	}
 
-	dataArgs := append(args, pageSize, start)
-	rows, err := r.db.Query(context.Background(), dataQuery, dataArgs...)
+	rows, err := r.db.Query(context.Background(),
+		`SELECT id, tenant_id, url, description, is_enabled, created_by, created_at, updated_at
+		 FROM short_links WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+		tenantID, pageSize, start)
 	if err != nil {
 		return result, errors.New("系统繁忙请稍后再试")
 	}

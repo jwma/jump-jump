@@ -260,7 +260,7 @@ func SuperListTenantShortLinksAPI(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.NewSuccessResponse(&models.ListShortLinksAPIResponseData{
-		ShortLinks: models.ToShortLinkDataSlice(result.ShortLinks),
+		ShortLinks: toShortLinkDataSliceWithUsernames(result.ShortLinks),
 		Total:      result.Total,
 	}))
 }
