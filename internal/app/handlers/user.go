@@ -133,7 +133,7 @@ func LogoutAPI() gin.HandlerFunc {
 // @Param body body models.ChangePasswordAPIRequest true "修改密码请求"
 // @Success 200 {object} models.Response
 // @Failure 401 {object} nil
-// @Router /user/change-password [post]
+// @Router /auth/change-password [post]
 func ChangePasswordAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		p := &models.ChangePasswordAPIRequest{}

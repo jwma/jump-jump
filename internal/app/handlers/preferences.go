@@ -47,7 +47,7 @@ type updatePreferencesRequest struct {
 // @Param body body object true "更新偏好设置请求" example({"preferences":[{"key":"theme","value":"dark"}]})
 // @Success 200 {object} models.Response{data=map[string]interface{}} "data.preferences 为 []*models.UserPreference"
 // @Failure 401 {object} nil
-// @Router /user/preferences [put]
+// @Router /user/preferences [patch]
 func UpdateUserPreferencesAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		req := &updatePreferencesRequest{}

@@ -799,29 +799,7 @@ func makeEmptyShortLinkListResult() *shortLinkListResult {
 }
 
 func (r *shortLinkRepository) List(tenantID string, start, pageSize int64) (*shortLinkListResult, error) {
-	result := makeEmptyShortLinkListResult()
-
-	err := r.db.QueryRow(context.Background(),
-		`SELECT COUNT(*) FROM short_links WHERE tenant_id = $1`, tenantID).Scan(&result.Total)
-	if err != nil || result.Total == 0 {
-		return result, nil
-	}
-
-	rows, err := r.db.Query(context.Background(),
-		`SELECT id, tenant_id, url, description, is_enabled, created_by, created_at, updated_at
-		 FROM short_links WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
-		tenantID, pageSize, start)
-	if err != nil {
-		return result, errors.New("系统繁忙请稍后再试")
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		s := &models.ShortLink{}
-		rows.Scan(&s.Id, &s.TenantID, &s.Url, &s.Description, &s.IsEnable, &s.CreatedBy, &s.CreateTime, &s.UpdateTime)
-		result.ShortLinks = append(result.ShortLinks, s)
-	}
-	return result, nil
+	return r.ListByTenantID(tenantID, start, pageSize)
 }
 
 func (r *shortLinkRepository) ListByTenantID(tenantID string, start, pageSize int64) (*shortLinkListResult, error) {
@@ -829,7 +807,10 @@ func (r *shortLinkRepository) ListByTenantID(tenantID string, start, pageSize in
 
 	err := r.db.QueryRow(context.Background(),
 		`SELECT COUNT(*) FROM short_links WHERE tenant_id = $1`, tenantID).Scan(&result.Total)
-	if err != nil || result.Total == 0 {
+	if err != nil {
+		return nil, fmt.Errorf("查询短链接总数失败: %w", err)
+	}
+	if result.Total == 0 {
 		return result, nil
 	}
 
@@ -838,19 +819,19 @@ func (r *shortLinkRepository) ListByTenantID(tenantID string, start, pageSize in
 		 FROM short_links WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
 		tenantID, pageSize, start)
 	if err != nil {
-		return result, errors.New("系统繁忙请稍后再试")
+		return nil, errors.New("系统繁忙请稍后再试")
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		s := &models.ShortLink{}
 		if err := rows.Scan(&s.Id, &s.TenantID, &s.Url, &s.Description, &s.IsEnable, &s.CreatedBy, &s.CreateTime, &s.UpdateTime); err != nil {
-			return result, err
+			return nil, err
 		}
 		result.ShortLinks = append(result.ShortLinks, s)
 	}
 	if err := rows.Err(); err != nil {
-		return result, err
+		return nil, err
 	}
 	return result, nil
 }

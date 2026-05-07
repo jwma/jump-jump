@@ -149,6 +149,7 @@ func SetupRouter() *gin.Engine {
 	{
 		userAPI.GET("/preferences", handlers.GetUserPreferencesAPI())
 		userAPI.PATCH("/preferences", handlers.UpdateUserPreferencesAPI())
+		userAPI.POST("/logout", handlers.LogoutAPI())
 	}
 
 	// User routes — JWT + TenantContext (need role info)
@@ -156,7 +157,6 @@ func SetupRouter() *gin.Engine {
 	userTenantAPI.Use(handlers.JWTAuthenticatorMiddleware(), handlers.TenantContextMiddleware())
 	{
 		userTenantAPI.GET("/info", handlers.GetUserInfoAPI())
-		userTenantAPI.POST("/logout", handlers.LogoutAPI())
 	}
 
 	// Short link routes — JWT + TenantContext (X-Tenant-ID required)

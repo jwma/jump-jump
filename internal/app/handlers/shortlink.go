@@ -61,6 +61,15 @@ func toShortLinkDataWithUsername(s *models.ShortLink) *models.ShortLinkData {
 	return d
 }
 
+// checkTenantOwnership verifies that a short link belongs to the current tenant.
+func checkTenantOwnership(c *gin.Context, s *models.ShortLink) bool {
+	if s.TenantID != getTenantID(c) {
+		c.JSON(http.StatusOK, models.NewErrorResponse("短链接不存在"))
+		return false
+	}
+	return true
+}
+
 // GetShortLinkAPI godoc
 // @Summary 获取指定 ID 短链接
 // @Description 获取指定 ID 短链接详情
@@ -78,6 +87,10 @@ func GetShortLinkAPI() gin.HandlerFunc {
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			return
+		}
+
+		if !checkTenantOwnership(c, s) {
 			return
 		}
 
@@ -168,6 +181,10 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 			return
 		}
 
+		if !checkTenantOwnership(c, s) {
+			return
+		}
+
 		updateShortLink := &models.UpdateShortLinkAPIRequest{}
 		if err := c.ShouldBindJSON(updateShortLink); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
@@ -202,6 +219,10 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			return
+		}
+
+		if !checkTenantOwnership(c, s) {
 			return
 		}
 
@@ -262,6 +283,10 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			s, err := slRepo.Get(c.Param("id"))
 			if err != nil {
 				c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+				return
+			}
+
+			if !checkTenantOwnership(c, s) {
 				return
 			}
 
