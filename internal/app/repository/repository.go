@@ -69,6 +69,80 @@ func (r *TenantRepository) List() ([]*models.Tenant, error) {
 	return result, nil
 }
 
+func (r *TenantRepository) Update(id string, req *models.UpdateTenantRequest) (*models.Tenant, error) {
+	t := &models.Tenant{}
+	err := r.db.QueryRow(context.Background(),
+		`UPDATE tenants SET name = COALESCE(NULLIF($1, ''), name), slug = COALESCE(NULLIF($2, ''), slug), updated_at = now()
+		 WHERE id = $3 RETURNING id, name, slug, is_active, created_at, updated_at`,
+		req.Name, req.Slug, id).Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("更新租户失败")
+	}
+	return t, nil
+}
+
+func (r *TenantRepository) UpdateStatus(id string, isActive bool) error {
+	ct, err := r.db.Exec(context.Background(),
+		`UPDATE tenants SET is_active = $1, updated_at = now() WHERE id = $2`, isActive, id)
+	if err != nil {
+		return err
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("租户不存在")
+	}
+	return nil
+}
+
+func (r *TenantRepository) ListByUser(userID string) ([]*models.Tenant, error) {
+	rows, err := r.db.Query(context.Background(),
+		`SELECT t.id, t.name, t.slug, t.is_active, t.created_at, t.updated_at
+		 FROM tenants t
+		 JOIN tenant_members tm ON t.id = tm.tenant_id
+		 WHERE tm.user_id = $1
+		 ORDER BY tm.joined_at`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]*models.Tenant, 0)
+	for rows.Next() {
+		t := &models.Tenant{}
+		rows.Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
+		result = append(result, t)
+	}
+	return result, nil
+}
+
+func (r *TenantRepository) ListAll(page, pageSize int64) ([]*models.Tenant, int64, error) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+	offset := (page - 1) * pageSize
+
+	var total int64
+	r.db.QueryRow(context.Background(), `SELECT COUNT(*) FROM tenants`).Scan(&total)
+
+	rows, err := r.db.Query(context.Background(),
+		`SELECT id, name, slug, is_active, created_at, updated_at
+		 FROM tenants ORDER BY created_at DESC LIMIT $1 OFFSET $2`, pageSize, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	result := make([]*models.Tenant, 0)
+	for rows.Next() {
+		t := &models.Tenant{}
+		rows.Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
+		result = append(result, t)
+	}
+	return result, total, nil
+}
+
 func (r *TenantRepository) AddDomain(tenantID, domain string, isDefault bool) error {
 	_, err := r.db.Exec(context.Background(),
 		`INSERT INTO tenant_domains (tenant_id, domain, is_default) VALUES ($1, $2, $3)`,
@@ -707,6 +781,32 @@ func (r *shortLinkRepository) List(tenantID, username string, isAdmin bool, star
 
 	dataArgs := append(args, pageSize, start)
 	rows, err := r.db.Query(context.Background(), dataQuery, dataArgs...)
+	if err != nil {
+		return result, errors.New("系统繁忙请稍后再试")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		s := &models.ShortLink{}
+		rows.Scan(&s.Id, &s.TenantID, &s.Url, &s.Description, &s.IsEnable, &s.CreatedBy, &s.CreateTime, &s.UpdateTime)
+		result.ShortLinks = append(result.ShortLinks, s)
+	}
+	return result, nil
+}
+
+func (r *shortLinkRepository) ListByTenantID(tenantID string, start, pageSize int64) (*shortLinkListResult, error) {
+	result := makeEmptyShortLinkListResult()
+
+	err := r.db.QueryRow(context.Background(),
+		`SELECT COUNT(*) FROM short_links WHERE tenant_id = $1`, tenantID).Scan(&result.Total)
+	if err != nil || result.Total == 0 {
+		return result, nil
+	}
+
+	rows, err := r.db.Query(context.Background(),
+		`SELECT id, tenant_id, url, description, is_enabled, created_by, created_at, updated_at
+		 FROM short_links WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+		tenantID, pageSize, start)
 	if err != nil {
 		return result, errors.New("系统繁忙请稍后再试")
 	}

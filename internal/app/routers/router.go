@@ -90,55 +90,51 @@ func SetupRouter() *gin.Engine {
 		c.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
-	// Auth routes — no TenantResolverMiddleware
+	// Auth routes — no tenant context required
 	auth := r.Group("/v1/auth")
 	{
 		auth.POST("/login", handlers.LoginAPI)
 		auth.GET("/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetAuthInfoAPI())
 	}
 
-	// Super admin routes (no tenant context required)
+	// Super admin routes — JWT + SuperAdmin middleware
 	superAPI := r.Group("/v1/super")
 	superAPI.Use(handlers.JWTAuthenticatorMiddleware(), handlers.SuperAdminMiddleware())
 	{
+		// User management
 		superAPI.POST("/users", handlers.CreateUserAPI)
 		superAPI.GET("/users", handlers.ListUsersAPI)
 		superAPI.GET("/users/:id", handlers.GetUserAPI)
 		superAPI.POST("/users/:id/reset-password", handlers.ResetPasswordAPI)
 		superAPI.PATCH("/users/:id/status", handlers.UpdateUserStatusAPI)
+
+		// Tenant management
+		superAPI.GET("/tenants", handlers.ListAllTenantsAPI)
+		superAPI.PATCH("/tenants/:id/status", handlers.UpdateTenantStatusAPI)
+		superAPI.GET("/tenants/:id/short-links", handlers.SuperListTenantShortLinksAPI)
+		superAPI.GET("/tenants/:id/members", handlers.SuperListTenantMembersAPI)
+		superAPI.GET("/tenants/:id/domains", handlers.SuperListTenantDomainsAPI)
 	}
 
-	// Tenant-resolved API routes
-	v1 := r.Group("/v1")
-	v1.Use(handlers.TenantResolverMiddleware())
+	// Tenant CRUD routes — JWT only, tenant ID from path params
+	tenantAPI := r.Group("/v1/tenant")
+	tenantAPI.Use(handlers.JWTAuthenticatorMiddleware())
 	{
-		v1.GET("/user/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserInfoAPI())
-		v1.POST("/user/logout", handlers.JWTAuthenticatorMiddleware(), handlers.LogoutAPI())
-		v1.POST("/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
-		v1.GET("/user/preferences", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserPreferencesAPI())
-		v1.PUT("/user/preferences", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateUserPreferencesAPI())
-
-		v1.GET("/config", handlers.JWTAuthenticatorMiddleware(), handlers.GetConfigAPI())
-		v1.PATCH("/config/id-length", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateIdLengthConfigAPI())
-		v1.PATCH("/config/short-link-404-handling", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateShortLinkNotFoundConfigAPI())
-
-		shortLinkAPI := v1.Group("/short-link")
-		shortLinkAPI.Use(handlers.JWTAuthenticatorMiddleware())
-		shortLinkAPI.GET("/", handlers.ListShortLinksAPI())
-		shortLinkAPI.GET("/:id", handlers.GetShortLinkAPI())
-		shortLinkAPI.POST("/", handlers.CreateShortLinkAPI())
-		shortLinkAPI.PATCH("/:id", handlers.UpdateShortLinkAPI())
-		shortLinkAPI.DELETE("/:id", handlers.DeleteShortLinkAPI())
-		shortLinkAPI.GET("/:id/*action", handlers.ShortLinkActionAPI())
-
-		tenantAPI := v1.Group("/tenant")
-		tenantAPI.Use(handlers.JWTAuthenticatorMiddleware())
+		tenantAPI.POST("/", handlers.CreateTenantAPI())
 		tenantAPI.GET("/", handlers.ListTenantsAPI())
 		tenantAPI.GET("/:id", handlers.GetTenantAPI())
-		tenantAPI.POST("/", handlers.CreateTenantAPI())
+		tenantAPI.PATCH("/:id", handlers.UpdateTenantAPI())
+
+		// Domain management (affects landingserver only, not apiserver)
 		tenantAPI.GET("/:id/domains", handlers.ListDomainsAPI())
 		tenantAPI.POST("/:id/domains", handlers.AddDomainAPI())
-		tenantAPI.DELETE("/:id/domains", handlers.RemoveDomainAPI())
+		tenantAPI.DELETE("/:id/domains/:domain", handlers.RemoveDomainAPI())
+
+		// Config
+		tenantAPI.GET("/:id/config", handlers.GetTenantConfigAPI())
+		tenantAPI.PATCH("/:id/config", handlers.UpdateTenantConfigAPI())
+
+		// Member management
 		tenantAPI.GET("/:id/members", handlers.ListTenantMembersAPI())
 		tenantAPI.POST("/:id/invitations", handlers.InviteUserAPI())
 		tenantAPI.PATCH("/:id/members/:userId/role", handlers.UpdateMemberRoleAPI())
@@ -146,7 +142,30 @@ func SetupRouter() *gin.Engine {
 		tenantAPI.POST("/:id/leave", handlers.LeaveTenantAPI())
 	}
 
-	// Invitation routes — no TenantResolverMiddleware (tenant-agnostic)
+	// User routes — JWT + TenantContext (X-Tenant-ID required for role info)
+	userAPI := r.Group("/v1/user")
+	userAPI.Use(handlers.JWTAuthenticatorMiddleware(), handlers.TenantContextMiddleware())
+	{
+		userAPI.GET("/info", handlers.GetUserInfoAPI())
+		userAPI.POST("/logout", handlers.LogoutAPI())
+		userAPI.POST("/change-password", handlers.ChangePasswordAPI())
+		userAPI.GET("/preferences", handlers.GetUserPreferencesAPI())
+		userAPI.PUT("/preferences", handlers.UpdateUserPreferencesAPI())
+	}
+
+	// Short link routes — JWT + TenantContext (X-Tenant-ID required)
+	shortLinkAPI := r.Group("/v1/short-link")
+	shortLinkAPI.Use(handlers.JWTAuthenticatorMiddleware(), handlers.TenantContextMiddleware())
+	{
+		shortLinkAPI.GET("/", handlers.ListShortLinksAPI())
+		shortLinkAPI.GET("/:id", handlers.GetShortLinkAPI())
+		shortLinkAPI.POST("/", handlers.CreateShortLinkAPI())
+		shortLinkAPI.PATCH("/:id", handlers.UpdateShortLinkAPI())
+		shortLinkAPI.DELETE("/:id", handlers.DeleteShortLinkAPI())
+		shortLinkAPI.GET("/:id/*action", handlers.ShortLinkActionAPI())
+	}
+
+	// Invitation routes — JWT only, tenant-agnostic
 	invAPI := r.Group("/v1/invitations")
 	invAPI.Use(handlers.JWTAuthenticatorMiddleware())
 	{
