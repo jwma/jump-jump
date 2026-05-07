@@ -229,17 +229,20 @@ func (r *userRepository) List(opts ListOptions) (*UserListResult, error) {
 
 	if opts.Query != "" {
 		countQuery = `SELECT COUNT(*) FROM users WHERE username ILIKE $1`
-		dataQuery = `SELECT id, username, password, salt, is_active, is_super, created_at, updated_at
+		dataQuery = `SELECT id, username, is_active, is_super, created_at, updated_at
 					 FROM users WHERE username ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
 		args = append(args, "%"+opts.Query+"%")
 	} else {
 		countQuery = `SELECT COUNT(*) FROM users`
-		dataQuery = `SELECT id, username, password, salt, is_active, is_super, created_at, updated_at
+		dataQuery = `SELECT id, username, is_active, is_super, created_at, updated_at
 					 FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2`
 	}
 
 	err := r.db.QueryRow(context.Background(), countQuery, args...).Scan(&result.Total)
-	if err != nil || result.Total == 0 {
+	if err != nil {
+		return nil, fmt.Errorf("查询用户总数失败: %w", err)
+	}
+	if result.Total == 0 {
 		return result, nil
 	}
 
@@ -252,8 +255,13 @@ func (r *userRepository) List(opts ListOptions) (*UserListResult, error) {
 
 	for rows.Next() {
 		u := &models.User{}
-		rows.Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt)
+		if err := rows.Scan(&u.ID, &u.Username, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("查询用户列表失败: %w", err)
+		}
 		result.Users = append(result.Users, u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("查询用户列表失败: %w", err)
 	}
 	return result, nil
 }
@@ -267,17 +275,29 @@ func (r *userRepository) UpdatePasswordByID(userID, newPassword string) error {
 	if err != nil {
 		return fmt.Errorf("编码密码失败: %w", err)
 	}
-	_, err = r.db.Exec(context.Background(),
+	ct, err := r.db.Exec(context.Background(),
 		`UPDATE users SET password = $1, salt = $2, updated_at = now() WHERE id = $3`,
 		dk, salt, userID)
-	return err
+	if err != nil {
+		return err
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("用户不存在")
+	}
+	return nil
 }
 
 func (r *userRepository) UpdateStatus(userID string, isActive bool) error {
-	_, err := r.db.Exec(context.Background(),
+	ct, err := r.db.Exec(context.Background(),
 		`UPDATE users SET is_active = $1, updated_at = now() WHERE id = $2`,
 		isActive, userID)
-	return err
+	if err != nil {
+		return err
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("用户不存在")
+	}
+	return nil
 }
 
 func (r *userRepository) GetUserTenants(u *models.User) ([]*models.UserTenantEntry, error) {

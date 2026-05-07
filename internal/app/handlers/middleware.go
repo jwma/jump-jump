@@ -145,7 +145,7 @@ func SuperAdminMiddleware() gin.HandlerFunc {
 		}
 		ctx := ac.(*AuthContext)
 		if !ctx.User.IsSuper {
-			c.JSON(http.StatusForbidden, models.NewErrorResponse("仅超级管理员可执行此操作"))
+			c.JSON(http.StatusOK, models.NewErrorResponse("仅超级管理员可执行此操作"))
 			c.Abort()
 			return
 		}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/db"
@@ -20,7 +21,6 @@ import (
 // @Param body body models.CreateUserRequest true "创建用户请求"
 // @Success 200 {object} models.Response{data=models.UserData}
 // @Failure 401 {object} nil
-// @Failure 403 {object} nil
 // @Router /super/users [post]
 func CreateUserAPI(c *gin.Context) {
 	req := &models.CreateUserRequest{}
@@ -30,7 +30,7 @@ func CreateUserAPI(c *gin.Context) {
 	}
 
 	userRepo := repository.GetUserRepo(db.GetPostgresPool())
-	u := &models.User{Username: req.Username, RawPassword: req.Password}
+	u := &models.User{Username: strings.TrimSpace(req.Username), RawPassword: req.Password}
 	if err := userRepo.Save(u); err != nil {
 		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 		return
@@ -51,7 +51,6 @@ func CreateUserAPI(c *gin.Context) {
 // @Param query query string false "搜索用户名"
 // @Success 200 {object} models.Response{data=models.ListUsersResponseData}
 // @Failure 401 {object} nil
-// @Failure 403 {object} nil
 // @Router /super/users [get]
 func ListUsersAPI(c *gin.Context) {
 	page, _ := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
@@ -87,7 +86,6 @@ func ListUsersAPI(c *gin.Context) {
 // @Param id path string true "用户 ID"
 // @Success 200 {object} models.Response{data=models.UserDetailData}
 // @Failure 401 {object} nil
-// @Failure 403 {object} nil
 // @Router /super/users/{id} [get]
 func GetUserAPI(c *gin.Context) {
 	id := c.Param("id")
@@ -99,7 +97,11 @@ func GetUserAPI(c *gin.Context) {
 		return
 	}
 
-	tenants, _ := userRepo.GetUserTenants(u)
+	tenants, err := userRepo.GetUserTenants(u)
+	if err != nil {
+		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		return
+	}
 	c.JSON(http.StatusOK, models.NewSuccessResponse(models.UserDetailData{
 		ID: u.ID, Username: u.Username, IsActive: u.IsActive,
 		IsSuper: u.IsSuper, CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt,
@@ -118,7 +120,6 @@ func GetUserAPI(c *gin.Context) {
 // @Param body body models.ResetPasswordRequest true "重置密码请求"
 // @Success 200 {object} models.Response
 // @Failure 401 {object} nil
-// @Failure 403 {object} nil
 // @Router /super/users/{id}/reset-password [post]
 func ResetPasswordAPI(c *gin.Context) {
 	id := c.Param("id")
@@ -148,7 +149,6 @@ func ResetPasswordAPI(c *gin.Context) {
 // @Param body body models.UpdateUserStatusRequest true "更新用户状态请求"
 // @Success 200 {object} models.Response
 // @Failure 401 {object} nil
-// @Failure 403 {object} nil
 // @Router /super/users/{id}/status [patch]
 func UpdateUserStatusAPI(c *gin.Context) {
 	id := c.Param("id")
@@ -159,7 +159,7 @@ func UpdateUserStatusAPI(c *gin.Context) {
 	}
 
 	userRepo := repository.GetUserRepo(db.GetPostgresPool())
-	if err := userRepo.UpdateStatus(id, req.IsActive); err != nil {
+	if err := userRepo.UpdateStatus(id, *req.IsActive); err != nil {
 		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 		return
 	}

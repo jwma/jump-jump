@@ -108,7 +108,7 @@ type ResetPasswordRequest struct {
 }
 
 type UpdateUserStatusRequest struct {
-	IsActive bool `json:"isActive"`
+	IsActive *bool `json:"isActive" binding:"required"`
 }
 
 type UserData struct {
