@@ -57,6 +57,30 @@ type AddDomainRequest struct {
 	IsDefault bool   `json:"isDefault"`
 }
 
+type InviteUserRequest struct {
+	Username string `json:"username" binding:"required"`
+}
+
+type UpdateRoleRequest struct {
+	Role string `json:"role" binding:"required"`
+}
+
+type TenantMemberData struct {
+	UserID    string `json:"userId"`
+	Username  string `json:"username"`
+	Role      string `json:"role"`
+	JoinedAt  time.Time `json:"joinedAt"`
+}
+
+type InvitationData struct {
+	ID              string    `json:"id"`
+	TenantID        string    `json:"tenantId"`
+	TenantName      string    `json:"tenantName"`
+	InviterUsername string    `json:"inviterUsername"`
+	Status          string    `json:"status"`
+	CreatedAt       time.Time `json:"createdAt"`
+}
+
 // --- Auth ---
 
 type LoginAPIRequest struct {
