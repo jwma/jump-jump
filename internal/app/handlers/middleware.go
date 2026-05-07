@@ -135,6 +135,24 @@ func getTenantID(c *gin.Context) string {
 	return s
 }
 
+func SuperAdminMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ac, exists := c.Get("auth_context")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{})
+			c.Abort()
+			return
+		}
+		ctx := ac.(*AuthContext)
+		if !ctx.User.IsSuper {
+			c.JSON(http.StatusForbidden, models.NewErrorResponse("仅超级管理员可执行此操作"))
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
 func AllowedHostsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		allowedHosts := os.Getenv("ALLOWED_HOSTS")
