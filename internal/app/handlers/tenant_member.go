@@ -112,7 +112,8 @@ func InviteUserAPI() gin.HandlerFunc {
 		}
 
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-		if memberRepo.IsMember(tenantID, invitee.ID) {
+		isMember, _ := memberRepo.IsMember(tenantID, invitee.ID)
+		if isMember {
 			c.JSON(http.StatusOK, models.NewErrorResponse("该用户已是租户成员"))
 			return
 		}
@@ -123,7 +124,8 @@ func InviteUserAPI() gin.HandlerFunc {
 		}
 
 		invRepo := repository.GetTenantInvitationRepo(db.GetPostgresPool())
-		if invRepo.HasPendingInvitation(tenantID, invitee.ID) {
+		hasPending, _ := invRepo.HasPendingInvitation(tenantID, invitee.ID)
+		if hasPending {
 			c.JSON(http.StatusOK, models.NewErrorResponse("该用户已有待处理的邀请"))
 			return
 		}
@@ -219,11 +221,6 @@ func AcceptInvitationAPI() gin.HandlerFunc {
 			return
 		}
 
-		if err := invRepo.UpdateStatus(inv.ID, models.InvitationStatusAccepted); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("操作失败"))
-			return
-		}
-
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
 		if err := memberRepo.Save(&models.TenantMember{
 			TenantID: inv.TenantID,
@@ -231,6 +228,11 @@ func AcceptInvitationAPI() gin.HandlerFunc {
 			Role:     models.RoleMember,
 		}); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse("加入租户失败"))
+			return
+		}
+
+		if err := invRepo.UpdateStatus(inv.ID, models.InvitationStatusAccepted); err != nil {
+			c.JSON(http.StatusOK, models.NewErrorResponse("操作失败"))
 			return
 		}
 
@@ -320,7 +322,8 @@ func UpdateMemberRoleAPI() gin.HandlerFunc {
 		}
 
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-		if !memberRepo.IsMember(tenantID, targetUserID) {
+		isMember, _ := memberRepo.IsMember(tenantID, targetUserID)
+		if !isMember {
 			c.JSON(http.StatusOK, models.NewErrorResponse("该用户不是租户成员"))
 			return
 		}
@@ -363,7 +366,8 @@ func RemoveMemberAPI() gin.HandlerFunc {
 		}
 
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-		if !memberRepo.IsMember(tenantID, targetUserID) {
+		isMember, _ := memberRepo.IsMember(tenantID, targetUserID)
+		if !isMember {
 			c.JSON(http.StatusOK, models.NewErrorResponse("该用户不是租户成员"))
 			return
 		}

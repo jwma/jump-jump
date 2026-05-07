@@ -11,7 +11,7 @@ import (
 
 // CreateTenantAPI godoc
 // @Summary 创建租户
-// @Description 创建租户（仅管理员）
+// @Description 创建租户（已登录用户均可创建，创建者自动成为管理员）
 // @Tags 租户
 // @Accept json
 // @Produce json
@@ -36,11 +36,14 @@ func CreateTenantAPI() gin.HandlerFunc {
 		}
 
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
-		memberRepo.Save(&models.TenantMember{
+		if err := memberRepo.Save(&models.TenantMember{
 			TenantID: t.ID,
 			UserID:   ctx.User.ID,
 			Role:     models.RoleAdmin,
-		})
+		}); err != nil {
+			c.JSON(http.StatusOK, models.NewErrorResponse("创建租户成员关系失败"))
+			return
+		}
 
 		c.JSON(http.StatusOK, models.NewSuccessResponse(t))
 	})

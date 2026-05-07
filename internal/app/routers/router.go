@@ -144,15 +144,15 @@ func SetupRouter() *gin.Engine {
 		tenantAPI.PATCH("/:id/members/:userId/role", handlers.UpdateMemberRoleAPI())
 		tenantAPI.DELETE("/:id/members/:userId", handlers.RemoveMemberAPI())
 		tenantAPI.POST("/:id/leave", handlers.LeaveTenantAPI())
+	}
 
-		// Invitation routes (no tenant context in path)
-		invAPI := v1.Group("/invitations")
-		invAPI.Use(handlers.JWTAuthenticatorMiddleware())
-		{
-			invAPI.GET("/", handlers.ListMyInvitationsAPI())
-			invAPI.POST("/:id/accept", handlers.AcceptInvitationAPI())
-			invAPI.POST("/:id/reject", handlers.RejectInvitationAPI())
-		}
+	// Invitation routes — no TenantResolverMiddleware (tenant-agnostic)
+	invAPI := r.Group("/v1/invitations")
+	invAPI.Use(handlers.JWTAuthenticatorMiddleware())
+	{
+		invAPI.GET("/", handlers.ListMyInvitationsAPI())
+		invAPI.POST("/:id/accept", handlers.AcceptInvitationAPI())
+		invAPI.POST("/:id/reject", handlers.RejectInvitationAPI())
 	}
 
 	return r

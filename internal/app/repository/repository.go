@@ -409,18 +409,26 @@ func (r *TenantMemberRepository) ListByTenant(tenantID string) ([]*models.Tenant
 }
 
 func (r *TenantMemberRepository) UpdateRole(tenantID, userID, role string) error {
-	_, err := r.db.Exec(context.Background(),
+	ct, err := r.db.Exec(context.Background(),
 		`UPDATE tenant_members SET role = $1 WHERE tenant_id = $2 AND user_id = $3`,
 		role, tenantID, userID)
-	return err
+	if err != nil {
+		return err
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("成员不存在")
+	}
+	return nil
 }
 
-func (r *TenantMemberRepository) IsMember(tenantID, userID string) bool {
+func (r *TenantMemberRepository) IsMember(tenantID, userID string) (bool, error) {
 	var exists bool
-	r.db.QueryRow(context.Background(),
+	if err := r.db.QueryRow(context.Background(),
 		`SELECT EXISTS(SELECT 1 FROM tenant_members WHERE tenant_id = $1 AND user_id = $2)`,
-		tenantID, userID).Scan(&exists)
-	return exists
+		tenantID, userID).Scan(&exists); err != nil {
+		return false, err
+	}
+	return exists, nil
 }
 
 func (r *TenantMemberRepository) ListByUser(userID string) ([]*models.TenantMember, error) {
@@ -539,18 +547,25 @@ func (r *TenantInvitationRepository) FindPendingByInvitee(inviteeID string) ([]*
 	result := make([]*models.TenantInvitation, 0)
 	for rows.Next() {
 		inv := &models.TenantInvitation{}
-		rows.Scan(&inv.ID, &inv.TenantID, &inv.InviterID, &inv.InviteeID, &inv.Status, &inv.CreatedAt)
+		if err := rows.Scan(&inv.ID, &inv.TenantID, &inv.InviterID, &inv.InviteeID, &inv.Status, &inv.CreatedAt); err != nil {
+			return nil, err
+		}
 		result = append(result, inv)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 	return result, nil
 }
 
-func (r *TenantInvitationRepository) HasPendingInvitation(tenantID, inviteeID string) bool {
+func (r *TenantInvitationRepository) HasPendingInvitation(tenantID, inviteeID string) (bool, error) {
 	var exists bool
-	r.db.QueryRow(context.Background(),
+	if err := r.db.QueryRow(context.Background(),
 		`SELECT EXISTS(SELECT 1 FROM tenant_invitations WHERE tenant_id = $1 AND invitee_id = $2 AND status = $3)`,
-		tenantID, inviteeID, models.InvitationStatusPending).Scan(&exists)
-	return exists
+		tenantID, inviteeID, models.InvitationStatusPending).Scan(&exists); err != nil {
+		return false, err
+	}
+	return exists, nil
 }
 // --- Short Link Repository (PG + Redis cache, tenant-scoped) ---
 
