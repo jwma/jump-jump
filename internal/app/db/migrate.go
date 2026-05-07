@@ -73,6 +73,19 @@ var migrationStmts = []string{
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 )`,
 
+	// Migrate short_links.created_by from VARCHAR to UUID if the table already exists
+	`DO $$ BEGIN
+	    IF EXISTS (
+	        SELECT 1 FROM information_schema.columns
+	        WHERE table_name = 'short_links' AND column_name = 'created_by' AND data_type = 'character varying'
+	    ) THEN
+	        ALTER TABLE short_links DROP CONSTRAINT IF EXISTS short_links_created_by_fkey;
+	        ALTER TABLE short_links ALTER COLUMN created_by TYPE UUID USING created_by::UUID;
+	        ALTER TABLE short_links ADD CONSTRAINT short_links_created_by_fkey
+	            FOREIGN KEY (created_by) REFERENCES users(id);
+	    END IF;
+	END $$`,
+
 	`CREATE INDEX IF NOT EXISTS idx_short_links_tenant ON short_links(tenant_id)`,
 	`CREATE INDEX IF NOT EXISTS idx_short_links_tenant_created ON short_links(tenant_id, created_at DESC)`,
 	`CREATE INDEX IF NOT EXISTS idx_short_links_created_by ON short_links(created_by)`,
