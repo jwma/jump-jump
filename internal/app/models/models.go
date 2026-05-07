@@ -96,6 +96,52 @@ type ChangePasswordAPIRequest struct {
 	NewPassword string `json:"newPassword"`
 }
 
+// --- Super Admin User Management ---
+
+type CreateUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type ResetPasswordRequest struct {
+	NewPassword string `json:"newPassword" binding:"required"`
+}
+
+type UpdateUserStatusRequest struct {
+	IsActive *bool `json:"isActive" binding:"required"`
+}
+
+type UserData struct {
+	ID        string    `json:"id"`
+	Username  string    `json:"username"`
+	IsActive  bool      `json:"isActive"`
+	IsSuper   bool      `json:"isSuper"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+func ToUserData(u *User) *UserData {
+	return &UserData{
+		ID: u.ID, Username: u.Username, IsActive: u.IsActive,
+		IsSuper: u.IsSuper, CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt,
+	}
+}
+
+type UserDetailData struct {
+	ID        string              `json:"id"`
+	Username  string              `json:"username"`
+	IsActive  bool                `json:"isActive"`
+	IsSuper   bool                `json:"isSuper"`
+	CreatedAt time.Time           `json:"createdAt"`
+	UpdatedAt time.Time           `json:"updatedAt"`
+	Tenants   []*UserTenantEntry  `json:"tenants"`
+}
+
+type ListUsersResponseData struct {
+	Users []*UserData `json:"users"`
+	Total int64       `json:"total"`
+}
+
 // --- Config ---
 
 type GetConfigAPIResponseData struct {

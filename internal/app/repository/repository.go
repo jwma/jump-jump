@@ -202,6 +202,104 @@ func (r *userRepository) FindByID(userID string) (*models.User, error) {
 	return u, nil
 }
 
+type ListOptions struct {
+	Query    string
+	Page     int64
+	PageSize int64
+}
+
+type UserListResult struct {
+	Users []*models.User `json:"users"`
+	Total int64          `json:"total"`
+}
+
+func (r *userRepository) List(opts ListOptions) (*UserListResult, error) {
+	if opts.Page < 1 {
+		opts.Page = 1
+	}
+	if opts.PageSize < 1 || opts.PageSize > 100 {
+		opts.PageSize = 20
+	}
+	offset := (opts.Page - 1) * opts.PageSize
+
+	result := &UserListResult{Users: make([]*models.User, 0), Total: 0}
+
+	var countQuery, dataQuery string
+	var args []interface{}
+
+	if opts.Query != "" {
+		countQuery = `SELECT COUNT(*) FROM users WHERE username ILIKE $1`
+		dataQuery = `SELECT id, username, is_active, is_super, created_at, updated_at
+					 FROM users WHERE username ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
+		args = append(args, "%"+opts.Query+"%")
+	} else {
+		countQuery = `SELECT COUNT(*) FROM users`
+		dataQuery = `SELECT id, username, is_active, is_super, created_at, updated_at
+					 FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2`
+	}
+
+	err := r.db.QueryRow(context.Background(), countQuery, args...).Scan(&result.Total)
+	if err != nil {
+		return nil, fmt.Errorf("查询用户总数失败: %w", err)
+	}
+	if result.Total == 0 {
+		return result, nil
+	}
+
+	dataArgs := append(args, opts.PageSize, offset)
+	rows, err := r.db.Query(context.Background(), dataQuery, dataArgs...)
+	if err != nil {
+		return nil, fmt.Errorf("查询用户列表失败: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		u := &models.User{}
+		if err := rows.Scan(&u.ID, &u.Username, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("查询用户列表失败: %w", err)
+		}
+		result.Users = append(result.Users, u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("查询用户列表失败: %w", err)
+	}
+	return result, nil
+}
+
+func (r *userRepository) UpdatePasswordByID(userID, newPassword string) error {
+	salt, err := utils.RandomSalt(32)
+	if err != nil {
+		return fmt.Errorf("生成盐失败: %w", err)
+	}
+	dk, err := utils.EncodePassword([]byte(newPassword), salt)
+	if err != nil {
+		return fmt.Errorf("编码密码失败: %w", err)
+	}
+	ct, err := r.db.Exec(context.Background(),
+		`UPDATE users SET password = $1, salt = $2, updated_at = now() WHERE id = $3`,
+		dk, salt, userID)
+	if err != nil {
+		return err
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("用户不存在")
+	}
+	return nil
+}
+
+func (r *userRepository) UpdateStatus(userID string, isActive bool) error {
+	ct, err := r.db.Exec(context.Background(),
+		`UPDATE users SET is_active = $1, updated_at = now() WHERE id = $2`,
+		isActive, userID)
+	if err != nil {
+		return err
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("用户不存在")
+	}
+	return nil
+}
+
 func (r *userRepository) GetUserTenants(u *models.User) ([]*models.UserTenantEntry, error) {
 	if u.IsSuper {
 		rows, err := r.db.Query(context.Background(),

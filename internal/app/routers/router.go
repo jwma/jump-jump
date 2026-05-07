@@ -97,6 +97,17 @@ func SetupRouter() *gin.Engine {
 		auth.GET("/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetAuthInfoAPI())
 	}
 
+	// Super admin routes (no tenant context required)
+	superAPI := r.Group("/v1/super")
+	superAPI.Use(handlers.JWTAuthenticatorMiddleware(), handlers.SuperAdminMiddleware())
+	{
+		superAPI.POST("/users", handlers.CreateUserAPI)
+		superAPI.GET("/users", handlers.ListUsersAPI)
+		superAPI.GET("/users/:id", handlers.GetUserAPI)
+		superAPI.POST("/users/:id/reset-password", handlers.ResetPasswordAPI)
+		superAPI.PATCH("/users/:id/status", handlers.UpdateUserStatusAPI)
+	}
+
 	// Tenant-resolved API routes
 	v1 := r.Group("/v1")
 	v1.Use(handlers.TenantResolverMiddleware())
