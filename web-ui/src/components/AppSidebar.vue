@@ -53,11 +53,17 @@ function isActive(to: { name: string }) {
   return false
 }
 
-function handleTenantSwitch(tenantId: string) {
+async function handleTenantSwitch(tenantId: string) {
   tenantDropdownOpen.value = false
   if (tenantId !== auth.currentTenantId) {
     auth.selectTenant(tenantId)
-    auth.fetchUser().catch(() => {})
+    try {
+      await auth.fetchUser()
+    } catch {
+      auth.clearTenant()
+      router.push({ name: 'select-tenant' })
+      return
+    }
     router.push({ name: 'dashboard' })
   }
 }

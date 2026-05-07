@@ -12,6 +12,7 @@ export const useAuthStore = defineStore('auth', () => {
   const tenants = ref<AuthInfoTenant[]>([])
   const currentTenantId = ref<string | null>(localStorage.getItem('tenant_id') || null)
   const invitations = ref<Invitation[]>([])
+  const invitationsLoaded = ref(false)
 
   const isLoggedIn = computed(() => !!token.value)
   const isSuper = computed(() => authUser.value?.isSuper ?? false)
@@ -44,16 +45,19 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchInvitations() {
     const data = await listInvitations()
     invitations.value = data ?? []
+    invitationsLoaded.value = true
   }
 
   function selectTenant(tenantId: string) {
     currentTenantId.value = tenantId
     localStorage.setItem('tenant_id', tenantId)
+    user.value = null
   }
 
   function clearTenant() {
     currentTenantId.value = null
     localStorage.removeItem('tenant_id')
+    user.value = null
   }
 
   function clearAuth() {
@@ -63,6 +67,7 @@ export const useAuthStore = defineStore('auth', () => {
     tenants.value = []
     currentTenantId.value = null
     invitations.value = []
+    invitationsLoaded.value = false
     localStorage.removeItem('token')
     localStorage.removeItem('tenant_id')
   }
@@ -83,6 +88,7 @@ export const useAuthStore = defineStore('auth', () => {
     currentTenantId,
     currentTenant,
     invitations,
+    invitationsLoaded,
     isLoggedIn,
     isSuper,
     isAdmin,

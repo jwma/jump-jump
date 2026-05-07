@@ -31,8 +31,7 @@ async function handleAccept(id: string) {
   actionLoading.value[id] = true
   try {
     await acceptInvitation(id)
-    const inv = invitations.value.find((i) => i.id === id)
-    if (inv) inv.status = 'accepted'
+    invitations.value = invitations.value.filter((i) => i.id !== id)
     await auth.fetchAuthInfo()
     await auth.fetchInvitations()
   } catch {
@@ -46,8 +45,7 @@ async function handleReject(id: string) {
   actionLoading.value[id] = true
   try {
     await rejectInvitation(id)
-    const inv = invitations.value.find((i) => i.id === id)
-    if (inv) inv.status = 'rejected'
+    invitations.value = invitations.value.filter((i) => i.id !== id)
     await auth.fetchInvitations()
   } catch {
     // handled by interceptor

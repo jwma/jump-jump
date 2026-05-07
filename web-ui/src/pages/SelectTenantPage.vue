@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { createTenant } from '@/api/tenant'
 import { ArrowRight, Plus, Shield, Building2 } from 'lucide-vue-next'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 
 const showCreateDialog = ref(false)
@@ -25,12 +26,14 @@ onMounted(async () => {
 
 function selectTenant(tenantId: string) {
   auth.selectTenant(tenantId)
-  router.push({ name: 'dashboard' })
+  const redirect = (route.query.redirect as string) || '/'
+  router.push(redirect)
 }
 
 function enterSuperAdmin() {
   auth.clearTenant()
-  router.push({ name: 'dashboard' })
+  const redirect = (route.query.redirect as string) || '/'
+  router.push(redirect)
 }
 
 async function handleCreateTenant() {

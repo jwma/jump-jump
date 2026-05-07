@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const username = ref('')
 const password = ref('')
@@ -17,7 +18,8 @@ async function handleLogin() {
   try {
     await auth.login(username.value, password.value)
     await auth.fetchAuthInfo()
-    router.push({ name: 'select-tenant' })
+    const redirect = (route.query.redirect as string) || ''
+    router.push({ name: 'select-tenant', query: redirect ? { redirect } : undefined })
   } catch {
     error.value = 'Login failed. Please check your credentials.'
   } finally {

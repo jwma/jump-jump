@@ -128,16 +128,17 @@ router.beforeEach(async (to) => {
     try {
       await auth.fetchUser()
     } catch {
-      // user info may fail without tenant, continue
+      auth.clearTenant()
+      return { name: 'select-tenant' }
     }
   }
 
-  // Fetch invitations for authenticated users
-  if (auth.isLoggedIn && auth.invitations.length === 0) {
+  // Fetch invitations once per session
+  if (auth.isLoggedIn && !auth.invitationsLoaded) {
     auth.fetchInvitations().catch(() => {})
   }
 
-  if (to.meta.requiresTenant && !auth.currentTenantId) {
+  if (to.meta.requiresTenant && !auth.currentTenantId && !auth.isSuper) {
     return { name: 'select-tenant' }
   }
 
@@ -146,7 +147,7 @@ router.beforeEach(async (to) => {
   }
 
   if (to.name === 'login' && auth.isLoggedIn) {
-    return { name: 'select-tenant' }
+    return { name: auth.currentTenantId ? 'dashboard' : 'select-tenant' }
   }
 })
 
