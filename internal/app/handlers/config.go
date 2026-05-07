@@ -20,8 +20,8 @@ import (
 // @Failure 401 {object} nil
 // @Router /config [get]
 func GetConfigAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
-		tenantID := user.TenantID
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
+		tenantID := ctx.Member.TenantID
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
 			Config: config.GetTenantConfig(tenantID),
 		}))
@@ -40,8 +40,8 @@ func GetConfigAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /config/id-length [patch]
 func UpdateIdLengthConfigAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
-		if user.Role != models.RoleAdmin {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
+		if ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改设置"))
 			return
 		}
@@ -54,13 +54,13 @@ func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 
 		if p.IdMinimumLength <= p.IdLength && p.IdLength <= p.IdMaximumLength &&
 			p.IdMinimumLength > 0 && p.IdLength > 0 && p.IdMaximumLength > 0 {
-			config.UpdateIdConfig(user.TenantID, &config.IdConfig{
+			config.UpdateIdConfig(ctx.Member.TenantID, &config.IdConfig{
 				IdLength:        p.IdLength,
 				IdMinimumLength: p.IdMinimumLength,
 				IdMaximumLength: p.IdMaximumLength,
 			})
 			c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
-				Config: config.GetTenantConfig(user.TenantID),
+				Config: config.GetTenantConfig(ctx.Member.TenantID),
 			}))
 			return
 		}
@@ -81,8 +81,8 @@ func UpdateIdLengthConfigAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /config/short-link-404-handling [patch]
 func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
-		if user.Role != models.RoleAdmin {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
+		if ctx.Member.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改配置"))
 			return
 		}
@@ -98,12 +98,12 @@ func UpdateShortLinkNotFoundConfigAPI() gin.HandlerFunc {
 			return
 		}
 
-		config.UpdateShortLinkNotFoundConfig(user.TenantID, &config.ShortLinkNotFoundConfig{
+		config.UpdateShortLinkNotFoundConfig(ctx.Member.TenantID, &config.ShortLinkNotFoundConfig{
 			Mode:  p.Mode,
 			Value: p.Value,
 		})
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetConfigAPIResponseData{
-			Config: config.GetTenantConfig(user.TenantID),
+			Config: config.GetTenantConfig(ctx.Member.TenantID),
 		}))
 	})
 }

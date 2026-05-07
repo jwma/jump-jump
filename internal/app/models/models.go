@@ -5,13 +5,14 @@ import (
 	"time"
 )
 
-const RoleUser = 1
-const RoleAdmin = 2
+// Role constants (string-based for tenant_members)
+const RoleAdmin = "admin"
+const RoleMember = "member"
 
-var Roles = map[int]string{
-	RoleUser:  "user",
-	RoleAdmin: "admin",
-}
+// Invitation status constants
+const InvitationStatusPending = "pending"
+const InvitationStatusAccepted = "accepted"
+const InvitationStatusRejected = "rejected"
 
 type Response struct {
 	Msg  string      `json:"msg" example:"ok" default:"ok"`
@@ -69,7 +70,7 @@ type LoginAPIResponseData struct {
 
 type GetUserInfoAPIResponseData struct {
 	Username string `json:"username"`
-	Role     int    `json:"role"`
+	Role     string `json:"role"`
 }
 
 type ChangePasswordAPIRequest struct {
@@ -97,17 +98,38 @@ type UpdateNotFoundConfigRequest struct {
 // --- User ---
 
 type User struct {
-	TenantID    string    `json:"tenant_id"`
+	ID          string    `json:"id"`
 	Username    string    `json:"username"`
-	Role        int       `json:"role"`
 	RawPassword string    `json:"-"`
 	Password    []byte    `json:"password"`
 	Salt        []byte    `json:"salt"`
-	CreateTime  time.Time `json:"create_time"`
+	IsActive    bool      `json:"isActive"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
-func (u *User) IsAdmin() bool {
-	return u.Role == RoleAdmin
+// --- Tenant Member ---
+
+type TenantMember struct {
+	TenantID string    `json:"tenantId"`
+	UserID   string    `json:"userId"`
+	Role     string    `json:"role"`
+	JoinedAt time.Time `json:"joinedAt"`
+}
+
+func (m *TenantMember) IsAdmin() bool {
+	return m.Role == RoleAdmin
+}
+
+// --- Tenant Invitation ---
+
+type TenantInvitation struct {
+	ID        string    `json:"id"`
+	TenantID  string    `json:"tenantId"`
+	InviterID string    `json:"inviterId"`
+	InviteeID string    `json:"inviteeId"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 // --- Short Link ---

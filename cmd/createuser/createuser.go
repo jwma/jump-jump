@@ -15,11 +15,15 @@ func main() {
 	tenantID := flag.String("tenant-id", "", "tenant ID (UUID).")
 	username := flag.String("username", "", "username.")
 	password := flag.String("password", "", "password.")
-	role := flag.Int("role", models.RoleUser, "role, 1: normal user, 2: administrator.")
+	role := flag.String("role", models.RoleMember, "role: 'admin' or 'member'.")
 	flag.Parse()
 
 	if *tenantID == "" {
 		fmt.Fprintf(os.Stderr, "tenant-id is required\n")
+		os.Exit(1)
+	}
+	if *role != models.RoleAdmin && *role != models.RoleMember {
+		fmt.Fprintf(os.Stderr, "role must be 'admin' or 'member'\n")
 		os.Exit(1)
 	}
 
@@ -35,17 +39,30 @@ func main() {
 	}
 
 	user := &models.User{
-		TenantID:    strings.TrimSpace(*tenantID),
 		Username:    strings.TrimSpace(*username),
 		RawPassword: strings.TrimSpace(*password),
-		Role:        *role,
 	}
 
-	repo := repository.GetUserRepo(db.GetPostgresPool())
-	err := repo.Save(user)
+	userRepo := repository.GetUserRepo(db.GetPostgresPool())
+	err := userRepo.Save(user)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
-	fmt.Fprintf(os.Stdout, "create user %s successfully\n", *username)
+
+	member := &models.TenantMember{
+		TenantID: strings.TrimSpace(*tenantID),
+		UserID:   user.ID,
+		Role:     strings.TrimSpace(*role),
+	}
+
+	memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
+	err = memberRepo.Save(member)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "user created but membership failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Fprintf(os.Stdout, "create user %s (id: %s) with role %s in tenant %s successfully\n",
+		*username, user.ID, *role, *tenantID)
 }

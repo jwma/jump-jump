@@ -17,6 +17,12 @@ import (
 	"slices"
 )
 
+// AuthContext carries the authenticated user and their tenant membership for the current request.
+type AuthContext struct {
+	User   *models.User
+	Member *models.TenantMember
+}
+
 func parseAuthorizationHeader(a string) (string, error) {
 	if a == "" {
 		return "", fmt.Errorf("authorization 为空字符串")
@@ -73,8 +79,8 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		repo := repository.GetUserRepo(db.GetPostgresPool())
-		u, err := repo.FindOneByUsername(tenantID, username)
+		userRepo := repository.GetUserRepo(db.GetPostgresPool())
+		u, err := userRepo.FindByUsername(username)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{})
@@ -82,22 +88,30 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user", u)
+		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
+		m, err := memberRepo.Get(tenantID, u.ID)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusUnauthorized, gin.H{})
+			c.Abort()
+			return
+		}
+
+		c.Set("auth_context", &AuthContext{User: u, Member: m})
 		c.Set("tenant_id", tenantID)
 	}
 }
 
-type AuthAPIFunc func(c *gin.Context, user *models.User)
+type AuthAPIFunc func(c *gin.Context, ctx *AuthContext)
 
 func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		u, exists := c.Get("user")
+		ac, exists := c.Get("auth_context")
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		}
-		user := u.(*models.User)
-		f(c, user)
+		f(c, ac.(*AuthContext))
 	}
 }
 

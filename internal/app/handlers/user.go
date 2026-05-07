@@ -34,8 +34,16 @@ func LoginAPI(c *gin.Context) {
 		return
 	}
 
-	repo := repository.GetUserRepo(db.GetPostgresPool())
-	u, err := repo.FindOneByUsername(tid, strings.TrimSpace(f.Username))
+	userRepo := repository.GetUserRepo(db.GetPostgresPool())
+	u, err := userRepo.FindByUsername(strings.TrimSpace(f.Username))
+	if err != nil {
+		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
+		return
+	}
+
+	// Verify the user is a member of this tenant
+	memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
+	m, err := memberRepo.Get(tid, u.ID)
 	if err != nil {
 		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
 		return
@@ -47,8 +55,13 @@ func LoginAPI(c *gin.Context) {
 		return
 	}
 
+	if !u.IsActive {
+		c.JSON(http.StatusOK, models.NewErrorResponse("账号已被禁用"))
+		return
+	}
+
 	c.JSON(http.StatusOK, models.NewSuccessResponse(models.LoginAPIResponseData{
-		Token: utils.GenerateJWT(u.Username, u.TenantID),
+		Token: utils.GenerateJWT(u.Username, m.TenantID),
 	}))
 }
 
@@ -63,10 +76,10 @@ func LoginAPI(c *gin.Context) {
 // @Failure 401 {object} nil
 // @Router /user/info [get]
 func GetUserInfoAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		c.JSON(http.StatusOK, models.NewSuccessResponse(models.GetUserInfoAPIResponseData{
-			Username: user.Username,
-			Role:     user.Role,
+			Username: ctx.User.Username,
+			Role:     ctx.Member.Role,
 		}))
 	})
 }
@@ -82,7 +95,7 @@ func GetUserInfoAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /user/logout [post]
 func LogoutAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		c.JSON(http.StatusOK, models.NewSuccessResponse(nil))
 	})
 }
@@ -99,22 +112,22 @@ func LogoutAPI() gin.HandlerFunc {
 // @Failure 401 {object} nil
 // @Router /user/change-password [post]
 func ChangePasswordAPI() gin.HandlerFunc {
-	return Authenticator(func(c *gin.Context, user *models.User) {
+	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		p := &models.ChangePasswordAPIRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse("请填写原密码和新密码"))
 			return
 		}
 
-		dk, _ := utils.EncodePassword([]byte(p.Password), user.Salt)
-		if string(user.Password) != string(dk) {
+		dk, _ := utils.EncodePassword([]byte(p.Password), ctx.User.Salt)
+		if string(ctx.User.Password) != string(dk) {
 			c.JSON(http.StatusOK, models.NewErrorResponse("原密码错误"))
 			return
 		}
 
-		user.RawPassword = p.NewPassword
+		ctx.User.RawPassword = p.NewPassword
 		repo := repository.GetUserRepo(db.GetPostgresPool())
-		if err := repo.UpdatePassword(user); err != nil {
+		if err := repo.UpdatePassword(ctx.User); err != nil {
 			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
 			return
 		}
