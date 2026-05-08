@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getShortLink, updateShortLink } from '@/api/short-link'
+import { ApiError } from '@/api/http'
 import { ArrowLeft } from 'lucide-vue-next'
 
 defineOptions({ name: 'ShortLinkEditPage' })
@@ -43,7 +44,7 @@ async function fetchData() {
     createdBy.value = sl.createdBy
     createTime.value = sl.createTime
   } catch (e) {
-    if (e instanceof Error && e.message.includes('不存在')) {
+    if (e instanceof ApiError && e.status === 404) {
       notFound.value = true
     } else {
       error.value = 'Failed to load short link. Please try again.'

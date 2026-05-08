@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
 import { listSuperTenantMembers, listSuperTenantShortLinks, setSuperTenantStatus } from '@/api/super'
+import { ApiError } from '@/api/http'
 import type { Tenant, TenantDomain, ShortLinkData } from '@/types/api'
 import type { SuperTenantMember } from '@/types/api'
 import {
@@ -54,10 +55,10 @@ async function fetchTenant() {
   try {
     tenant.value = await getTenant(tenantId)
   } catch (e) {
-    const msg = e instanceof Error ? e.message : ''
-    if (msg.includes('不存在') || msg.includes('not found')) {
+    if (e instanceof ApiError && e.status === 404) {
       notFound.value = true
     } else {
+      const msg = e instanceof Error ? e.message : ''
       pageError.value = msg || 'Failed to load tenant.'
     }
   } finally {

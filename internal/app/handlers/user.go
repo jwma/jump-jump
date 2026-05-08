@@ -65,7 +65,7 @@ func GetAuthInfoAPI() gin.HandlerFunc {
 		userRepo := repository.GetUserRepo(db.GetPostgresPool())
 		tenants, err := userRepo.GetUserTenants(ctx.User)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -151,7 +151,7 @@ func ChangePasswordAPI() gin.HandlerFunc {
 		ctx.User.RawPassword = p.NewPassword
 		repo := repository.GetUserRepo(db.GetPostgresPool())
 		if err := repo.UpdatePassword(ctx.User); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 

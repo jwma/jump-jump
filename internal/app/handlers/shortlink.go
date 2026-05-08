@@ -64,7 +64,7 @@ func toShortLinkDataWithUsername(s *models.ShortLink) *models.ShortLinkData {
 // checkTenantOwnership verifies that a short link belongs to the current tenant.
 func checkTenantOwnership(c *gin.Context, s *models.ShortLink) bool {
 	if s.TenantID != getTenantID(c) {
-		c.JSON(http.StatusOK, models.NewErrorResponse("短链接不存在"))
+		c.JSON(http.StatusNotFound, models.NewErrorResponse("短链接不存在"))
 		return false
 	}
 	return true
@@ -86,7 +86,7 @@ func GetShortLinkAPI() gin.HandlerFunc {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -150,7 +150,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 		}
 
 		if err := repo.Save(s); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -177,7 +177,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -187,12 +187,12 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 
 		updateShortLink := &models.UpdateShortLinkAPIRequest{}
 		if err := c.ShouldBindJSON(updateShortLink); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
 		if err := slRepo.Update(s, updateShortLink); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -218,7 +218,7 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		s, err := slRepo.Get(c.Param("id"))
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -252,7 +252,7 @@ func ListShortLinksAPI() gin.HandlerFunc {
 		slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 		result, err := slRepo.List(getTenantID(c), start, int64(pageSize))
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -282,7 +282,7 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 			s, err := slRepo.Get(c.Param("id"))
 			if err != nil {
-				c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+				writeErrorResponse(c, err)
 				return
 			}
 
@@ -320,6 +320,6 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, models.NewErrorResponse("请求资源不存在"))
+		c.JSON(http.StatusNotFound, models.NewErrorResponse("请求资源不存在"))
 	})
 }
