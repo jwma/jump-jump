@@ -2,8 +2,8 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { getTenant, updateTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
-import { getConfig, updateIdConfig, updateShortLinkNotFoundConfig } from '@/api/config'
-import type { Tenant, TenantDomain, IdConfig, ShortLinkNotFoundConfig } from '@/types/api'
+import { getTenantConfig, updateTenantConfig } from '@/api/config'
+import type { Tenant, TenantDomain } from '@/types/api'
 import {
   Settings,
   Loader2,
@@ -111,7 +111,7 @@ async function fetchAll() {
   try {
     const [t, configData] = await Promise.all([
       getTenant(auth.currentTenantId),
-      getConfig(),
+      getTenantConfig(auth.currentTenantId),
     ])
     tenant.value = t
     editName.value = t.name
@@ -255,7 +255,7 @@ async function doSaveIdConfig() {
   idError.value = ''
   idSaveSuccess.value = false
   try {
-    await updateIdConfig({ idLength: idLength.value, idMinimumLength: idMinimumLength.value, idMaximumLength: idMaximumLength.value } as IdConfig)
+    await updateTenantConfig(auth.currentTenantId!, { idLength: idLength.value, idMinimumLength: idMinimumLength.value, idMaximumLength: idMaximumLength.value })
     idSaveSuccess.value = true
     setTimeout(() => { idSaveSuccess.value = false }, 3000)
   } catch {
@@ -279,7 +279,7 @@ async function doSaveNotFoundConfig() {
   notFoundError.value = ''
   notFoundSaveSuccess.value = false
   try {
-    await updateShortLinkNotFoundConfig({ mode: notFoundMode.value, value: notFoundValue.value } as ShortLinkNotFoundConfig)
+    await updateTenantConfig(auth.currentTenantId!, { notFoundMode: notFoundMode.value, notFoundValue: notFoundValue.value })
     notFoundSaveSuccess.value = true
     setTimeout(() => { notFoundSaveSuccess.value = false }, 3000)
   } catch {
