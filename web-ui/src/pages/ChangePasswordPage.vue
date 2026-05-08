@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { changePassword } from '@/api/user'
 import { useToast } from '@/composables/useToast'
+import { Eye, EyeOff, CheckCircle2 } from 'lucide-vue-next'
 
 defineOptions({ name: 'ChangePasswordPage' })
 const toast = useToast()
@@ -10,9 +11,43 @@ const newPassword = ref('')
 const confirmPassword = ref('')
 const loading = ref(false)
 const error = ref('')
+const success = ref(false)
+const showCurrentPassword = ref(false)
+const showNewPassword = ref(false)
+const showConfirmPassword = ref(false)
+let successTimer: ReturnType<typeof setTimeout> | null = null
+
+onUnmounted(() => {
+  if (successTimer) clearTimeout(successTimer)
+})
+
+const passwordStrength = computed(() => {
+  const pw = newPassword.value
+  if (!pw) return { score: 0, label: '', color: '' }
+
+  let score = 0
+  if (pw.length >= 6) score++
+  if (pw.length >= 10) score++
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++
+  if (/\d/.test(pw)) score++
+  if (/[^a-zA-Z0-9]/.test(pw)) score++
+
+  const levels = [
+    { label: 'Very weak', color: 'bg-red-500' },
+    { label: 'Weak', color: 'bg-orange-500' },
+    { label: 'Fair', color: 'bg-yellow-500' },
+    { label: 'Good', color: 'bg-blue-500' },
+    { label: 'Strong', color: 'bg-green-500' },
+  ]
+
+  const clampedScore = Math.max(1, Math.min(score, levels.length))
+  const level = levels[clampedScore - 1]
+  return { score: clampedScore, ...level }
+})
 
 async function handleSubmit() {
   error.value = ''
+  success.value = false
 
   if (newPassword.value !== confirmPassword.value) {
     error.value = 'New passwords do not match.'
@@ -27,10 +62,15 @@ async function handleSubmit() {
   loading.value = true
   try {
     await changePassword({ password: currentPassword.value, newPassword: newPassword.value })
-    toast.success('Password changed successfully')
+    toast.success('Password changed successfully!')
+    success.value = true
     currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
+    successTimer = setTimeout(() => {
+      success.value = false
+      successTimer = null
+    }, 4000)
   } catch {
     error.value = 'Failed to change password. Please check your current password.'
   } finally {
@@ -48,36 +88,100 @@ async function handleSubmit() {
       <div class="space-y-4">
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">Current Password</label>
-          <input
-            v-model="currentPassword"
-            type="password"
-            required
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          />
+          <div class="relative">
+            <input
+              v-model="currentPassword"
+              :type="showCurrentPassword ? 'text' : 'password'"
+              required
+              class="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            />
+            <button
+              type="button"
+              :aria-label="showCurrentPassword ? 'Hide current password' : 'Show current password'"
+              :aria-pressed="showCurrentPassword"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              @click="showCurrentPassword = !showCurrentPassword"
+            >
+              <Eye v-if="!showCurrentPassword" class="h-4 w-4" />
+              <EyeOff v-else class="h-4 w-4" />
+            </button>
+          </div>
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">New Password</label>
-          <input
-            v-model="newPassword"
-            type="password"
-            required
-            minlength="6"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          />
+          <div class="relative">
+            <input
+              v-model="newPassword"
+              :type="showNewPassword ? 'text' : 'password'"
+              required
+              minlength="6"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            />
+            <button
+              type="button"
+              :aria-label="showNewPassword ? 'Hide new password' : 'Show new password'"
+              :aria-pressed="showNewPassword"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              @click="showNewPassword = !showNewPassword"
+            >
+              <Eye v-if="!showNewPassword" class="h-4 w-4" />
+              <EyeOff v-else class="h-4 w-4" />
+            </button>
+          </div>
+          <div v-if="newPassword" class="mt-2">
+            <div class="flex gap-1">
+              <div
+                v-for="i in 5"
+                :key="i"
+                class="h-1.5 flex-1 rounded-full"
+                :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200'"
+              />
+            </div>
+            <p class="mt-1 text-xs text-gray-500">
+              Strength: <span class="font-medium">{{ passwordStrength.label }}</span>
+            </p>
+          </div>
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">Confirm New Password</label>
-          <input
-            v-model="confirmPassword"
-            type="password"
-            required
-            minlength="6"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          />
+          <div class="relative">
+            <input
+              v-model="confirmPassword"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              required
+              minlength="6"
+              class="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              :class="confirmPassword && newPassword !== confirmPassword ? 'border-red-300' : ''"
+            />
+            <button
+              type="button"
+              :aria-label="showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'"
+              :aria-pressed="showConfirmPassword"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              @click="showConfirmPassword = !showConfirmPassword"
+            >
+              <Eye v-if="!showConfirmPassword" class="h-4 w-4" />
+              <EyeOff v-else class="h-4 w-4" />
+            </button>
+          </div>
+          <p
+            v-if="confirmPassword && newPassword !== confirmPassword"
+            class="mt-1 text-xs text-red-500"
+          >
+            Passwords do not match
+          </p>
         </div>
       </div>
 
       <p v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</p>
+
+      <div
+        v-if="success"
+        class="mt-4 flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700"
+      >
+        <CheckCircle2 class="h-4 w-4" />
+        Password changed successfully!
+      </div>
 
       <button
         type="submit"
