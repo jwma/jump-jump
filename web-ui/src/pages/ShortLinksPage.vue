@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listShortLinks, deleteShortLink, updateShortLink } from '@/api/short-link'
+import { useToast } from '@/composables/useToast'
 import type { ShortLinkData } from '@/types/api'
 import {
   Plus,
@@ -19,6 +20,7 @@ import {
 defineOptions({ name: 'ShortLinksPage' })
 
 const router = useRouter()
+const toast = useToast()
 
 const links = ref<ShortLinkData[]>([])
 const total = ref(0)
@@ -112,12 +114,13 @@ async function handleDelete(id: string) {
     links.value = links.value.filter((l) => l.id !== id)
     total.value--
     confirmDeleteId.value = null
+    toast.success('Short link deleted')
     if (links.value.length === 0 && page.value > 1) {
       page.value--
       fetchLinks()
     }
   } catch {
-    // error handled by interceptor
+    toast.error('Failed to delete short link')
   } finally {
     deleting.value = null
   }
@@ -126,12 +129,15 @@ async function handleDelete(id: string) {
 async function handleBatchDelete() {
   if (selectedIds.value.size === 0) return
   deleting.value = 'batch'
+  const count = selectedIds.value.size
   try {
     await Promise.all([...selectedIds.value].map((id) => deleteShortLink(id)))
     links.value = links.value.filter((l) => !selectedIds.value.has(l.id))
-    total.value -= selectedIds.value.size
+    total.value -= count
     selectedIds.value.clear()
+    toast.success(`${count} short link${count !== 1 ? 's' : ''} deleted`)
   } catch {
+    toast.error('Failed to delete some short links')
     await fetchLinks()
   } finally {
     deleting.value = null

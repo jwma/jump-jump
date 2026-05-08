@@ -3,6 +3,7 @@ import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listMembers, inviteMember, updateMemberRole, removeMember, leaveTenant } from '@/api/member'
+import { useToast } from '@/composables/useToast'
 import type { TenantMember } from '@/types/api'
 import { UserRole } from '@/types/api'
 import {
@@ -15,13 +16,13 @@ import {
   Trash2,
   LogOut,
   X,
-  Check,
 } from 'lucide-vue-next'
 
 defineOptions({ name: 'MembersPage' })
 
 const router = useRouter()
 const auth = useAuthStore()
+const toast = useToast()
 
 const members = ref<TenantMember[]>([])
 const loading = ref(false)
@@ -31,7 +32,6 @@ const showInvite = ref(false)
 const inviteUsername = ref('')
 const inviteLoading = ref(false)
 const inviteError = ref('')
-const inviteSuccess = ref('')
 
 // Role change confirm
 const confirmRoleChange = ref<{ userId: string; username: string; currentRole: string; newRole: string } | null>(null)
@@ -87,7 +87,6 @@ async function fetchMembers() {
 function openInviteModal() {
   inviteUsername.value = ''
   inviteError.value = ''
-  inviteSuccess.value = ''
   showInvite.value = true
   nextTick(() => {
     const input = document.getElementById('invite-username-input') as HTMLInputElement
@@ -99,11 +98,11 @@ async function handleInvite() {
   if (!auth.currentTenantId || !inviteUsername.value.trim()) return
   inviteLoading.value = true
   inviteError.value = ''
-  inviteSuccess.value = ''
   try {
     await inviteMember(auth.currentTenantId, inviteUsername.value.trim())
-    inviteSuccess.value = `Invitation sent to ${inviteUsername.value.trim()}`
+    toast.success(`Invitation sent to ${inviteUsername.value.trim()}`)
     inviteUsername.value = ''
+    showInvite.value = false
     await fetchMembers()
   } catch (e: unknown) {
     inviteError.value = (e as Error).message || 'Failed to send invitation'
@@ -327,10 +326,6 @@ onMounted(fetchMembers)
             </div>
 
             <p v-if="inviteError" class="mb-3 text-sm text-red-600">{{ inviteError }}</p>
-            <p v-if="inviteSuccess" class="mb-3 flex items-center gap-1 text-sm text-green-600">
-              <Check class="h-4 w-4" />
-              {{ inviteSuccess }}
-            </p>
 
             <div class="flex justify-end gap-2">
               <button

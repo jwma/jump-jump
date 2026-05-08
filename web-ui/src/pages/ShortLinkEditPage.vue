@@ -3,12 +3,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getShortLink, updateShortLink } from '@/api/short-link'
 import { ApiError } from '@/api/http'
+import { useToast } from '@/composables/useToast'
 import { ArrowLeft } from 'lucide-vue-next'
 
 defineOptions({ name: 'ShortLinkEditPage' })
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 const id = route.params.id as string
 
 const url = ref('')
@@ -65,7 +67,7 @@ async function handleSubmit() {
       description: description.value,
       isEnable: isEnable.value,
     })
-    router.push({ name: 'short-links' })
+    toast.success('Short link updated successfully')
   } catch {
     error.value = 'Failed to update short link. Please try again.'
   } finally {
