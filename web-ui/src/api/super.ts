@@ -8,7 +8,7 @@ import type {
   SetStatusRequest,
   ListSuperTenantsResponse,
   SuperTenantMember,
-  ListSuperTenantShortLinksResponse,
+  ListShortLinksResponse,
   SuperTenantDomain,
 } from '@/types/api'
 
@@ -49,7 +49,7 @@ export function listSuperTenantMembers(tenantId: string) {
 }
 
 export function listSuperTenantShortLinks(tenantId: string, page = 1, pageSize = 20) {
-  return request<ListSuperTenantShortLinksResponse>('GET', `/super/tenants/${tenantId}/short-links`, { page, pageSize })
+  return request<ListShortLinksResponse>('GET', `/super/tenants/${tenantId}/short-links`, { page, pageSize })
 }
 
 export function listSuperTenantDomains(tenantId: string) {

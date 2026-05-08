@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { listSuperUsers, listSuperTenants } from '@/api/super'
-import { Building2, Users, Link, Loader2 } from 'lucide-vue-next'
+import { Building2, Users, Loader2 } from 'lucide-vue-next'
 
 defineOptions({ name: 'SuperDashboardPage' })
 
 const loading = ref(true)
 const totalTenants = ref(0)
 const totalUsers = ref(0)
-const totalShortLinks = ref(0)
 const recentTenants = ref<{ id: string; name: string; slug: string; isActive: boolean; createdAt: string }[]>([])
 
 async function fetchDashboardData() {
@@ -49,7 +48,7 @@ onMounted(fetchDashboardData)
       <p class="mt-1 text-sm text-gray-500">Platform overview and statistics.</p>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <div class="flex items-center justify-between">
           <div>
@@ -76,21 +75,6 @@ onMounted(fetchDashboardData)
           </div>
           <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
             <Users class="h-5 w-5 text-green-600" />
-          </div>
-        </div>
-      </div>
-
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-500">Short Links</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">
-              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
-              <template v-else>{{ totalShortLinks.toLocaleString() }}</template>
-            </p>
-          </div>
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
-            <Link class="h-5 w-5 text-purple-600" />
           </div>
         </div>
       </div>

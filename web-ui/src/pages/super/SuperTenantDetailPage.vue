@@ -3,8 +3,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
 import { listSuperTenantMembers, listSuperTenantShortLinks, setSuperTenantStatus } from '@/api/super'
-import type { Tenant, TenantDomain } from '@/types/api'
-import type { SuperTenantMember, SuperTenantShortLink } from '@/types/api'
+import type { Tenant, TenantDomain, ShortLinkData } from '@/types/api'
+import type { SuperTenantMember } from '@/types/api'
 import {
   ArrowLeft,
   Globe,
@@ -33,7 +33,7 @@ const members = ref<SuperTenantMember[]>([])
 const membersLoading = ref(false)
 
 // Short links
-const shortLinks = ref<SuperTenantShortLink[]>([])
+const shortLinks = ref<ShortLinkData[]>([])
 const shortLinksTotal = ref(0)
 const shortLinksPage = ref(1)
 const shortLinksLoading = ref(false)
@@ -340,19 +340,19 @@ onMounted(fetchTenant)
                   <td colspan="5" class="px-4 py-8 text-center text-gray-400">No short links.</td>
                 </tr>
                 <tr v-for="sl in shortLinks" :key="sl.id" class="transition-colors hover:bg-gray-50">
-                  <td class="px-4 py-3 font-mono text-sm font-medium text-gray-900">{{ sl.shortId || sl.id }}</td>
-                  <td class="hidden max-w-[240px] truncate px-4 py-3 text-gray-500 md:table-cell">{{ sl.originalURL }}</td>
+                  <td class="px-4 py-3 font-mono text-sm font-medium text-gray-900">{{ sl.id }}</td>
+                  <td class="hidden max-w-[240px] truncate px-4 py-3 text-gray-500 md:table-cell">{{ sl.url }}</td>
                   <td class="px-4 py-3">
                     <span
                       class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="sl.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
+                      :class="sl.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
                     >
-                      <span class="h-1.5 w-1.5 rounded-full" :class="sl.isActive ? 'bg-green-500' : 'bg-gray-400'" />
-                      {{ sl.isActive ? 'Active' : 'Inactive' }}
+                      <span class="h-1.5 w-1.5 rounded-full" :class="sl.isEnable ? 'bg-green-500' : 'bg-gray-400'" />
+                      {{ sl.isEnable ? 'Active' : 'Inactive' }}
                     </span>
                   </td>
-                  <td class="hidden px-4 py-3 text-gray-500 lg:table-cell">{{ sl.username }}</td>
-                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 lg:table-cell">{{ formatDate(sl.createdAt) }}</td>
+                  <td class="hidden px-4 py-3 text-gray-500 lg:table-cell">{{ sl.createdBy }}</td>
+                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 lg:table-cell">{{ formatDate(sl.createTime) }}</td>
                 </tr>
               </tbody>
             </table>

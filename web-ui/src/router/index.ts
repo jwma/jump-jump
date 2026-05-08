@@ -21,6 +21,7 @@ const router = createRouter({
       path: '/super',
       component: () => import('@/layouts/DefaultLayout.vue'),
       meta: { requiresAuth: true, requiresSuper: true },
+      redirect: { name: 'super-dashboard' },
       children: [
         {
           path: 'dashboard',

@@ -240,24 +240,6 @@ export interface SuperTenantMember {
   joinedAt: string
 }
 
-export interface SuperTenantShortLink {
-  id: string
-  shortId: string
-  originalURL: string
-  title: string
-  description: string
-  clickCount: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-  username: string
-}
-
-export interface ListSuperTenantShortLinksResponse {
-  shortLinks: SuperTenantShortLink[]
-  total: number
-}
-
 export interface SuperTenantDomain {
   id: string
   domain: string

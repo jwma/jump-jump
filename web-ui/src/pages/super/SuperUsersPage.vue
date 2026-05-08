@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import {
   listSuperUsers,
   createSuperUser,
@@ -73,7 +73,7 @@ function goToPage(p: number) {
   fetchUsers()
 }
 
-const totalPages = ref(0)
+const totalPages = computed(() => Math.ceil(total.value / pageSize) || 1)
 
 async function handleCreate() {
   if (!newUsername.value.trim() || !newPassword.value.trim()) return
