@@ -6,7 +6,7 @@ import type { UserInfo, AuthInfoUser, AuthInfoTenant, Invitation } from '@/types
 import { UserRole } from '@/types/api'
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref<string>(localStorage.getItem('token') || '')
+  const token = ref<string>(localStorage.getItem('token') || sessionStorage.getItem('token') || '')
   const user = ref<UserInfo | null>(null)
   const authUser = ref<AuthInfoUser | null>(null)
   const tenants = ref<AuthInfoTenant[]>([])
@@ -25,10 +25,11 @@ export const useAuthStore = defineStore('auth', () => {
     invitations.value.filter((i) => i.status === 'pending').length,
   )
 
-  async function login(username: string, password: string) {
+  async function login(username: string, password: string, rememberMe = true) {
     const data = await apiLogin({ username, password })
     token.value = data.token
-    localStorage.setItem('token', data.token)
+    const storage = rememberMe ? localStorage : sessionStorage
+    storage.setItem('token', data.token)
   }
 
   async function fetchAuthInfo() {
@@ -48,15 +49,19 @@ export const useAuthStore = defineStore('auth', () => {
     invitationsLoaded.value = true
   }
 
+  function getActiveStorage() {
+    return sessionStorage.getItem('token') ? sessionStorage : localStorage
+  }
+
   function selectTenant(tenantId: string) {
     currentTenantId.value = tenantId
-    localStorage.setItem('tenant_id', tenantId)
+    getActiveStorage().setItem('tenant_id', tenantId)
     user.value = null
   }
 
   function clearTenant() {
     currentTenantId.value = null
-    localStorage.removeItem('tenant_id')
+    getActiveStorage().removeItem('tenant_id')
     user.value = null
   }
 
@@ -70,6 +75,8 @@ export const useAuthStore = defineStore('auth', () => {
     invitationsLoaded.value = false
     localStorage.removeItem('token')
     localStorage.removeItem('tenant_id')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('tenant_id')
   }
 
   async function logout() {
