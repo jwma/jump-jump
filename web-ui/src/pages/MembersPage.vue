@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listMembers, inviteMember, updateMemberRole, removeMember, leaveTenant } from '@/api/member'
@@ -14,8 +14,8 @@ import {
   User,
   ArrowLeftRight,
   Trash2,
-  LogOut,
   X,
+  Search,
 } from 'lucide-vue-next'
 
 defineOptions({ name: 'MembersPage' })
@@ -26,6 +26,13 @@ const toast = useToast()
 
 const members = ref<TenantMember[]>([])
 const loading = ref(false)
+const searchQuery = ref('')
+
+const filteredMembers = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return members.value
+  return members.value.filter((m) => m.username.toLowerCase().includes(q))
+})
 
 // Invite modal
 const showInvite = ref(false)
@@ -206,6 +213,16 @@ onMounted(fetchMembers)
         </span>
       </div>
       <div class="flex items-center gap-2">
+        <!-- Search -->
+        <div class="relative">
+          <Search class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search members..."
+            class="w-48 rounded-md border border-gray-300 py-2 pl-8 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
         <button
           v-if="auth.isAdmin"
           class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
@@ -213,13 +230,6 @@ onMounted(fetchMembers)
         >
           <UserPlus class="h-4 w-4" />
           Invite Member
-        </button>
-        <button
-          class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
-          @click="requestLeaveTenant"
-        >
-          <LogOut class="h-4 w-4" />
-          Leave Tenant
         </button>
       </div>
     </div>
@@ -241,7 +251,7 @@ onMounted(fetchMembers)
           </tr>
         </thead>
         <tbody class="divide-y">
-          <tr v-for="m in members" :key="m.userId" class="transition-colors hover:bg-gray-50">
+          <tr v-for="m in filteredMembers" :key="m.userId" class="transition-colors hover:bg-gray-50">
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
                 <div
@@ -291,9 +301,22 @@ onMounted(fetchMembers)
         </tbody>
       </table>
 
-      <div v-if="members.length === 0" class="py-12 text-center text-sm text-gray-400">
+      <div v-if="filteredMembers.length === 0 && members.length > 0" class="py-12 text-center text-sm text-gray-400">
+        No members match "{{ searchQuery }}".
+      </div>
+      <div v-else-if="members.length === 0" class="py-12 text-center text-sm text-gray-400">
         No members found.
       </div>
+    </div>
+
+    <!-- Leave tenant (subtle placement) -->
+    <div v-if="!loading" class="mt-6 text-right">
+      <button
+        class="text-sm text-gray-400 transition-colors hover:text-gray-600"
+        @click="requestLeaveTenant"
+      >
+        Leave this tenant
+      </button>
     </div>
 
     <!-- Invite Modal -->
@@ -368,6 +391,21 @@ onMounted(fetchMembers)
             <span class="font-mono font-medium">{{ confirmRoleChange.currentRole }}</span> to
             <span class="font-mono font-medium">{{ confirmRoleChange.newRole }}</span>?
           </p>
+          <div class="mt-3 rounded-lg border bg-gray-50 p-3 text-xs text-gray-600">
+            <p class="font-medium text-gray-700">
+              {{ confirmRoleChange.newRole === UserRole.Admin ? 'Admin' : 'Member' }} permissions:
+            </p>
+            <ul v-if="confirmRoleChange.newRole === UserRole.Admin" class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
+              <li>Manage tenant settings and domains</li>
+              <li>Invite and remove members</li>
+              <li>Change member roles</li>
+              <li>Create, edit, and delete short links</li>
+            </ul>
+            <ul v-else class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
+              <li>Create, edit, and delete short links</li>
+              <li>View member list</li>
+            </ul>
+          </div>
           <p v-if="roleError" class="mt-2 text-sm text-red-600">{{ roleError }}</p>
           <div class="mt-4 flex justify-end gap-2">
             <button

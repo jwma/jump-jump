@@ -58,7 +58,7 @@ async function handleReject(id: string) {
 <template>
   <div>
     <div class="mb-6 flex items-center gap-3">
-      <button class="rounded p-1 text-gray-400 hover:text-gray-600" @click="router.back()">
+      <button class="rounded p-1 text-gray-400 hover:text-gray-600" @click="router.push({ name: 'dashboard' })">
         <ArrowLeft class="h-5 w-5" />
       </button>
       <h1 class="text-xl font-semibold text-gray-900">Invitations</h1>
