@@ -32,7 +32,7 @@ func CreateTenantAPI() gin.HandlerFunc {
 		repo := repository.GetTenantRepo(db.GetPostgresPool())
 		t, err := repo.Create(p)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -72,7 +72,7 @@ func GetTenantAPI() gin.HandlerFunc {
 		repo := repository.GetTenantRepo(db.GetPostgresPool())
 		t, err := repo.GetByID(tenantID)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -95,7 +95,7 @@ func ListTenantsAPI() gin.HandlerFunc {
 		repo := repository.GetTenantRepo(db.GetPostgresPool())
 		tenants, err := repo.ListByUser(ctx.User.ID)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -133,7 +133,7 @@ func UpdateTenantAPI() gin.HandlerFunc {
 		repo := repository.GetTenantRepo(db.GetPostgresPool())
 		t, err := repo.Update(tenantID, p)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -170,7 +170,7 @@ func AddDomainAPI() gin.HandlerFunc {
 
 		repo := repository.GetTenantRepo(db.GetPostgresPool())
 		if err := repo.AddDomain(tenantID, p.Domain, p.IsDefault); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -208,7 +208,7 @@ func RemoveDomainAPI() gin.HandlerFunc {
 
 		repo := repository.GetTenantRepo(db.GetPostgresPool())
 		if err := repo.RemoveDomain(tenantID, domain); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -239,7 +239,7 @@ func ListDomainsAPI() gin.HandlerFunc {
 		repo := repository.GetTenantRepo(db.GetPostgresPool())
 		domains, err := repo.ListDomains(tenantID)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 

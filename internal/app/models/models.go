@@ -28,6 +28,14 @@ func NewErrorResponse(msg string) *Response {
 	return &Response{Msg: msg, Code: 4999, Data: nil}
 }
 
+type NotFoundError struct {
+	Msg string
+}
+
+func (e *NotFoundError) Error() string {
+	return e.Msg
+}
+
 // --- Tenant ---
 
 type Tenant struct {

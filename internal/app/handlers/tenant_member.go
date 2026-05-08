@@ -107,7 +107,7 @@ func InviteUserAPI() gin.HandlerFunc {
 		userRepo := repository.GetUserRepo(db.GetPostgresPool())
 		invitee, err := userRepo.FindByUsername(req.Username)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("用户不存在"))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -207,7 +207,7 @@ func AcceptInvitationAPI() gin.HandlerFunc {
 
 		inv, err := invRepo.Get(invID)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("邀请不存在"))
+			writeErrorResponse(c, err)
 			return
 		}
 
@@ -258,7 +258,7 @@ func RejectInvitationAPI() gin.HandlerFunc {
 
 		inv, err := invRepo.Get(invID)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("邀请不存在"))
+			writeErrorResponse(c, err)
 			return
 		}
 

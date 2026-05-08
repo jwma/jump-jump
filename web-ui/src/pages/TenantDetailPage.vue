@@ -2,6 +2,7 @@
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
+import { ApiError } from '@/api/http'
 import type { Tenant, TenantDomain } from '@/types/api'
 import {
   ArrowLeft,
@@ -42,10 +43,10 @@ async function fetchTenant() {
   try {
     tenant.value = await getTenant(tenantId)
   } catch (e) {
-    const msg = e instanceof Error ? e.message : ''
-    if (msg.includes('不存在')) {
+    if (e instanceof ApiError && e.status === 404) {
       notFound.value = true
     } else {
+      const msg = e instanceof Error ? e.message : ''
       pageError.value = msg || 'Failed to load tenant.'
     }
   } finally {

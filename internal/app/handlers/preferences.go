@@ -24,7 +24,7 @@ func GetUserPreferencesAPI() gin.HandlerFunc {
 		repo := repository.GetUserPreferenceRepo(db.GetPostgresPool())
 		prefs, err := repo.GetAll(ctx.User.ID)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 		c.JSON(http.StatusOK, models.NewSuccessResponse(map[string]interface{}{
@@ -58,7 +58,7 @@ func UpdateUserPreferencesAPI() gin.HandlerFunc {
 
 		repo := repository.GetUserPreferenceRepo(db.GetPostgresPool())
 		if err := repo.Upsert(ctx.User.ID, req.Preferences); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+			writeErrorResponse(c, err)
 			return
 		}
 

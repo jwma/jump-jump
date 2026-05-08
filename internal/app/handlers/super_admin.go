@@ -32,7 +32,7 @@ func CreateUserAPI(c *gin.Context) {
 	userRepo := repository.GetUserRepo(db.GetPostgresPool())
 	u := &models.User{Username: strings.TrimSpace(req.Username), RawPassword: req.Password}
 	if err := userRepo.Save(u); err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		writeErrorResponse(c, err)
 		return
 	}
 
@@ -62,7 +62,7 @@ func ListUsersAPI(c *gin.Context) {
 		Query: query, Page: page, PageSize: pageSize,
 	})
 	if err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		writeErrorResponse(c, err)
 		return
 	}
 
@@ -93,13 +93,13 @@ func GetUserAPI(c *gin.Context) {
 
 	u, err := userRepo.FindByID(id)
 	if err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse("用户不存在"))
+		writeErrorResponse(c, err)
 		return
 	}
 
 	tenants, err := userRepo.GetUserTenants(u)
 	if err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		writeErrorResponse(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, models.NewSuccessResponse(models.UserDetailData{
@@ -131,7 +131,7 @@ func ResetPasswordAPI(c *gin.Context) {
 
 	userRepo := repository.GetUserRepo(db.GetPostgresPool())
 	if err := userRepo.UpdatePasswordByID(id, req.NewPassword); err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		writeErrorResponse(c, err)
 		return
 	}
 
@@ -160,7 +160,7 @@ func UpdateUserStatusAPI(c *gin.Context) {
 
 	userRepo := repository.GetUserRepo(db.GetPostgresPool())
 	if err := userRepo.UpdateStatus(id, *req.IsActive); err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		writeErrorResponse(c, err)
 		return
 	}
 
@@ -188,7 +188,7 @@ func ListAllTenantsAPI(c *gin.Context) {
 	tenantRepo := repository.GetTenantRepo(db.GetPostgresPool())
 	tenants, total, err := tenantRepo.ListAll(page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		writeErrorResponse(c, err)
 		return
 	}
 
@@ -220,7 +220,7 @@ func UpdateTenantStatusAPI(c *gin.Context) {
 
 	tenantRepo := repository.GetTenantRepo(db.GetPostgresPool())
 	if err := tenantRepo.UpdateStatus(id, *req.IsActive); err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		writeErrorResponse(c, err)
 		return
 	}
 
@@ -255,7 +255,7 @@ func SuperListTenantShortLinksAPI(c *gin.Context) {
 	slRepo := repository.GetShortLinkRepo(db.GetPostgresPool(), db.GetRedisClient())
 	result, err := slRepo.ListByTenantID(tenantID, start, pageSize)
 	if err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		writeErrorResponse(c, err)
 		return
 	}
 
@@ -321,7 +321,7 @@ func SuperListTenantDomainsAPI(c *gin.Context) {
 	tenantRepo := repository.GetTenantRepo(db.GetPostgresPool())
 	domains, err := tenantRepo.ListDomains(tenantID)
 	if err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse(err.Error()))
+		writeErrorResponse(c, err)
 		return
 	}
 

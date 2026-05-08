@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,6 +16,16 @@ import (
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"slices"
 )
+
+// writeErrorResponse returns 404 for NotFoundError, 200 for other errors.
+func writeErrorResponse(c *gin.Context, err error) {
+	status := http.StatusOK
+	var nf *models.NotFoundError
+	if errors.As(err, &nf) {
+		status = http.StatusNotFound
+	}
+	c.JSON(status, models.NewErrorResponse(err.Error()))
+}
 
 // AuthContext carries the authenticated user and their tenant membership for the current request.
 type AuthContext struct {

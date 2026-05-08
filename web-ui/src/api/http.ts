@@ -3,6 +3,18 @@ import type { ApiResponse } from '@/types/api'
 import { useAuthStore } from '@/stores/auth'
 import router from '@/router'
 
+export class ApiError extends Error {
+  status: number
+  code: number
+
+  constructor(message: string, status: number = 0, code: number = 0) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.code = code
+  }
+}
+
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/v1',
   timeout: 10000,
@@ -27,7 +39,11 @@ http.interceptors.response.use(
       auth.clearAuth()
       router.push({ name: 'login' })
     }
-    return Promise.reject(error)
+    return Promise.reject(new ApiError(
+      error.response?.data?.msg || error.message || 'Request failed',
+      error.response?.status || 0,
+      error.response?.data?.code || 0,
+    ))
   },
 )
 
@@ -39,7 +55,7 @@ export async function request<T>(method: string, url: string, data?: unknown): P
     params: method === 'GET' ? data : undefined,
   })
   if (res.data.code !== 0) {
-    return Promise.reject(new Error(res.data.msg || '请求失败'))
+    return Promise.reject(new ApiError(res.data.msg || 'Request failed', res.status, res.data.code))
   }
   return res.data.data
 }
