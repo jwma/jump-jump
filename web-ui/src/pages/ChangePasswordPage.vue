@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { changePassword } from '@/api/user'
 import { useToast } from '@/composables/useToast'
 import { Eye, EyeOff, CheckCircle2 } from 'lucide-vue-next'
@@ -15,6 +15,11 @@ const success = ref(false)
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
+let successTimer: ReturnType<typeof setTimeout> | null = null
+
+onUnmounted(() => {
+  if (successTimer) clearTimeout(successTimer)
+})
 
 const passwordStrength = computed(() => {
   const pw = newPassword.value
@@ -35,8 +40,9 @@ const passwordStrength = computed(() => {
     { label: 'Strong', color: 'bg-green-500' },
   ]
 
-  const level = levels[Math.min(score, levels.length) - 1] || levels[0]
-  return { score, ...level }
+  const clampedScore = Math.max(1, Math.min(score, levels.length))
+  const level = levels[clampedScore - 1]
+  return { score: clampedScore, ...level }
 })
 
 async function handleSubmit() {
@@ -61,7 +67,10 @@ async function handleSubmit() {
     currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
-    setTimeout(() => (success.value = false), 4000)
+    successTimer = setTimeout(() => {
+      success.value = false
+      successTimer = null
+    }, 4000)
   } catch {
     error.value = 'Failed to change password. Please check your current password.'
   } finally {
@@ -88,6 +97,8 @@ async function handleSubmit() {
             />
             <button
               type="button"
+              :aria-label="showCurrentPassword ? 'Hide current password' : 'Show current password'"
+              :aria-pressed="showCurrentPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
               @click="showCurrentPassword = !showCurrentPassword"
             >
@@ -108,6 +119,8 @@ async function handleSubmit() {
             />
             <button
               type="button"
+              :aria-label="showNewPassword ? 'Hide new password' : 'Show new password'"
+              :aria-pressed="showNewPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
               @click="showNewPassword = !showNewPassword"
             >
@@ -142,6 +155,8 @@ async function handleSubmit() {
             />
             <button
               type="button"
+              :aria-label="showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'"
+              :aria-pressed="showConfirmPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
               @click="showConfirmPassword = !showConfirmPassword"
             >

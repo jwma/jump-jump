@@ -10,7 +10,9 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<UserInfo | null>(null)
   const authUser = ref<AuthInfoUser | null>(null)
   const tenants = ref<AuthInfoTenant[]>([])
-  const currentTenantId = ref<string | null>(localStorage.getItem('tenant_id') || null)
+  const currentTenantId = ref<string | null>(
+    localStorage.getItem('tenant_id') || sessionStorage.getItem('tenant_id') || null,
+  )
   const invitations = ref<Invitation[]>([])
   const invitationsLoaded = ref(false)
 
@@ -28,6 +30,10 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(username: string, password: string, rememberMe = true) {
     const data = await apiLogin({ username, password })
     token.value = data.token
+    localStorage.removeItem('token')
+    localStorage.removeItem('tenant_id')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('tenant_id')
     const storage = rememberMe ? localStorage : sessionStorage
     storage.setItem('token', data.token)
   }
