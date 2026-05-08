@@ -88,13 +88,29 @@ const notFoundCanSave = computed(() => !notFoundValidationError.value && !notFou
 
 const sampleIdSeed = ref(0)
 
-const sampleId = computed(() => {
-  void sampleIdSeed.value
-  const len = Math.max(1, Math.round(idLength.value))
+const normalizedIdLengths = computed(() => {
+  const min = Math.max(2, Math.round(idMinimumLength.value))
+  const def = Math.max(min + 1, Math.round(idLength.value))
+  const max = Math.min(10, Math.max(def + 1, Math.round(idMaximumLength.value)))
+  return { min, default: def, max }
+})
+
+function generateId(len: number): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let result = ''
   for (let i = 0; i < len; i++) result += chars.charAt(Math.floor(Math.random() * chars.length))
   return result
+}
+
+const sampleIds = computed(() => {
+  void sampleIdSeed.value
+  if (idValidationError.value) return null
+  const n = normalizedIdLengths.value
+  return {
+    min: generateId(n.min),
+    default: generateId(n.default),
+    max: generateId(n.max),
+  }
 })
 
 const previewText = computed(() => {
@@ -287,7 +303,7 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-function refreshSampleId() {
+function refreshSampleIds() {
   sampleIdSeed.value++
 }
 
@@ -589,14 +605,29 @@ onMounted(fetchAll)
         <div class="p-5">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-              <p class="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">ID Length</p>
-              <div class="flex items-center gap-3">
-                <span class="font-mono text-lg font-bold text-blue-600">{{ sampleId }}</span>
-                <button class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600" @click="refreshSampleId">
+              <div class="mb-3 flex items-center justify-between">
+                <p class="text-xs font-medium uppercase tracking-wider text-gray-500">ID Length Examples</p>
+                <button v-if="sampleIds" class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600" @click="refreshSampleIds">
                   <Loader2 class="h-3.5 w-3.5" />
                 </button>
               </div>
-              <p class="mt-2 text-xs text-gray-500">Length: {{ idLength }} (min {{ idMinimumLength }}, max {{ idMaximumLength }})</p>
+              <template v-if="sampleIds">
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3">
+                    <span class="w-16 text-xs text-gray-400">Min ({{ normalizedIdLengths.min }})</span>
+                    <span class="font-mono text-sm font-semibold text-gray-600">{{ sampleIds.min }}</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="w-16 text-xs font-medium text-blue-600">Default ({{ normalizedIdLengths.default }})</span>
+                    <span class="font-mono text-sm font-bold text-blue-600">{{ sampleIds.default }}</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="w-16 text-xs text-gray-400">Max ({{ normalizedIdLengths.max }})</span>
+                    <span class="font-mono text-sm font-semibold text-gray-600">{{ sampleIds.max }}</span>
+                  </div>
+                </div>
+              </template>
+              <p v-else class="text-xs text-gray-400">Fix validation errors to see examples.</p>
             </div>
             <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
               <p class="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">404 Handling</p>

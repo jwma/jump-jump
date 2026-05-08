@@ -117,8 +117,7 @@ const router = createRouter({
         {
           path: 'preferences',
           name: 'preferences',
-          component: () => import('@/pages/PreferencesPage.vue'),
-          meta: { title: 'Preferences' },
+          redirect: { name: 'dashboard' },
         },
         {
           path: 'change-password',

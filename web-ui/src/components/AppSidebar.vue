@@ -9,7 +9,6 @@ import {
   Link,
   Settings,
   Building2,
-  UserCog,
   KeyRound,
   LogOut,
   ChevronLeft,
@@ -52,7 +51,6 @@ const menuItems = computed(() => {
   }
 
   items.push(
-    { icon: UserCog, label: 'Preferences', to: { name: 'preferences' } },
     { icon: KeyRound, label: 'Change Password', to: { name: 'change-password' } },
   )
 
