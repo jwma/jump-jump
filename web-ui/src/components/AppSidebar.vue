@@ -17,6 +17,8 @@ import {
   Bell,
   ChevronDown,
   ChevronRight,
+  Shield,
+  Users,
 } from 'lucide-vue-next'
 
 const auth = useAuthStore()
@@ -26,16 +28,26 @@ const router = useRouter()
 const tenantDropdownOpen = ref(false)
 
 const menuItems = computed(() => {
-  const items = [
-    { icon: LayoutDashboard, label: 'Dashboard', to: { name: 'dashboard' } },
-    { icon: Link, label: 'Short Links', to: { name: 'short-links' } },
-  ]
+  const items: { icon: unknown; label: string; to: { name: string } }[] = []
 
-  if (auth.user?.role === UserRole.Admin) {
+  if (isSuperRoute.value) {
     items.push(
-      { icon: Settings, label: 'System Config', to: { name: 'config' } },
-      { icon: Building2, label: 'Tenants', to: { name: 'tenants' } },
+      { icon: LayoutDashboard, label: 'Dashboard', to: { name: 'super-dashboard' } },
+      { icon: Users, label: 'Users', to: { name: 'super-users' } },
+      { icon: Building2, label: 'Tenants', to: { name: 'super-tenants' } },
     )
+  } else {
+    items.push(
+      { icon: LayoutDashboard, label: 'Dashboard', to: { name: 'dashboard' } },
+      { icon: Link, label: 'Short Links', to: { name: 'short-links' } },
+    )
+
+    if (auth.user?.role === UserRole.Admin) {
+      items.push(
+        { icon: Settings, label: 'System Config', to: { name: 'config' } },
+        { icon: Building2, label: 'Tenants', to: { name: 'tenants' } },
+      )
+    }
   }
 
   items.push(
@@ -46,10 +58,15 @@ const menuItems = computed(() => {
   return items
 })
 
+const isSuperRoute = computed(() => String(route.path).startsWith('/super'))
+
+const showTenantSwitcher = computed(() => !isSuperRoute.value)
+
 function isActive(to: { name: string }) {
   if (route.name === to.name) return true
   if (to.name === 'short-links' && String(route.name).startsWith('short-link')) return true
   if (to.name === 'tenants' && String(route.name).startsWith('tenant')) return true
+  if (to.name === 'super-tenants' && String(route.name).startsWith('super-tenant')) return true
   return false
 }
 
@@ -144,8 +161,8 @@ async function handleLogout() {
       <ChevronLeft class="h-3 w-3 rotate-180" />
     </button>
 
-    <!-- Tenant switcher -->
-    <div v-if="!layout.sidebarCollapsed" class="border-b px-3 py-2">
+    <!-- Tenant switcher (hidden on super admin routes) -->
+    <div v-if="!layout.sidebarCollapsed && showTenantSwitcher" class="border-b px-3 py-2">
       <button
         class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm hover:bg-gray-100"
         @click="tenantDropdownOpen = !tenantDropdownOpen"
@@ -179,6 +196,18 @@ async function handleLogout() {
           Manage tenants
         </router-link>
       </div>
+    </div>
+
+    <!-- Super admin toggle -->
+    <div v-if="auth.isSuper" class="border-b px-2 py-2">
+      <button
+        class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors"
+        :class="isSuperRoute ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'"
+        @click="isSuperRoute ? router.push({ name: auth.currentTenantId ? 'dashboard' : 'select-tenant' }) : router.push({ name: 'super-dashboard' })"
+      >
+        <Shield class="h-4 w-4 shrink-0" />
+        <span v-show="!layout.sidebarCollapsed">{{ isSuperRoute ? 'Back to App' : 'Super Admin' }}</span>
+      </button>
     </div>
 
     <!-- Navigation -->

@@ -18,6 +18,38 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresTenant: false },
     },
     {
+      path: '/super',
+      component: () => import('@/layouts/DefaultLayout.vue'),
+      meta: { requiresAuth: true, requiresSuper: true },
+      redirect: { name: 'super-dashboard' },
+      children: [
+        {
+          path: 'dashboard',
+          name: 'super-dashboard',
+          component: () => import('@/pages/super/SuperDashboardPage.vue'),
+          meta: { title: 'Super Dashboard' },
+        },
+        {
+          path: 'users',
+          name: 'super-users',
+          component: () => import('@/pages/super/SuperUsersPage.vue'),
+          meta: { title: 'User Management' },
+        },
+        {
+          path: 'tenants',
+          name: 'super-tenants',
+          component: () => import('@/pages/super/SuperTenantsPage.vue'),
+          meta: { title: 'Tenant Management' },
+        },
+        {
+          path: 'tenants/:id',
+          name: 'super-tenant-detail',
+          component: () => import('@/pages/super/SuperTenantDetailPage.vue'),
+          meta: { title: 'Tenant Detail' },
+        },
+      ],
+    },
+    {
       path: '/',
       component: () => import('@/layouts/DefaultLayout.vue'),
       meta: { requiresAuth: true },
@@ -144,6 +176,10 @@ router.beforeEach(async (to) => {
 
   if (to.meta.requiredRole && auth.user?.role !== to.meta.requiredRole) {
     return { name: 'dashboard' }
+  }
+
+  if (to.meta.requiresSuper && !auth.isSuper) {
+    return { name: auth.currentTenantId ? 'dashboard' : 'select-tenant' }
   }
 
   if (to.name === 'login' && auth.isLoggedIn) {
