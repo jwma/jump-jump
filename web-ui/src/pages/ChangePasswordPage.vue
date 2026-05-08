@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { changePassword } from '@/api/user'
+import { useToast } from '@/composables/useToast'
 
 defineOptions({ name: 'ChangePasswordPage' })
+const toast = useToast()
 const currentPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
 const loading = ref(false)
-const success = ref('')
 const error = ref('')
 
 async function handleSubmit() {
   error.value = ''
-  success.value = ''
 
   if (newPassword.value !== confirmPassword.value) {
     error.value = 'New passwords do not match.'
@@ -27,7 +27,7 @@ async function handleSubmit() {
   loading.value = true
   try {
     await changePassword({ password: currentPassword.value, newPassword: newPassword.value })
-    success.value = 'Password changed successfully.'
+    toast.success('Password changed successfully')
     currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
@@ -78,7 +78,6 @@ async function handleSubmit() {
       </div>
 
       <p v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</p>
-      <p v-if="success" class="mt-4 text-sm text-green-600">{{ success }}</p>
 
       <button
         type="submit"

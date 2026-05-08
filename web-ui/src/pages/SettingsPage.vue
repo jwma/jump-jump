@@ -3,12 +3,12 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { getTenant, updateTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
 import { getTenantConfig, updateTenantConfig } from '@/api/config'
+import { useToast } from '@/composables/useToast'
 import type { Tenant, TenantDomain } from '@/types/api'
 import {
   Settings,
   Loader2,
   Save,
-  Check,
   Hash,
   AlertTriangle,
   Eye,
@@ -23,6 +23,7 @@ import {
 defineOptions({ name: 'SettingsPage' })
 
 const auth = useAuthStore()
+const toast = useToast()
 
 const loading = ref(true)
 const pageError = ref('')
@@ -32,7 +33,6 @@ const tenant = ref<Tenant | null>(null)
 const editName = ref('')
 const editSlug = ref('')
 const tenantSaving = ref(false)
-const tenantSaveSuccess = ref(false)
 const tenantError = ref('')
 
 // Domains
@@ -49,13 +49,11 @@ const idLength = ref(6)
 const idMinimumLength = ref(2)
 const idMaximumLength = ref(10)
 const idSaving = ref(false)
-const idSaveSuccess = ref(false)
 const idError = ref('')
 
 const notFoundMode = ref<'content' | 'redirect'>('content')
 const notFoundValue = ref('')
 const notFoundSaving = ref(false)
-const notFoundSaveSuccess = ref(false)
 const notFoundError = ref('')
 
 // Confirm dialog
@@ -148,7 +146,6 @@ async function handleSaveTenant() {
   if (!auth.currentTenantId) return
   tenantSaving.value = true
   tenantError.value = ''
-  tenantSaveSuccess.value = false
   try {
     const updated = await updateTenant(auth.currentTenantId, {
       name: editName.value,
@@ -157,9 +154,8 @@ async function handleSaveTenant() {
     tenant.value = updated
     editName.value = updated.name
     editSlug.value = updated.slug
-    tenantSaveSuccess.value = true
+    toast.success('Tenant information saved successfully')
     await auth.fetchAuthInfo()
-    setTimeout(() => { tenantSaveSuccess.value = false }, 3000)
   } catch (e: unknown) {
     tenantError.value = (e as Error).message || 'Failed to update tenant.'
   } finally {
@@ -254,11 +250,9 @@ async function doSaveIdConfig() {
   if (!auth.currentTenantId) return
   idSaving.value = true
   idError.value = ''
-  idSaveSuccess.value = false
   try {
     await updateTenantConfig(auth.currentTenantId!, { idLength: idLength.value, idMinimumLength: idMinimumLength.value, idMaximumLength: idMaximumLength.value })
-    idSaveSuccess.value = true
-    setTimeout(() => { idSaveSuccess.value = false }, 3000)
+    toast.success('ID length configuration saved successfully')
   } catch {
     idError.value = 'Failed to save ID length configuration.'
   } finally {
@@ -279,11 +273,9 @@ async function doSaveNotFoundConfig() {
   if (!auth.currentTenantId) return
   notFoundSaving.value = true
   notFoundError.value = ''
-  notFoundSaveSuccess.value = false
   try {
     await updateTenantConfig(auth.currentTenantId!, { notFoundMode: notFoundMode.value, notFoundValue: notFoundValue.value })
-    notFoundSaveSuccess.value = true
-    setTimeout(() => { notFoundSaveSuccess.value = false }, 3000)
+    toast.success('404 handling configuration saved successfully')
   } catch {
     notFoundError.value = 'Failed to save 404 handling configuration.'
   } finally {
@@ -350,10 +342,6 @@ onMounted(fetchAll)
               <p class="mt-1 text-xs text-gray-400">Lowercase letters, numbers, and hyphens</p>
             </div>
             <p v-if="tenantError" class="text-xs text-red-600">{{ tenantError }}</p>
-            <p v-if="tenantSaveSuccess" class="flex items-center gap-1 text-xs text-green-600">
-              <Check class="h-3.5 w-3.5" />
-              Tenant information saved successfully.
-            </p>
           </div>
           <div class="mt-5">
             <button
@@ -513,10 +501,6 @@ onMounted(fetchAll)
             </div>
             <p v-if="idValidationError" class="text-xs text-red-600">{{ idValidationError }}</p>
             <p v-if="idError" class="text-xs text-red-600">{{ idError }}</p>
-            <p v-if="idSaveSuccess" class="flex items-center gap-1 text-xs text-green-600">
-              <Check class="h-3.5 w-3.5" />
-              Configuration saved successfully.
-            </p>
           </div>
           <div class="mt-5">
             <button
@@ -581,10 +565,6 @@ onMounted(fetchAll)
             </div>
             <p v-if="notFoundValidationError" class="text-xs text-red-600">{{ notFoundValidationError }}</p>
             <p v-if="notFoundError" class="text-xs text-red-600">{{ notFoundError }}</p>
-            <p v-if="notFoundSaveSuccess" class="flex items-center gap-1 text-xs text-green-600">
-              <Check class="h-3.5 w-3.5" />
-              Configuration saved successfully.
-            </p>
           </div>
           <div class="mt-5">
             <button

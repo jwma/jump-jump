@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { createShortLink } from '@/api/short-link'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 import { UserRole } from '@/types/api'
 import { ArrowLeft } from 'lucide-vue-next'
 
@@ -10,6 +11,7 @@ defineOptions({ name: 'ShortLinkCreatePage' })
 
 const router = useRouter()
 const auth = useAuthStore()
+const toast = useToast()
 
 const url = ref('')
 const customId = ref('')
@@ -44,6 +46,7 @@ async function handleSubmit() {
       isEnable: isEnable.value,
       ...(isAdmin.value && customId.value ? { id: customId.value } : {}),
     })
+    toast.success('Short link created successfully')
     router.push({ name: 'short-links' })
   } catch {
     error.value = 'Failed to create short link. Please try again.'
