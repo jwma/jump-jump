@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { getShortLink, updateShortLink } from '@/api/short-link'
 import { ApiError } from '@/api/http'
 import { useToast } from '@/composables/useToast'
+import { useUnsavedChanges } from '@/composables/useUnsavedChanges'
 import { ArrowLeft } from 'lucide-vue-next'
 
 defineOptions({ name: 'ShortLinkEditPage' })
@@ -22,6 +23,16 @@ const loading = ref(false)
 const saving = ref(false)
 const error = ref('')
 const notFound = ref(false)
+
+const originalData = ref({ url: '', description: '', isEnable: true })
+
+const isDirty = computed(() =>
+  url.value !== originalData.value.url ||
+  description.value !== originalData.value.description ||
+  isEnable.value !== originalData.value.isEnable
+)
+
+useUnsavedChanges(isDirty)
 
 function normalizeUrl(value: string): string {
   const trimmed = value.trim()
@@ -52,6 +63,7 @@ async function fetchData() {
     isEnable.value = sl.isEnable
     createdBy.value = sl.createdBy
     createTime.value = sl.createTime
+    originalData.value = { url: sl.url, description: sl.description, isEnable: sl.isEnable }
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) {
       notFound.value = true
@@ -75,6 +87,7 @@ async function handleSubmit() {
       description: description.value,
       isEnable: isEnable.value,
     })
+    originalData.value = { url: normalizedUrl, description: description.value, isEnable: isEnable.value }
     toast.success('Short link updated successfully')
   } catch {
     error.value = 'Failed to update short link. Please try again.'

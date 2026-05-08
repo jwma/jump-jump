@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listMembers, inviteMember, updateMemberRole, removeMember, leaveTenant } from '@/api/member'
 import { useToast } from '@/composables/useToast'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import type { TenantMember } from '@/types/api'
 import { UserRole } from '@/types/api'
 import {
@@ -55,25 +56,20 @@ const confirmLeave = ref(false)
 const leaveLoading = ref(false)
 const leaveError = ref('')
 
-// Dialog focus
-const dialogEl = ref<HTMLElement | null>(null)
-
+// Invite modal ESC handling
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
-    confirmRoleChange.value = null
-    confirmRemove.value = null
-    confirmLeave.value = false
     showInvite.value = false
   }
 }
 
-watch([confirmRoleChange, confirmRemove, confirmLeave, showInvite], (values) => {
-  if (values.some(Boolean)) {
+watch(showInvite, (isOpen) => {
+  if (isOpen) {
     document.addEventListener('keydown', handleKeydown)
   } else {
     document.removeEventListener('keydown', handleKeydown)
   }
-}, { deep: true })
+})
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
@@ -127,7 +123,6 @@ function requestRoleChange(member: TenantMember) {
     currentRole: member.role,
     newRole,
   }
-  nextTick(() => dialogEl.value?.focus())
 }
 
 async function executeRoleChange() {
@@ -148,7 +143,6 @@ async function executeRoleChange() {
 function requestRemoveMember(member: TenantMember) {
   removeError.value = ''
   confirmRemove.value = { userId: member.userId, username: member.username }
-  nextTick(() => dialogEl.value?.focus())
 }
 
 async function executeRemoveMember() {
@@ -169,7 +163,6 @@ async function executeRemoveMember() {
 function requestLeaveTenant() {
   leaveError.value = ''
   confirmLeave.value = true
-  nextTick(() => dialogEl.value?.focus())
 }
 
 async function executeLeaveTenant() {
@@ -372,137 +365,70 @@ onMounted(fetchMembers)
     </Teleport>
 
     <!-- Role Change Confirm -->
-    <Teleport to="body">
-      <div
-        v-if="confirmRoleChange"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-        @click.self="confirmRoleChange = null"
-      >
-        <div
-          ref="dialogEl"
-          role="dialog"
-          aria-modal="true"
-          tabindex="-1"
-          class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
-        >
-          <h3 class="text-lg font-semibold text-gray-900">Change Role</h3>
-          <p class="mt-2 text-sm text-gray-600">
-            Change <span class="font-medium text-gray-900">{{ confirmRoleChange.username }}</span>'s role from
-            <span class="font-mono font-medium">{{ confirmRoleChange.currentRole }}</span> to
-            <span class="font-mono font-medium">{{ confirmRoleChange.newRole }}</span>?
-          </p>
-          <div class="mt-3 rounded-lg border bg-gray-50 p-3 text-xs text-gray-600">
-            <p class="font-medium text-gray-700">
-              {{ confirmRoleChange.newRole === UserRole.Admin ? 'Admin' : 'Member' }} permissions:
-            </p>
-            <ul v-if="confirmRoleChange.newRole === UserRole.Admin" class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
-              <li>Manage tenant settings and domains</li>
-              <li>Invite and remove members</li>
-              <li>Change member roles</li>
-              <li>Create, edit, and delete short links</li>
-            </ul>
-            <ul v-else class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
-              <li>Create, edit, and delete short links</li>
-              <li>View member list</li>
-            </ul>
-          </div>
-          <p v-if="roleError" class="mt-2 text-sm text-red-600">{{ roleError }}</p>
-          <div class="mt-4 flex justify-end gap-2">
-            <button
-              class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              @click="confirmRoleChange = null"
-            >
-              Cancel
-            </button>
-            <button
-              :disabled="roleLoading"
-              class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              @click="executeRoleChange"
-            >
-              {{ roleLoading ? 'Changing...' : 'Confirm' }}
-            </button>
-          </div>
-        </div>
+    <ConfirmDialog
+      :open="!!confirmRoleChange"
+      title="Change Role"
+      :confirm-text="roleLoading ? 'Changing...' : 'Confirm'"
+      :loading="roleLoading"
+      @confirm="executeRoleChange"
+      @cancel="confirmRoleChange = null"
+    >
+      <p class="mt-2 text-sm text-gray-600">
+        Change <span class="font-medium text-gray-900">{{ confirmRoleChange?.username }}</span>'s role from
+        <span class="font-mono font-medium">{{ confirmRoleChange?.currentRole }}</span> to
+        <span class="font-mono font-medium">{{ confirmRoleChange?.newRole }}</span>?
+      </p>
+      <div class="mt-3 rounded-lg border bg-gray-50 p-3 text-xs text-gray-600">
+        <p class="font-medium text-gray-700">
+          {{ confirmRoleChange?.newRole === UserRole.Admin ? 'Admin' : 'Member' }} permissions:
+        </p>
+        <ul v-if="confirmRoleChange?.newRole === UserRole.Admin" class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
+          <li>Manage tenant settings and domains</li>
+          <li>Invite and remove members</li>
+          <li>Change member roles</li>
+          <li>Create, edit, and delete short links</li>
+        </ul>
+        <ul v-else class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
+          <li>Create, edit, and delete short links</li>
+          <li>View member list</li>
+        </ul>
       </div>
-    </Teleport>
+      <p v-if="roleError" class="mt-2 text-sm text-red-600">{{ roleError }}</p>
+    </ConfirmDialog>
 
     <!-- Remove Member Confirm -->
-    <Teleport to="body">
-      <div
-        v-if="confirmRemove"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-        @click.self="confirmRemove = null"
-      >
-        <div
-          ref="dialogEl"
-          role="dialog"
-          aria-modal="true"
-          tabindex="-1"
-          class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
-        >
-          <h3 class="text-lg font-semibold text-gray-900">Remove Member</h3>
-          <p class="mt-2 text-sm text-gray-600">
-            Are you sure you want to remove
-            <span class="font-medium text-gray-900">{{ confirmRemove.username }}</span> from this tenant?
-            This action cannot be undone.
-          </p>
-          <p v-if="removeError" class="mt-2 text-sm text-red-600">{{ removeError }}</p>
-          <div class="mt-4 flex justify-end gap-2">
-            <button
-              class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              @click="confirmRemove = null"
-            >
-              Cancel
-            </button>
-            <button
-              :disabled="removeLoading"
-              class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-              @click="executeRemoveMember"
-            >
-              {{ removeLoading ? 'Removing...' : 'Remove' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDialog
+      :open="!!confirmRemove"
+      title="Remove Member"
+      variant="danger"
+      :confirm-text="removeLoading ? 'Removing...' : 'Remove'"
+      :loading="removeLoading"
+      @confirm="executeRemoveMember"
+      @cancel="confirmRemove = null"
+    >
+      <p class="mt-2 text-sm text-gray-600">
+        Are you sure you want to remove
+        <span class="font-medium text-gray-900">{{ confirmRemove?.username }}</span> from this tenant?
+        This action cannot be undone.
+      </p>
+      <p v-if="removeError" class="mt-2 text-sm text-red-600">{{ removeError }}</p>
+    </ConfirmDialog>
 
     <!-- Leave Tenant Confirm -->
-    <Teleport to="body">
-      <div
-        v-if="confirmLeave"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-        @click.self="confirmLeave = false"
-      >
-        <div
-          ref="dialogEl"
-          role="dialog"
-          aria-modal="true"
-          tabindex="-1"
-          class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
-        >
-          <h3 class="text-lg font-semibold text-gray-900">Leave Tenant</h3>
-          <p class="mt-2 text-sm text-gray-600">
-            Are you sure you want to leave <span class="font-medium text-gray-900">{{ auth.currentTenant?.tenantName }}</span>?
-            You will need to be re-invited to join again.
-          </p>
-          <p v-if="leaveError" class="mt-2 text-sm text-red-600">{{ leaveError }}</p>
-          <div class="mt-4 flex justify-end gap-2">
-            <button
-              class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              @click="confirmLeave = false"
-            >
-              Cancel
-            </button>
-            <button
-              :disabled="leaveLoading"
-              class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-              @click="executeLeaveTenant"
-            >
-              {{ leaveLoading ? 'Leaving...' : 'Leave' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDialog
+      :open="confirmLeave"
+      title="Leave Tenant"
+      variant="danger"
+      :confirm-text="leaveLoading ? 'Leaving...' : 'Leave'"
+      :loading="leaveLoading"
+      @confirm="executeLeaveTenant"
+      @cancel="confirmLeave = false"
+    >
+      <p class="mt-2 text-sm text-gray-600">
+        Are you sure you want to leave <span class="font-medium text-gray-900">{{ auth.currentTenant?.tenantName }}</span>?
+        You will need to be re-invited to join again.
+      </p>
+      <p v-if="leaveError" class="mt-2 text-sm text-red-600">{{ leaveError }}</p>
+    </ConfirmDialog>
   </div>
 </template>
