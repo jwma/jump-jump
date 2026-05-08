@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Shield,
   Users,
+  UserPlus,
 } from 'lucide-vue-next'
 
 const auth = useAuthStore()
@@ -40,12 +41,12 @@ const menuItems = computed(() => {
     items.push(
       { icon: LayoutDashboard, label: 'Dashboard', to: { name: 'dashboard' } },
       { icon: Link, label: 'Short Links', to: { name: 'short-links' } },
+      { icon: UserPlus, label: 'Members', to: { name: 'members' } },
     )
 
     if (auth.user?.role === UserRole.Admin) {
       items.push(
-        { icon: Settings, label: 'System Config', to: { name: 'config' } },
-        { icon: Building2, label: 'Tenants', to: { name: 'tenants' } },
+        { icon: Settings, label: 'Settings', to: { name: 'settings' } },
       )
     }
   }

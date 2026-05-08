@@ -1,5 +1,5 @@
 import { request } from './http'
-import type { Tenant, TenantDomain, CreateTenantRequest, AddDomainRequest } from '@/types/api'
+import type { Tenant, TenantDomain, CreateTenantRequest, AddDomainRequest, UpdateTenantRequest } from '@/types/api'
 
 export function listTenants() {
   return request<Tenant[]>('GET', '/tenant/')
@@ -11,6 +11,10 @@ export function getTenant(id: string) {
 
 export function createTenant(data: CreateTenantRequest) {
   return request<Tenant>('POST', '/tenant/', data)
+}
+
+export function updateTenant(id: string, data: UpdateTenantRequest) {
+  return request<Tenant>('PATCH', `/tenant/${id}`, data)
 }
 
 export function listDomains(tenantId: string) {
