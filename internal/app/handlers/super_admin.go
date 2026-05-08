@@ -93,7 +93,7 @@ func GetUserAPI(c *gin.Context) {
 
 	u, err := userRepo.FindByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, models.NewErrorResponse("用户不存在"))
+		writeErrorResponse(c, err)
 		return
 	}
 

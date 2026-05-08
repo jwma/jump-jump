@@ -8,6 +8,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
@@ -47,7 +48,10 @@ func (r *TenantRepository) GetByID(id string) (*models.Tenant, error) {
 		`SELECT id, name, slug, is_active, created_at, updated_at FROM tenants WHERE id = $1`, id).
 		Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
-		return nil, &models.NotFoundError{Msg: "租户不存在"}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &models.NotFoundError{Msg: "租户不存在"}
+		}
+		return nil, err
 	}
 	return t, nil
 }
@@ -267,7 +271,10 @@ func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 		 FROM users WHERE username = $1`,
 		username).Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
-		return nil, &models.NotFoundError{Msg: "用户不存在"}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &models.NotFoundError{Msg: "用户不存在"}
+		}
+		return nil, err
 	}
 	return u, nil
 }
@@ -283,7 +290,10 @@ func (r *userRepository) FindByID(userID string) (*models.User, error) {
 		 FROM users WHERE id = $1`,
 		userID).Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
-		return nil, &models.NotFoundError{Msg: "用户不存在"}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &models.NotFoundError{Msg: "用户不存在"}
+		}
+		return nil, err
 	}
 	return u, nil
 }
@@ -494,7 +504,10 @@ func (r *TenantMemberRepository) Get(tenantID, userID string) (*models.TenantMem
 		 FROM tenant_members WHERE tenant_id = $1 AND user_id = $2`,
 		tenantID, userID).Scan(&m.TenantID, &m.UserID, &m.Role, &m.JoinedAt)
 	if err != nil {
-		return nil, &models.NotFoundError{Msg: "成员关系不存在"}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &models.NotFoundError{Msg: "成员关系不存在"}
+		}
+		return nil, err
 	}
 	return m, nil
 }
@@ -601,7 +614,10 @@ func (r *TenantInvitationRepository) Get(id string) (*models.TenantInvitation, e
 		 FROM tenant_invitations WHERE id = $1`, id).
 		Scan(&inv.ID, &inv.TenantID, &inv.InviterID, &inv.InviteeID, &inv.Status, &inv.CreatedAt)
 	if err != nil {
-		return nil, &models.NotFoundError{Msg: "邀请不存在"}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &models.NotFoundError{Msg: "邀请不存在"}
+		}
+		return nil, err
 	}
 	return inv, nil
 }
@@ -781,7 +797,10 @@ func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
 		 FROM short_links WHERE id = $1`, id).Scan(
 		&s.Id, &s.TenantID, &s.Url, &s.Description, &s.IsEnable, &s.CreatedBy, &s.CreateTime, &s.UpdateTime)
 	if err != nil {
-		return nil, &models.NotFoundError{Msg: "短链接不存在"}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &models.NotFoundError{Msg: "短链接不存在"}
+		}
+		return nil, err
 	}
 
 	j, _ := json.Marshal(s)
