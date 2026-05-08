@@ -131,6 +131,15 @@ export interface GetConfigResponse {
   config: SystemConfig
 }
 
+export interface TenantConfig {
+  idConfig: IdConfig
+  shortLinkNotFoundConfig: ShortLinkNotFoundConfig
+}
+
+export interface GetTenantConfigResponse {
+  config: TenantConfig
+}
+
 export interface UpdateLandingHostsRequest {
   hosts: string[]
 }

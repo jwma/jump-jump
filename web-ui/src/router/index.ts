@@ -96,13 +96,7 @@ const router = createRouter({
           component: () => import('@/pages/SettingsPage.vue'),
           meta: { title: 'Settings', requiredRole: UserRole.Admin, requiresTenant: true },
         },
-        {
-          path: 'config',
-          name: 'config',
-          component: () => import('@/pages/ConfigPage.vue'),
-          meta: { title: 'System Config', requiredRole: UserRole.Admin, requiresTenant: true },
-        },
-        {
+{
           path: 'tenants',
           name: 'tenants',
           component: () => import('@/pages/TenantsPage.vue'),
