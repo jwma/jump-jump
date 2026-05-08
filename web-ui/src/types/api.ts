@@ -188,10 +188,6 @@ export interface UpdateTenantRequest {
   slug?: string
 }
 
-export interface UpdateRoleRequest {
-  role: string
-}
-
 // Super Admin types
 export interface SuperUser {
   id: string

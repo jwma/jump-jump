@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { getTenant, updateTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
 import { getConfig, updateIdConfig, updateShortLinkNotFoundConfig } from '@/api/config'
@@ -88,7 +88,10 @@ const notFoundValidationError = computed(() => {
 const idCanSave = computed(() => !idValidationError.value && !idSaving.value && !loading.value)
 const notFoundCanSave = computed(() => !notFoundValidationError.value && !notFoundSaving.value && !loading.value)
 
+const sampleIdSeed = ref(0)
+
 const sampleId = computed(() => {
+  void sampleIdSeed.value
   const len = Math.max(1, Math.round(idLength.value))
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let result = ''
@@ -235,6 +238,10 @@ watch([confirmOpen, confirmDeleteDomain], (values) => {
   }
 })
 
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
+
 function handleSaveIdConfig() {
   openConfirm(
     'Save ID Length Configuration',
@@ -287,9 +294,7 @@ function formatDate(d: string) {
 }
 
 function refreshSampleId() {
-  const current = idLength.value
-  idLength.value = current + 1
-  idLength.value = current
+  sampleIdSeed.value++
 }
 
 onMounted(fetchAll)

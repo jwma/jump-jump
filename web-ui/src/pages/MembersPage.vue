@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listMembers, inviteMember, updateMemberRole, removeMember, leaveTenant } from '@/api/member'
@@ -36,14 +36,17 @@ const inviteSuccess = ref('')
 // Role change confirm
 const confirmRoleChange = ref<{ userId: string; username: string; currentRole: string; newRole: string } | null>(null)
 const roleLoading = ref(false)
+const roleError = ref('')
 
 // Remove member confirm
 const confirmRemove = ref<{ userId: string; username: string } | null>(null)
 const removeLoading = ref(false)
+const removeError = ref('')
 
 // Leave tenant confirm
 const confirmLeave = ref(false)
 const leaveLoading = ref(false)
+const leaveError = ref('')
 
 // Dialog focus
 const dialogEl = ref<HTMLElement | null>(null)
@@ -64,6 +67,10 @@ watch([confirmRoleChange, confirmRemove, confirmLeave, showInvite], (values) => 
     document.removeEventListener('keydown', handleKeydown)
   }
 }, { deep: true })
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 
 async function fetchMembers() {
   if (!auth.currentTenantId) return
@@ -107,6 +114,7 @@ async function handleInvite() {
 
 function requestRoleChange(member: TenantMember) {
   const newRole = member.role === UserRole.Admin ? UserRole.Member : UserRole.Admin
+  roleError.value = ''
   confirmRoleChange.value = {
     userId: member.userId,
     username: member.username,
@@ -119,19 +127,20 @@ function requestRoleChange(member: TenantMember) {
 async function executeRoleChange() {
   if (!auth.currentTenantId || !confirmRoleChange.value) return
   roleLoading.value = true
+  roleError.value = ''
   try {
     await updateMemberRole(auth.currentTenantId, confirmRoleChange.value.userId, confirmRoleChange.value.newRole)
     confirmRoleChange.value = null
     await fetchMembers()
   } catch (e: unknown) {
-    alert((e as Error).message || 'Failed to update role')
-    confirmRoleChange.value = null
+    roleError.value = (e as Error).message || 'Failed to update role'
   } finally {
     roleLoading.value = false
   }
 }
 
 function requestRemoveMember(member: TenantMember) {
+  removeError.value = ''
   confirmRemove.value = { userId: member.userId, username: member.username }
   nextTick(() => dialogEl.value?.focus())
 }
@@ -139,19 +148,20 @@ function requestRemoveMember(member: TenantMember) {
 async function executeRemoveMember() {
   if (!auth.currentTenantId || !confirmRemove.value) return
   removeLoading.value = true
+  removeError.value = ''
   try {
     await removeMember(auth.currentTenantId, confirmRemove.value.userId)
     confirmRemove.value = null
     await fetchMembers()
   } catch (e: unknown) {
-    alert((e as Error).message || 'Failed to remove member')
-    confirmRemove.value = null
+    removeError.value = (e as Error).message || 'Failed to remove member'
   } finally {
     removeLoading.value = false
   }
 }
 
 function requestLeaveTenant() {
+  leaveError.value = ''
   confirmLeave.value = true
   nextTick(() => dialogEl.value?.focus())
 }
@@ -159,14 +169,14 @@ function requestLeaveTenant() {
 async function executeLeaveTenant() {
   if (!auth.currentTenantId) return
   leaveLoading.value = true
+  leaveError.value = ''
   try {
     await leaveTenant(auth.currentTenantId)
     auth.clearTenant()
     await auth.fetchAuthInfo()
     router.push({ name: 'select-tenant' })
   } catch (e: unknown) {
-    alert((e as Error).message || 'Failed to leave tenant')
-    confirmLeave.value = false
+    leaveError.value = (e as Error).message || 'Failed to leave tenant'
   } finally {
     leaveLoading.value = false
   }
@@ -363,6 +373,7 @@ onMounted(fetchMembers)
             <span class="font-mono font-medium">{{ confirmRoleChange.currentRole }}</span> to
             <span class="font-mono font-medium">{{ confirmRoleChange.newRole }}</span>?
           </p>
+          <p v-if="roleError" class="mt-2 text-sm text-red-600">{{ roleError }}</p>
           <div class="mt-4 flex justify-end gap-2">
             <button
               class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
@@ -402,6 +413,7 @@ onMounted(fetchMembers)
             <span class="font-medium text-gray-900">{{ confirmRemove.username }}</span> from this tenant?
             This action cannot be undone.
           </p>
+          <p v-if="removeError" class="mt-2 text-sm text-red-600">{{ removeError }}</p>
           <div class="mt-4 flex justify-end gap-2">
             <button
               class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
@@ -440,6 +452,7 @@ onMounted(fetchMembers)
             Are you sure you want to leave <span class="font-medium text-gray-900">{{ auth.currentTenant?.tenantName }}</span>?
             You will need to be re-invited to join again.
           </p>
+          <p v-if="leaveError" class="mt-2 text-sm text-red-600">{{ leaveError }}</p>
           <div class="mt-4 flex justify-end gap-2">
             <button
               class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
