@@ -85,6 +85,18 @@ const router = createRouter({
           meta: { title: 'Edit Short Link', requiresTenant: true },
         },
         {
+          path: 'members',
+          name: 'members',
+          component: () => import('@/pages/MembersPage.vue'),
+          meta: { title: 'Members', requiresTenant: true },
+        },
+        {
+          path: 'settings',
+          name: 'settings',
+          component: () => import('@/pages/SettingsPage.vue'),
+          meta: { title: 'Settings', requiredRole: UserRole.Admin, requiresTenant: true },
+        },
+        {
           path: 'config',
           name: 'config',
           component: () => import('@/pages/ConfigPage.vue'),

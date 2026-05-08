@@ -183,6 +183,15 @@ export interface AddDomainRequest {
   isDefault: boolean
 }
 
+export interface UpdateTenantRequest {
+  name?: string
+  slug?: string
+}
+
+export interface UpdateRoleRequest {
+  role: string
+}
+
 // Super Admin types
 export interface SuperUser {
   id: string
