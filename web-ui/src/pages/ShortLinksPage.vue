@@ -119,9 +119,8 @@ async function handleDelete(id: string) {
       page.value--
       fetchLinks()
     }
-  } catch {
-    toast.error('Failed to delete short link')
-  } finally {
+  } catch (e: unknown) {
+    toast.error((e as Error).message || 'Failed to delete short link')
     deleting.value = null
   }
 }
@@ -136,8 +135,8 @@ async function handleBatchDelete() {
     total.value -= count
     selectedIds.value.clear()
     toast.success(`${count} short link${count !== 1 ? 's' : ''} deleted`)
-  } catch {
-    toast.error('Failed to delete some short links')
+  } catch (e: unknown) {
+    toast.error((e as Error).message || 'Failed to delete some short links')
     await fetchLinks()
   } finally {
     deleting.value = null

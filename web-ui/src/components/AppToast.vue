@@ -43,6 +43,8 @@ const iconStyleMap = {
           />
           <p class="flex-1 text-sm">{{ toast.message }}</p>
           <button
+            type="button"
+            aria-label="Dismiss notification"
             class="shrink-0 rounded p-0.5 opacity-60 transition-opacity hover:opacity-100"
             @click="remove(toast.id)"
           >
