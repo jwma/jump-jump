@@ -1,5 +1,5 @@
 import { request } from './http'
-import type { GetConfigResponse } from '@/types/api'
+import type { GetTenantConfigResponse } from '@/types/api'
 
 export interface UpdateTenantConfigRequest {
   idLength?: number
@@ -10,9 +10,9 @@ export interface UpdateTenantConfigRequest {
 }
 
 export function getTenantConfig(tenantId: string) {
-  return request<GetConfigResponse>('GET', `/tenant/${tenantId}/config`)
+  return request<GetTenantConfigResponse>('GET', `/tenant/${tenantId}/config`)
 }
 
 export function updateTenantConfig(tenantId: string, data: UpdateTenantConfigRequest) {
-  return request<GetConfigResponse>('PATCH', `/tenant/${tenantId}/config`, data)
+  return request<GetTenantConfigResponse>('PATCH', `/tenant/${tenantId}/config`, data)
 }

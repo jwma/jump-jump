@@ -251,6 +251,7 @@ function handleSaveIdConfig() {
 }
 
 async function doSaveIdConfig() {
+  if (!auth.currentTenantId) return
   idSaving.value = true
   idError.value = ''
   idSaveSuccess.value = false
@@ -275,6 +276,7 @@ function handleSaveNotFoundConfig() {
 }
 
 async function doSaveNotFoundConfig() {
+  if (!auth.currentTenantId) return
   notFoundSaving.value = true
   notFoundError.value = ''
   notFoundSaveSuccess.value = false
