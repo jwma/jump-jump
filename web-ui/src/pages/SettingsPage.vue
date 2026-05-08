@@ -88,6 +88,13 @@ const notFoundCanSave = computed(() => !notFoundValidationError.value && !notFou
 
 const sampleIdSeed = ref(0)
 
+const normalizedIdLengths = computed(() => {
+  const min = Math.max(2, Math.round(idMinimumLength.value))
+  const def = Math.max(min + 1, Math.round(idLength.value))
+  const max = Math.min(10, Math.max(def + 1, Math.round(idMaximumLength.value)))
+  return { min, default: def, max }
+})
+
 function generateId(len: number): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let result = ''
@@ -97,10 +104,12 @@ function generateId(len: number): string {
 
 const sampleIds = computed(() => {
   void sampleIdSeed.value
+  if (idValidationError.value) return null
+  const n = normalizedIdLengths.value
   return {
-    min: generateId(Math.max(2, idMinimumLength.value)),
-    default: generateId(Math.round(idLength.value)),
-    max: generateId(Math.min(10, idMaximumLength.value)),
+    min: generateId(n.min),
+    default: generateId(n.default),
+    max: generateId(n.max),
   }
 })
 
@@ -414,7 +423,6 @@ onMounted(fetchAll)
               <thead>
                 <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   <th class="px-4 py-3">Domain</th>
-                  <th class="px-4 py-3">Status</th>
                   <th class="px-4 py-3">Default</th>
                   <th class="hidden px-4 py-3 lg:table-cell">Created</th>
                   <th class="px-4 py-3 text-right">Actions</th>
@@ -427,12 +435,6 @@ onMounted(fetchAll)
                       <Globe class="h-4 w-4 text-gray-400" />
                       <span class="font-mono text-sm text-gray-900">{{ d.domain }}</span>
                     </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-green-700">
-                      <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                      Active
-                    </span>
                   </td>
                   <td class="px-4 py-3">
                     <span v-if="d.isDefault" class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
@@ -605,24 +607,27 @@ onMounted(fetchAll)
             <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
               <div class="mb-3 flex items-center justify-between">
                 <p class="text-xs font-medium uppercase tracking-wider text-gray-500">ID Length Examples</p>
-                <button class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600" @click="refreshSampleIds">
+                <button v-if="sampleIds" class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600" @click="refreshSampleIds">
                   <Loader2 class="h-3.5 w-3.5" />
                 </button>
               </div>
-              <div class="space-y-2">
-                <div class="flex items-center gap-3">
-                  <span class="w-14 text-xs text-gray-400">Min ({{ idMinimumLength }})</span>
-                  <span class="font-mono text-sm font-semibold text-gray-600">{{ sampleIds.min }}</span>
+              <template v-if="sampleIds">
+                <div class="space-y-2">
+                  <div class="flex items-center gap-3">
+                    <span class="w-16 text-xs text-gray-400">Min ({{ normalizedIdLengths.min }})</span>
+                    <span class="font-mono text-sm font-semibold text-gray-600">{{ sampleIds.min }}</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="w-16 text-xs font-medium text-blue-600">Default ({{ normalizedIdLengths.default }})</span>
+                    <span class="font-mono text-sm font-bold text-blue-600">{{ sampleIds.default }}</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="w-16 text-xs text-gray-400">Max ({{ normalizedIdLengths.max }})</span>
+                    <span class="font-mono text-sm font-semibold text-gray-600">{{ sampleIds.max }}</span>
+                  </div>
                 </div>
-                <div class="flex items-center gap-3">
-                  <span class="w-14 text-xs font-medium text-blue-600">Default ({{ idLength }})</span>
-                  <span class="font-mono text-sm font-bold text-blue-600">{{ sampleIds.default }}</span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <span class="w-14 text-xs text-gray-400">Max ({{ idMaximumLength }})</span>
-                  <span class="font-mono text-sm font-semibold text-gray-600">{{ sampleIds.max }}</span>
-                </div>
-              </div>
+              </template>
+              <p v-else class="text-xs text-gray-400">Fix validation errors to see examples.</p>
             </div>
             <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
               <p class="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">404 Handling</p>
