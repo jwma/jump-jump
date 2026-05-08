@@ -23,10 +23,17 @@ const saving = ref(false)
 const error = ref('')
 const notFound = ref(false)
 
+function normalizeUrl(value: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  return `https://${trimmed}`
+}
+
 const urlError = computed(() => {
   if (!url.value) return ''
   try {
-    new URL(url.value)
+    new URL(normalizeUrl(url.value))
     return ''
   } catch {
     return 'Please enter a valid URL (e.g. https://example.com)'
@@ -62,8 +69,9 @@ async function handleSubmit() {
   saving.value = true
 
   try {
+    const normalizedUrl = normalizeUrl(url.value)
     await updateShortLink(id, {
-      url: url.value,
+      url: normalizedUrl,
       description: description.value,
       isEnable: isEnable.value,
     })
@@ -105,7 +113,30 @@ onMounted(fetchData)
       </div>
     </div>
 
-    <div v-if="loading" class="mt-6 text-center text-gray-400">Loading...</div>
+    <!-- Skeleton loading -->
+    <div v-if="loading" class="mt-6 max-w-lg rounded-lg border bg-white p-6">
+      <div class="mb-5 rounded-md bg-gray-50 p-3">
+        <div class="grid grid-cols-2 gap-2">
+          <div class="h-4 w-32 animate-pulse rounded bg-gray-200" />
+          <div class="h-4 w-28 animate-pulse rounded bg-gray-200" />
+          <div class="col-span-2 h-4 w-48 animate-pulse rounded bg-gray-200" />
+        </div>
+      </div>
+      <div class="space-y-5">
+        <div>
+          <div class="mb-1 h-4 w-16 animate-pulse rounded bg-gray-200" />
+          <div class="h-9 w-full animate-pulse rounded-md bg-gray-200" />
+        </div>
+        <div>
+          <div class="mb-1 h-4 w-20 animate-pulse rounded bg-gray-200" />
+          <div class="h-20 w-full animate-pulse rounded-md bg-gray-200" />
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="h-4 w-14 animate-pulse rounded bg-gray-200" />
+          <div class="h-6 w-11 animate-pulse rounded-full bg-gray-200" />
+        </div>
+      </div>
+    </div>
 
     <div v-else-if="notFound" class="mt-6 text-center text-gray-400">
       Short link not found.
@@ -147,12 +178,16 @@ onMounted(fetchData)
           </label>
           <input
             v-model="url"
-            type="url"
+            type="text"
             required
+            placeholder="example.com/long-url or https://example.com"
             class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             :class="urlError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />
           <p v-if="urlError" class="mt-1 text-xs text-red-600">{{ urlError }}</p>
+          <p v-else class="mt-1 text-xs text-gray-400">
+            https:// will be added automatically if omitted.
+          </p>
         </div>
 
         <div>
