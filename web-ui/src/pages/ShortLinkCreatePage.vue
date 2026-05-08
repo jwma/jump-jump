@@ -69,12 +69,17 @@ function getShortLinkUrl(id: string) {
 
 function copyCreatedLink() {
   if (!createdLink.value) return
-  navigator.clipboard.writeText(getShortLinkUrl(createdLink.value.id)).then(() => {
-    copiedShortLink.value = true
-    setTimeout(() => {
-      copiedShortLink.value = false
-    }, 2000)
-  })
+  navigator.clipboard.writeText(getShortLinkUrl(createdLink.value.id)).then(
+    () => {
+      copiedShortLink.value = true
+      setTimeout(() => {
+        copiedShortLink.value = false
+      }, 2000)
+    },
+    () => {
+      toast.error('Failed to copy link to clipboard')
+    },
+  )
 }
 
 async function handleSubmit() {

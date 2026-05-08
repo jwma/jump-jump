@@ -209,9 +209,9 @@ async function handleBatchDelete() {
 async function handleBatchToggleEnable(enable: boolean) {
   if (selectedIds.value.size === 0) return
   batchUpdating.value = true
-  const count = selectedIds.value.size
   const ids = [...selectedIds.value]
   try {
+    let updated = 0
     await Promise.all(
       ids.map(async (id) => {
         const link = links.value.find((l) => l.id === id)
@@ -222,10 +222,11 @@ async function handleBatchToggleEnable(enable: boolean) {
             isEnable: enable,
           })
           link.isEnable = enable
+          updated++
         }
       }),
     )
-    toast.success(`${count} short link${count !== 1 ? 's' : ''} ${enable ? 'enabled' : 'disabled'}`)
+    toast.success(`${updated} short link${updated !== 1 ? 's' : ''} ${enable ? 'enabled' : 'disabled'}`)
   } catch (e: unknown) {
     toast.error((e as Error).message || `Failed to ${enable ? 'enable' : 'disable'} some short links`)
   } finally {
@@ -580,7 +581,7 @@ onMounted(fetchLinks)
           >
             <ChevronLeft class="h-5 w-5" />
           </button>
-          <template v-for="p in pageNumbers" :key="p">
+          <template v-for="(p, idx) in pageNumbers" :key="`page-${idx}`">
             <span v-if="p === '...'" class="px-1 text-sm text-gray-400">...</span>
             <button
               v-else
