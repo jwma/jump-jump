@@ -307,6 +307,7 @@ onMounted(fetchLinks)
         <input
           v-model="searchId"
           type="text"
+          data-shortcut-search
           placeholder="Search by ID..."
           class="w-full rounded-md border border-gray-300 dark:border-gray-600 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
         />
