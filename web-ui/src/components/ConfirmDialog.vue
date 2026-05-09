@@ -42,7 +42,7 @@ watch(() => props.open, (isOpen) => {
       previousFocusEl = null
     }
   }
-})
+}, { immediate: true })
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)

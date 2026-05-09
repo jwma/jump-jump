@@ -7,6 +7,7 @@ export function useUnsavedChanges(isDirty: Ref<boolean> | (() => boolean)) {
   function handleBeforeUnload(e: BeforeUnloadEvent) {
     if (getDirty()) {
       e.preventDefault()
+      e.returnValue = ''
     }
   }
 
