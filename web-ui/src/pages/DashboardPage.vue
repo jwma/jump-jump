@@ -16,7 +16,9 @@ import {
   TrendingUp,
   ArrowRight,
   Clock,
-  Loader2,
+  RefreshCw,
+  TrendingDown,
+  Minus,
 } from 'lucide-vue-next'
 import { defineAsyncComponent } from 'vue'
 
@@ -42,6 +44,7 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const loading = ref(true)
+const refreshing = ref(false)
 const totalLinks = ref(0)
 const activeLinks = ref(0)
 const todayVisits = ref(0)
@@ -52,6 +55,8 @@ const trendDays = ref<7 | 30>(7)
 const trendData = ref<DailyStats[]>([])
 const chartLoading = ref(false)
 const copiedId = ref<string | null>(null)
+const prevTodayVisits = ref(0)
+const prevPeriodVisits = ref(0)
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -65,6 +70,32 @@ const todayStr = computed(() => {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 })
+
+const yesterdayStr = computed(() => {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+})
+
+const periodLabel = computed(() => {
+  return `Last ${trendDays.value} Days Visits`
+})
+
+const todayTrend = computed(() => {
+  return computeTrend(todayVisits.value, prevTodayVisits.value)
+})
+
+const periodTrend = computed(() => {
+  return computeTrend(periodVisits.value, prevPeriodVisits.value)
+})
+
+function computeTrend(current: number, previous: number) {
+  if (previous === 0) return current > 0 ? { pct: 100, dir: 'up' as const } : null
+  const pct = Math.round(((current - previous) / previous) * 100)
+  if (pct > 0) return { pct, dir: 'up' as const }
+  if (pct < 0) return { pct: Math.abs(pct), dir: 'down' as const }
+  return { pct: 0, dir: 'flat' as const }
+}
 
 function formatDate(daysAgo: number) {
   const d = new Date()
@@ -110,6 +141,81 @@ function aggregateFromHistories(histories: RequestHistory[]): {
   }
 
   return { daily, totalPv, todayPv }
+}
+
+interface LinkStatsResult {
+  allDaily: Record<string, { pv: number; uv: number }>
+  linkDaily: { link: ShortLinkData; daily: Record<string, { pv: number; uv: number }> }[]
+  totalPv: number
+  todayPv: number
+}
+
+async function fetchLinkStats(
+  links: ShortLinkData[],
+  startDate: string,
+  endDate: string,
+): Promise<LinkStatsResult> {
+  const allDaily: Record<string, { pv: number; uv: number }> = {}
+  const linkDaily: { link: ShortLinkData; daily: Record<string, { pv: number; uv: number }> }[] = []
+  let totalPv = 0
+  let todayPv = 0
+
+  const results = await Promise.allSettled(
+    links.map((link) => getShortLinkData(link.id, startDate, endDate)),
+  )
+
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i]
+    if (result.status === 'fulfilled' && result.value) {
+      const { daily, totalPv: linkTotalPv, todayPv: linkTodayPv } = aggregateFromHistories(
+        result.value.histories,
+      )
+
+      for (const [date, stats] of Object.entries(daily)) {
+        if (!allDaily[date]) {
+          allDaily[date] = { pv: 0, uv: 0 }
+        }
+        allDaily[date].pv += stats.pv
+        allDaily[date].uv += stats.uv
+      }
+
+      totalPv += linkTotalPv
+      todayPv += linkTodayPv
+
+      if (Object.keys(daily).length > 0) {
+        linkDaily.push({ link: links[i], daily })
+      }
+    }
+  }
+
+  return { allDaily, linkDaily, totalPv, todayPv }
+}
+
+function computeTopLinks(
+  linkDaily: { link: ShortLinkData; daily: Record<string, { pv: number; uv: number }> }[],
+  startDate: string,
+): { link: ShortLinkData; pv: number; uv: number }[] {
+  const result: { link: ShortLinkData; pv: number; uv: number }[] = []
+  for (const entry of linkDaily) {
+    let pv = 0
+    let uv = 0
+    for (const [date, stats] of Object.entries(entry.daily)) {
+      if (date >= startDate) {
+        pv += stats.pv
+        uv += stats.uv
+      }
+    }
+    if (pv > 0) {
+      result.push({ link: entry.link, pv, uv })
+    }
+  }
+  return result.sort((a, b) => b.pv - a.pv).slice(0, 10)
+}
+
+function dailyToTrend(allDaily: Record<string, { pv: number; uv: number }>): DailyStats[] {
+  return Object.entries(allDaily)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, { pv, uv }]) => ({ date, pv, uv }))
 }
 
 const chartOption = computed(() => {
@@ -222,8 +328,12 @@ async function fetchAllPages() {
   return { links: allLinks, total }
 }
 
-async function fetchDashboardData() {
-  loading.value = true
+async function fetchDashboardData(isRefresh = false) {
+  if (isRefresh) {
+    refreshing.value = true
+  } else {
+    loading.value = true
+  }
   try {
     const { links, total } = await fetchAllPages()
     totalLinks.value = total
@@ -233,60 +343,42 @@ async function fetchDashboardData() {
       .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())
       .slice(0, 8)
 
-    const startDate = formatDate(trendDays.value - 1)
+    // Fetch 2x the period to compute trends (current period + previous period)
+    const extendedStartDate = formatDate(trendDays.value * 2 - 1)
     const endDate = formatDate(0)
-    const allDaily: Record<string, { pv: number; uv: number }> = {}
-    const linkStats: { link: ShortLinkData; pv: number; uv: number }[] = []
+    const currentStartDate = formatDate(trendDays.value - 1)
 
-    const results = await Promise.allSettled(
-      links.map((link) => getShortLinkData(link.id, startDate, endDate)),
-    )
+    const stats = await fetchLinkStats(links, extendedStartDate, endDate)
 
-    let todayPv = 0
-    let periodPv = 0
+    // Split daily data into current and previous periods
+    let currentPeriodPv = 0
+    let previousPeriodPv = 0
+    const currentDaily: Record<string, { pv: number; uv: number }> = {}
 
-    for (let i = 0; i < results.length; i++) {
-      const result = results[i]
-      if (result.status === 'fulfilled' && result.value) {
-        const {
-          daily,
-          totalPv,
-          todayPv: linkTodayPv,
-        } = aggregateFromHistories(result.value.histories)
-        let linkPv = 0
-        let linkUv = 0
-
-        for (const [date, stats] of Object.entries(daily)) {
-          if (!allDaily[date]) {
-            allDaily[date] = { pv: 0, uv: 0 }
-          }
-          allDaily[date].pv += stats.pv
-          allDaily[date].uv += stats.uv
-          linkPv += stats.pv
-          linkUv += stats.uv
-        }
-
-        periodPv += totalPv
-        todayPv += linkTodayPv
-
-        if (linkPv > 0) {
-          linkStats.push({ link: links[i], pv: linkPv, uv: linkUv })
-        }
+    for (const [date, val] of Object.entries(stats.allDaily)) {
+      if (date >= currentStartDate) {
+        currentDaily[date] = val
+        currentPeriodPv += val.pv
+      } else {
+        previousPeriodPv += val.pv
       }
     }
 
-    todayVisits.value = todayPv
-    periodVisits.value = periodPv
+    todayVisits.value = stats.todayPv
+    periodVisits.value = currentPeriodPv
+    prevPeriodVisits.value = previousPeriodPv
 
-    trendData.value = Object.entries(allDaily)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, { pv, uv }]) => ({ date, pv, uv }))
+    // Yesterday visits for today's trend
+    const yesterdayData = stats.allDaily[yesterdayStr.value]
+    prevTodayVisits.value = yesterdayData ? yesterdayData.pv : 0
 
-    topLinks.value = linkStats.sort((a, b) => b.pv - a.pv).slice(0, 10)
+    trendData.value = dailyToTrend(currentDaily)
+    topLinks.value = computeTopLinks(stats.linkDaily, currentStartDate)
   } catch {
     // error handled by interceptor
   } finally {
     loading.value = false
+    refreshing.value = false
   }
 }
 
@@ -295,43 +387,30 @@ async function fetchTrendData() {
   try {
     const startDate = formatDate(trendDays.value - 1)
     const endDate = formatDate(0)
+    const prevStartDate = formatDate(trendDays.value * 2 - 1)
 
     const { links } = await fetchAllPages()
-    const allDaily: Record<string, { pv: number; uv: number }> = {}
-    const linkStats: { link: ShortLinkData; pv: number; uv: number }[] = []
 
-    const results = await Promise.allSettled(
-      links.map((link) => getShortLinkData(link.id, startDate, endDate)),
-    )
+    // Fetch extended range for trend comparison
+    const stats = await fetchLinkStats(links, prevStartDate, endDate)
 
-    for (let i = 0; i < results.length; i++) {
-      const result = results[i]
-      if (result.status === 'fulfilled' && result.value) {
-        const { daily } = aggregateFromHistories(result.value.histories)
-        let linkPv = 0
-        let linkUv = 0
+    let currentPeriodPv = 0
+    let previousPeriodPv = 0
+    const currentDaily: Record<string, { pv: number; uv: number }> = {}
 
-        for (const [date, stats] of Object.entries(daily)) {
-          if (!allDaily[date]) {
-            allDaily[date] = { pv: 0, uv: 0 }
-          }
-          allDaily[date].pv += stats.pv
-          allDaily[date].uv += stats.uv
-          linkPv += stats.pv
-          linkUv += stats.uv
-        }
-
-        if (linkPv > 0) {
-          linkStats.push({ link: links[i], pv: linkPv, uv: linkUv })
-        }
+    for (const [date, val] of Object.entries(stats.allDaily)) {
+      if (date >= startDate) {
+        currentDaily[date] = val
+        currentPeriodPv += val.pv
+      } else {
+        previousPeriodPv += val.pv
       }
     }
 
-    trendData.value = Object.entries(allDaily)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, { pv, uv }]) => ({ date, pv, uv }))
-
-    topLinks.value = linkStats.sort((a, b) => b.pv - a.pv).slice(0, 10)
+    periodVisits.value = currentPeriodPv
+    prevPeriodVisits.value = previousPeriodPv
+    trendData.value = dailyToTrend(currentDaily)
+    topLinks.value = computeTopLinks(stats.linkDaily, startDate)
   } catch {
     // error handled by interceptor
   } finally {
@@ -345,6 +424,10 @@ function switchTrend(days: 7 | 30) {
   fetchTrendData()
 }
 
+function handleRefresh() {
+  fetchDashboardData(true)
+}
+
 function copyLink(id: string) {
   const url = `${window.location.origin}/${id}`
   navigator.clipboard.writeText(url).then(() => {
@@ -355,7 +438,7 @@ function copyLink(id: string) {
   })
 }
 
-onMounted(fetchDashboardData)
+onMounted(() => fetchDashboardData())
 </script>
 
 <template>
@@ -368,13 +451,23 @@ onMounted(fetchDashboardData)
           Here's an overview of your short links performance.
         </p>
       </div>
-      <router-link
-        :to="{ name: 'short-link-create' }"
-        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-      >
-        <Plus class="h-4 w-4" />
-        Create Short Link
-      </router-link>
+      <div class="flex items-center gap-2">
+        <button
+          :disabled="loading || refreshing"
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+          @click="handleRefresh"
+        >
+          <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': refreshing }" />
+          Refresh
+        </button>
+        <router-link
+          :to="{ name: 'short-link-create' }"
+          class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+        >
+          <Plus class="h-4 w-4" />
+          Create Short Link
+        </router-link>
+      </div>
     </div>
 
     <!-- Stats cards -->
@@ -422,37 +515,63 @@ onMounted(fetchDashboardData)
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Today's Visits</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">
+            <div class="mt-1 flex items-baseline gap-2">
+              <p class="text-2xl font-bold text-gray-900">
+                <span
+                  v-if="loading"
+                  class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+                />
+                <template v-else>{{ todayVisits.toLocaleString() }}</template>
+              </p>
               <span
-                v-if="loading"
-                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
-              />
-              <template v-else>{{ todayVisits.toLocaleString() }}</template>
-            </p>
+                v-if="!loading && todayTrend"
+                class="inline-flex items-center gap-0.5 text-xs font-medium"
+                :class="todayTrend.dir === 'up' ? 'text-green-600' : todayTrend.dir === 'down' ? 'text-red-500' : 'text-gray-400'"
+              >
+                <TrendingUp v-if="todayTrend.dir === 'up'" class="h-3 w-3" />
+                <TrendingDown v-else-if="todayTrend.dir === 'down'" class="h-3 w-3" />
+                <Minus v-else class="h-3 w-3" />
+                {{ todayTrend.pct }}%
+              </span>
+            </div>
           </div>
           <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
             <MousePointerClick class="h-5 w-5 text-purple-600" />
           </div>
         </div>
+        <p v-if="!loading && todayTrend" class="mt-1 text-xs text-gray-400">vs yesterday</p>
       </div>
 
-      <!-- Total Visits -->
+      <!-- Period Visits -->
       <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Period Visits</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">
+            <p class="text-sm font-medium text-gray-500">{{ periodLabel }}</p>
+            <div class="mt-1 flex items-baseline gap-2">
+              <p class="text-2xl font-bold text-gray-900">
+                <span
+                  v-if="loading"
+                  class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+                />
+                <template v-else>{{ periodVisits.toLocaleString() }}</template>
+              </p>
               <span
-                v-if="loading"
-                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
-              />
-              <template v-else>{{ periodVisits.toLocaleString() }}</template>
-            </p>
+                v-if="!loading && periodTrend"
+                class="inline-flex items-center gap-0.5 text-xs font-medium"
+                :class="periodTrend.dir === 'up' ? 'text-green-600' : periodTrend.dir === 'down' ? 'text-red-500' : 'text-gray-400'"
+              >
+                <TrendingUp v-if="periodTrend.dir === 'up'" class="h-3 w-3" />
+                <TrendingDown v-else-if="periodTrend.dir === 'down'" class="h-3 w-3" />
+                <Minus v-else class="h-3 w-3" />
+                {{ periodTrend.pct }}%
+              </span>
+            </div>
           </div>
           <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
             <BarChart3 class="h-5 w-5 text-orange-600" />
           </div>
         </div>
+        <p v-if="!loading && periodTrend" class="mt-1 text-xs text-gray-400">vs previous {{ trendDays }} days</p>
       </div>
     </div>
 
@@ -486,8 +605,23 @@ onMounted(fetchDashboardData)
             </button>
           </div>
         </div>
-        <div v-if="chartLoading" class="flex h-64 items-center justify-center">
-          <Loader2 class="h-6 w-6 animate-spin text-gray-400" />
+        <div v-if="chartLoading" class="h-64">
+          <!-- Chart skeleton -->
+          <div class="flex h-full items-end gap-3 px-2 pt-4">
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 55%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 75%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 45%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 85%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 65%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 40%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 70%" />
+          </div>
+          <div class="mt-3 flex justify-between px-2">
+            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100" />
+            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100" />
+            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100" />
+            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100" />
+          </div>
         </div>
         <div v-else class="h-64">
           <VChart
