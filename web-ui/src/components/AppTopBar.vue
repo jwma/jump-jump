@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLayoutStore } from '@/stores/layout'
 import { useTheme } from '@/composables/useTheme'
+import GlobalSearch from '@/components/GlobalSearch.vue'
 import {
   Menu,
   Bell,
@@ -61,6 +62,11 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
       </button>
       <!-- Breadcrumb slot -->
       <slot name="breadcrumb" />
+    </div>
+
+    <div class="flex items-center gap-3">
+      <!-- Global Search -->
+      <GlobalSearch />
     </div>
 
     <div class="flex items-center gap-2">
