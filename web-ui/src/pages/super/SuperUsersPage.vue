@@ -207,11 +207,17 @@ onMounted(fetchUsers)
               </td>
             </tr>
             <tr v-else-if="users.length === 0">
-              <td colspan="5" class="px-4 py-8 text-center text-gray-400">
-                <div class="flex flex-col items-center gap-2">
-                  <Users class="h-8 w-8 text-gray-300" />
-                  <span>No users found.</span>
-                </div>
+              <td colspan="5" class="px-4 py-12 text-center">
+                <Users class="mx-auto h-10 w-10 text-gray-300" />
+                <p class="mt-3 text-sm font-medium text-gray-500">No users yet</p>
+                <p class="mt-1 text-sm text-gray-400">Create a new user to get started.</p>
+                <button
+                  class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                  @click="showCreateModal = true"
+                >
+                  <Plus class="h-4 w-4" />
+                  Create User
+                </button>
               </td>
             </tr>
             <tr

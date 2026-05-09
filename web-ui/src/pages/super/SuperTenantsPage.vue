@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listSuperTenants, setSuperTenantStatus } from '@/api/super'
 import type { SuperTenant } from '@/types/api'
@@ -9,6 +9,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-vue-next'
 
 defineOptions({ name: 'SuperTenantsPage' })
@@ -21,6 +24,42 @@ const page = ref(1)
 const pageSize = 20
 const total = ref(0)
 const toggleLoading = ref<string | null>(null)
+
+type SortField = 'name' | 'slug' | 'createdAt'
+type SortDirection = 'asc' | 'desc'
+const sortField = ref<SortField>('createdAt')
+const sortDirection = ref<SortDirection>('desc')
+
+const sortedTenants = computed(() => {
+  const arr = [...tenants.value]
+  const dir = sortDirection.value === 'asc' ? 1 : -1
+  return arr.sort((a, b) => {
+    switch (sortField.value) {
+      case 'name':
+        return dir * a.name.localeCompare(b.name)
+      case 'slug':
+        return dir * a.slug.localeCompare(b.slug)
+      case 'createdAt':
+        return dir * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      default:
+        return 0
+    }
+  })
+})
+
+function toggleSort(field: SortField) {
+  if (sortField.value === field) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField.value = field
+    sortDirection.value = 'desc'
+  }
+}
+
+function SortIcon({ field }: { field: SortField }) {
+  if (sortField.value !== field) return ArrowUpDown
+  return sortDirection.value === 'asc' ? ArrowUp : ArrowDown
+}
 
 async function fetchTenants() {
   loading.value = true
@@ -80,10 +119,34 @@ onMounted(fetchTenants)
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-              <th class="px-4 py-3">Name</th>
-              <th class="px-4 py-3">Slug</th>
+              <th
+                class="px-4 py-3"
+                :aria-sort="sortField === 'name' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+              >
+                <button class="flex items-center gap-1" @click="toggleSort('name')">
+                  Name
+                  <component :is="SortIcon({ field: 'name' })" class="h-3.5 w-3.5" />
+                </button>
+              </th>
+              <th
+                class="px-4 py-3"
+                :aria-sort="sortField === 'slug' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+              >
+                <button class="flex items-center gap-1" @click="toggleSort('slug')">
+                  Slug
+                  <component :is="SortIcon({ field: 'slug' })" class="h-3.5 w-3.5" />
+                </button>
+              </th>
               <th class="px-4 py-3">Status</th>
-              <th class="hidden px-4 py-3 lg:table-cell">Created</th>
+              <th
+                class="hidden px-4 py-3 lg:table-cell"
+                :aria-sort="sortField === 'createdAt' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+              >
+                <button class="flex items-center gap-1" @click="toggleSort('createdAt')">
+                  Created
+                  <component :is="SortIcon({ field: 'createdAt' })" class="h-3.5 w-3.5" />
+                </button>
+              </th>
               <th class="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -94,15 +157,14 @@ onMounted(fetchTenants)
               </td>
             </tr>
             <tr v-else-if="tenants.length === 0">
-              <td colspan="5" class="px-4 py-8 text-center text-gray-400">
-                <div class="flex flex-col items-center gap-2">
-                  <Building2 class="h-8 w-8 text-gray-300" />
-                  <span>No tenants found.</span>
-                </div>
+              <td colspan="5" class="px-4 py-12 text-center">
+                <Building2 class="mx-auto h-10 w-10 text-gray-300" />
+                <p class="mt-3 text-sm font-medium text-gray-500">No tenants yet</p>
+                <p class="mt-1 text-sm text-gray-400">Tenants will appear here once created by users.</p>
               </td>
             </tr>
             <tr
-              v-for="tenant in tenants"
+              v-for="tenant in sortedTenants"
               :key="tenant.id"
               class="transition-colors hover:bg-gray-50"
             >
