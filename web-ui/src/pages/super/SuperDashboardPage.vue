@@ -96,8 +96,16 @@ onMounted(fetchDashboardData)
       <div v-if="loading" class="flex items-center justify-center p-8">
         <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
       </div>
-      <div v-else-if="recentTenants.length === 0" class="px-5 py-8 text-center text-sm text-gray-400">
-        No tenants found.
+      <div v-else-if="recentTenants.length === 0" class="px-5 py-12 text-center">
+        <Building2 class="mx-auto h-10 w-10 text-gray-300" />
+        <p class="mt-3 text-sm font-medium text-gray-500">No tenants yet</p>
+        <p class="mt-1 text-sm text-gray-400">Tenants will appear here once created.</p>
+        <router-link
+          :to="{ name: 'super-tenants' }"
+          class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+        >
+          View all tenants
+        </router-link>
       </div>
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">

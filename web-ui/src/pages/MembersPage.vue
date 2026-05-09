@@ -297,8 +297,18 @@ onMounted(fetchMembers)
       <div v-if="filteredMembers.length === 0 && members.length > 0" class="py-12 text-center text-sm text-gray-400">
         No members match "{{ searchQuery }}".
       </div>
-      <div v-else-if="members.length === 0" class="py-12 text-center text-sm text-gray-400">
-        No members found.
+      <div v-else-if="members.length === 0" class="py-12 text-center">
+        <Users class="mx-auto h-10 w-10 text-gray-300" />
+        <p class="mt-3 text-sm font-medium text-gray-500">No members yet</p>
+        <p class="mt-1 text-sm text-gray-400">Invite a member to start collaborating.</p>
+        <button
+          v-if="auth.isAdmin"
+          class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+          @click="openInviteModal"
+        >
+          <UserPlus class="h-4 w-4" />
+          Invite Member
+        </button>
       </div>
     </div>
 

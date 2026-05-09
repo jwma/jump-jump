@@ -180,8 +180,21 @@ onMounted(fetchTenant)
       </div>
     </div>
 
-    <div v-if="loading" class="mt-6 text-center text-gray-400">
-      <Loader2 class="inline h-5 w-5 animate-spin" />
+    <div v-if="loading" class="mt-6 space-y-4">
+      <div class="rounded-lg border bg-white p-5">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 animate-pulse rounded-lg bg-gray-200" />
+          <div class="flex-1">
+            <div class="h-5 w-40 animate-pulse rounded bg-gray-200" />
+            <div class="mt-2 h-4 w-24 animate-pulse rounded bg-gray-200" />
+          </div>
+        </div>
+        <div class="mt-4 grid gap-4 sm:grid-cols-3">
+          <div class="h-10 animate-pulse rounded bg-gray-100" />
+          <div class="h-10 animate-pulse rounded bg-gray-100" />
+          <div class="h-10 animate-pulse rounded bg-gray-100" />
+        </div>
+      </div>
     </div>
 
     <div v-else-if="notFound" class="mt-6 text-center text-gray-400">
@@ -292,7 +305,7 @@ onMounted(fetchTenant)
               </thead>
               <tbody class="divide-y">
                 <tr v-if="members.length === 0">
-                  <td colspan="3" class="px-4 py-8 text-center text-gray-400">No members.</td>
+                  <td colspan="3" class="px-4 py-8 text-center text-gray-400">No members in this tenant.</td>
                 </tr>
                 <tr v-for="m in members" :key="m.userId" class="transition-colors hover:bg-gray-50">
                   <td class="px-4 py-3">
@@ -338,7 +351,7 @@ onMounted(fetchTenant)
               </thead>
               <tbody class="divide-y">
                 <tr v-if="shortLinks.length === 0">
-                  <td colspan="5" class="px-4 py-8 text-center text-gray-400">No short links.</td>
+                  <td colspan="5" class="px-4 py-8 text-center text-gray-400">No short links in this tenant.</td>
                 </tr>
                 <tr v-for="sl in shortLinks" :key="sl.id" class="transition-colors hover:bg-gray-50">
                   <td class="px-4 py-3 font-mono text-sm font-medium text-gray-900">{{ sl.id }}</td>
@@ -442,7 +455,7 @@ onMounted(fetchTenant)
             </table>
           </div>
           <div v-else class="rounded-lg border bg-white py-8 text-center text-sm text-gray-400">
-            No domains configured.
+            No domains configured for this tenant.
           </div>
         </div>
       </div>
