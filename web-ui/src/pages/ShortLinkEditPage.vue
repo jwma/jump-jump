@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getShortLink, updateShortLink } from '@/api/short-link'
@@ -68,7 +70,7 @@ async function fetchData() {
     if (e instanceof ApiError && e.status === 404) {
       notFound.value = true
     } else {
-      error.value = 'Failed to load short link. Please try again.'
+      error.value = t('shortLinkEdit.loadFailed')
     }
   } finally {
     loading.value = false
@@ -88,9 +90,9 @@ async function handleSubmit() {
       isEnable: isEnable.value,
     })
     originalData.value = { url: normalizedUrl, description: description.value, isEnable: isEnable.value }
-    toast.success('Short link updated successfully')
+    toast.success(t('shortLinkEdit.updated'))
   } catch {
-    error.value = 'Failed to update short link. Please try again.'
+    error.value = t('shortLinkEdit.updateFailed')
   } finally {
     saving.value = false
   }
@@ -119,7 +121,7 @@ onMounted(fetchData)
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Edit Short Link</h1>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('shortLinkEdit.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
           Editing <span class="font-mono font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ id }}</span>
         </p>
@@ -170,15 +172,15 @@ onMounted(fetchData)
       <div class="mb-5 rounded-md bg-gray-50 dark:bg-gray-800/50 p-3">
         <div class="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">ID:</span>
+            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinkEdit.infoId') }}</span>
             <span class="ml-1 font-mono font-medium text-gray-900 dark:text-white">{{ id }}</span>
           </div>
           <div>
-            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">Created by:</span>
+            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinkEdit.infoCreatedBy') }}</span>
             <span class="ml-1 text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ createdBy }}</span>
           </div>
           <div class="col-span-2">
-            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">Created:</span>
+            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinkEdit.infoCreated') }}</span>
             <span class="ml-1 text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ formatDate(createTime) }}</span>
           </div>
         </div>
@@ -204,7 +206,7 @@ onMounted(fetchData)
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">Description</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkEdit.description') }}</label>
           <textarea
             v-model="description"
             rows="3"
@@ -213,7 +215,7 @@ onMounted(fetchData)
         </div>
 
         <div class="flex items-center gap-3">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">Enabled</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkEdit.enabled') }}</label>
           <button
             type="button"
             role="switch"

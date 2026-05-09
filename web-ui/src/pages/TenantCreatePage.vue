@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { createTenant } from '@/api/tenant'
 import { ArrowLeft } from 'lucide-vue-next'
 
 defineOptions({ name: 'TenantCreatePage' })
 
 const router = useRouter()
+const { t } = useI18n()
 
 const name = ref('')
 const slug = ref('')
@@ -16,7 +18,7 @@ const error = ref('')
 const slugError = computed(() => {
   if (!slug.value) return ''
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug.value)) {
-    return 'Slug must be lowercase, URL-friendly (letters, numbers, hyphens only)'
+    return t('tenantCreate.slugError')
   }
   return ''
 })
@@ -41,7 +43,7 @@ async function handleSubmit() {
     const tenant = await createTenant({ name: name.value, slug: slug.value })
     router.push({ name: 'tenant-detail', params: { id: tenant.id } })
   } catch {
-    error.value = 'Failed to create tenant. Please try again.'
+    error.value = t('tenantCreate.failed')
   } finally {
     loading.value = false
   }
@@ -58,8 +60,8 @@ async function handleSubmit() {
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Create Tenant</h1>
-        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Add a new tenant to the system.</p>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('tenantCreate.title') }}</h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('tenantCreate.description') }}</p>
       </div>
     </div>
 
@@ -67,31 +69,31 @@ async function handleSubmit() {
       <div class="space-y-5">
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
-            Name <span class="text-red-500">*</span>
+            {{ t('tenantCreate.name') }} <span class="text-red-500">*</span>
           </label>
           <input
             v-model="name"
             type="text"
             required
-            placeholder="My Organization"
+            :placeholder="t('tenantCreate.namePlaceholder')"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
-            Slug <span class="text-red-500">*</span>
+            {{ t('tenantCreate.slug') }} <span class="text-red-500">*</span>
           </label>
           <input
             v-model="slug"
             type="text"
             required
-            placeholder="my-organization"
+            :placeholder="t('tenantCreate.slugPlaceholder')"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             :class="slugError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />
           <p v-if="slugError" class="mt-1 text-xs text-red-600">{{ slugError }}</p>
-          <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">URL-friendly identifier (auto-generated from name).</p>
+          <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ t('tenantCreate.slugHint') }}</p>
         </div>
       </div>
 
@@ -103,14 +105,14 @@ async function handleSubmit() {
           :disabled="!canSubmit"
           class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
         >
-          {{ loading ? 'Creating...' : 'Create Tenant' }}
+          {{ loading ? t('tenantCreate.creating') : t('tenantCreate.createTenant') }}
         </button>
         <button
           type="button"
           class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
           @click="router.push({ name: 'tenants' })"
         >
-          Cancel
+          {{ t('common.cancel') }}
         </button>
       </div>
     </form>

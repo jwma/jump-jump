@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { listInvitations, acceptInvitation, rejectInvitation } from '@/api/invitation'
 import type { Invitation } from '@/types/api'
 import { ArrowLeft, Check, X } from 'lucide-vue-next'
 
 const router = useRouter()
+const { t } = useI18n()
 const auth = useAuthStore()
 const loading = ref(false)
 const invitations = ref<Invitation[]>([])
@@ -61,13 +63,13 @@ async function handleReject(id: string) {
       <button class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" @click="router.push({ name: 'dashboard' })">
         <ArrowLeft class="h-5 w-5" />
       </button>
-      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Invitations</h1>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('invitations.title') }}</h1>
     </div>
 
-    <div v-if="loading" class="py-12 text-center text-gray-400 dark:text-gray-500">Loading...</div>
+    <div v-if="loading" class="py-12 text-center text-gray-400 dark:text-gray-500">{{ t('common.loading') }}</div>
 
     <div v-else-if="invitations.length === 0" class="py-12 text-center text-gray-400 dark:text-gray-500">
-      No pending invitations.
+      {{ t('invitations.empty') }}
     </div>
 
     <div v-else class="space-y-3">
@@ -79,7 +81,7 @@ async function handleReject(id: string) {
         <div>
           <div class="font-medium text-gray-900 dark:text-white">{{ inv.tenantName }}</div>
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            Invited by {{ inv.inviterUsername }} &middot; {{ formatTime(inv.createdAt) }}
+            {{ t('invitations.invitedBy', { username: inv.inviterUsername }) }} &middot; {{ formatTime(inv.createdAt) }}
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -90,7 +92,7 @@ async function handleReject(id: string) {
               @click="handleAccept(inv.id)"
             >
               <Check class="h-4 w-4" />
-              Accept
+              {{ t('invitations.accept') }}
             </button>
             <button
               :disabled="actionLoading[inv.id]"
@@ -98,7 +100,7 @@ async function handleReject(id: string) {
               @click="handleReject(inv.id)"
             >
               <X class="h-4 w-4" />
-              Reject
+              {{ t('invitations.reject') }}
             </button>
           </template>
           <span
@@ -106,7 +108,7 @@ async function handleReject(id: string) {
             class="rounded-full px-2.5 py-0.5 text-xs font-medium"
             :class="inv.status === 'accepted' ? 'bg-green-50 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
           >
-            {{ inv.status === 'accepted' ? 'Accepted' : 'Rejected' }}
+            {{ inv.status === 'accepted' ? t('invitations.accepted') : t('invitations.rejected') }}
           </span>
         </div>
       </div>

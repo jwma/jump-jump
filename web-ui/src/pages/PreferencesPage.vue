@@ -1,13 +1,37 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 defineOptions({ name: 'PreferencesPage' })
+
+const { t, locale } = useI18n()
+
+function setLocale(lang: string) {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+}
 </script>
 
 <template>
   <div>
-    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">User Preferences</h1>
-    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Manage your account preferences.</p>
+    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('preferences.title') }}</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('preferences.subtitle') }}</p>
     <div class="mt-6 rounded-lg border bg-white dark:bg-gray-900 p-6">
-      <p class="text-sm text-gray-400 dark:text-gray-500">Preferences settings will be available here.</p>
+      <p class="text-sm text-gray-400 dark:text-gray-500">{{ t('preferences.comingSoon') }}</p>
+    </div>
+    <div class="mt-6 rounded-lg border bg-white dark:bg-gray-900 p-6">
+      <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('preferences.language') }}</h2>
+      <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ t('preferences.languageDesc') }}</p>
+      <div class="mt-3 flex gap-2">
+        <button
+          v-for="loc in ['en', 'zh']"
+          :key="loc"
+          class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+          :class="locale === loc ? 'bg-blue-600 text-white' : 'border text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'"
+          @click="setLocale(loc)"
+        >
+          {{ loc === 'en' ? t('preferences.en') : t('preferences.zh') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>

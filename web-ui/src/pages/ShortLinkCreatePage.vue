@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { createShortLink } from '@/api/short-link'
@@ -39,7 +41,7 @@ const customIdError = computed(() => {
   if (!customId.value) return ''
   if (customId.value.length < 2) return 'Custom ID must be at least 2 characters'
   if (customId.value.length > CUSTOM_ID_MAX_LENGTH)
-    return `Custom ID must be at most ${CUSTOM_ID_MAX_LENGTH} characters`
+    return t('shortLinkCreate.customIdMaxLength')
   if (!CUSTOM_ID_REGEX.test(customId.value))
     return 'Custom ID can only contain letters, numbers, hyphens, and underscores'
   return ''
@@ -84,7 +86,7 @@ function copyCreatedLink() {
       }, 2000)
     },
     () => {
-      toast.error('Failed to copy link to clipboard')
+      toast.error(t('shortLinkCreate.copyFailed'))
     },
   )
 }
@@ -103,9 +105,9 @@ async function handleSubmit() {
       ...(isAdmin.value && customId.value ? { id: customId.value } : {}),
     })
     createdLink.value = result.shortLink
-    toast.success('Short link created successfully')
+    toast.success(t('shortLinkCreate.created'))
   } catch {
-    error.value = 'Failed to create short link. Please try again.'
+    error.value = t('shortLinkCreate.failed')
   } finally {
     loading.value = false
   }
@@ -129,14 +131,14 @@ function goToLinks() {
   <div>
     <div class="flex items-center gap-3">
       <button
-        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
         @click="router.push({ name: 'short-links' })"
       >
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Create Short Link</h1>
-        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Generate a new short link for your URL.</p>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('shortLinkCreate.title') }}</h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{{ t('shortLinkCreate.subtitle') }}</p>
       </div>
     </div>
 
@@ -145,7 +147,7 @@ function goToLinks() {
       v-if="createdLink"
       class="mt-6 max-w-lg rounded-lg border border-green-200 bg-green-50 p-6"
     >
-      <h2 class="text-lg font-semibold text-green-800">Short Link Created!</h2>
+      <h2 class="text-lg font-semibold text-green-800">{{ t('shortLinkCreate.success') }}</h2>
       <div class="mt-3 flex items-center gap-2 rounded-md bg-white p-3 shadow-sm">
         <span class="font-mono text-sm font-medium text-gray-900 dark:text-white">
           {{ getShortLinkUrl(createdLink.id) }}
@@ -168,8 +170,8 @@ function goToLinks() {
           <ExternalLink class="h-4 w-4" />
         </a>
       </div>
-      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">
-        Destination:
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        {{ t('shortLinkCreate.destination') }}:
         <a
           :href="createdLink.url"
           target="_blank"
@@ -184,13 +186,13 @@ function goToLinks() {
           class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
           @click="handleCreateAnother"
         >
-          Create Another
+          {{ t('shortLinkCreate.createAnother') }}
         </button>
         <button
-          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
+          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
           @click="goToLinks"
         >
-          View All Links
+          {{ t('shortLinkCreate.viewAllLinks') }}
         </button>
       </div>
     </div>
@@ -199,57 +201,57 @@ function goToLinks() {
     <form v-else class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6" @submit.prevent="handleSubmit">
       <div class="space-y-5">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
-            Target URL <span class="text-red-500">*</span>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ t('shortLinkCreate.targetUrl') }} <span class="text-red-500">*</span>
           </label>
           <input
             v-model="url"
             type="text"
             required
-            placeholder="example.com/long-url or https://example.com"
+            :placeholder="t('shortLinkCreate.urlPlaceholder')"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             :class="urlError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />
           <p v-if="urlError" class="mt-1 text-xs text-red-600">{{ urlError }}</p>
           <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">
-            https:// will be added automatically if omitted.
+            {{ t('shortLinkCreate.urlHint') }}
           </p>
         </div>
 
         <div v-if="isAdmin">
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
-            Custom ID
-            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(optional)</span>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ t('shortLinkCreate.customId') }}
+            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('shortLinkCreate.optional') }}</span>
           </label>
           <input
             v-model="customId"
             type="text"
-            placeholder="my-custom-id"
+            :placeholder="t('shortLinkCreate.customIdPlaceholder')"
             maxlength="64"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             :class="customIdError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />
           <p v-if="customIdError" class="mt-1 text-xs text-red-600">{{ customIdError }}</p>
           <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">
-            Letters, numbers, hyphens, underscores. 2–64 characters. Leave empty to auto-generate.
+            {{ t('shortLinkCreate.customIdHint') }}
           </p>
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
-            Description
-            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(optional)</span>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ t('shortLinkCreate.description') }}
+            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('shortLinkCreate.optional') }}</span>
           </label>
           <textarea
             v-model="description"
             rows="3"
-            placeholder="Describe where this link points to..."
+            :placeholder="t('shortLinkCreate.descriptionPlaceholder')"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         <div class="flex items-center gap-3">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">Enabled</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('shortLinkCreate.enabled') }}</label>
           <button
             type="button"
             role="switch"
@@ -274,14 +276,14 @@ function goToLinks() {
           :disabled="!canSubmit"
           class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
         >
-          {{ loading ? 'Creating...' : 'Create Short Link' }}
+          {{ loading ? t('shortLinkCreate.creating') : t('shortLinkCreate.create') }}
         </button>
         <button
           type="button"
-          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
+          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
           @click="router.push({ name: 'short-links' })"
         >
-          Cancel
+          {{ t('common.cancel') }}
         </button>
       </div>
     </form>
