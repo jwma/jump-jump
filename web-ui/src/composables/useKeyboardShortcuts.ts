@@ -1,4 +1,4 @@
-import { onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 interface ShortcutDef {
@@ -9,9 +9,10 @@ interface ShortcutDef {
   page?: string
 }
 
-const showHelp = ref(false)
+export const showHelp = ref(false)
 
-import { ref } from 'vue'
+let installed = false
+let handleKeydown: ((e: KeyboardEvent) => void) | null = null
 
 export function useKeyboardShortcuts() {
   const router = useRouter()
@@ -71,36 +72,46 @@ export function useKeyboardShortcuts() {
     },
   ]
 
-  function handleKeydown(e: KeyboardEvent) {
-    const target = e.target as HTMLElement
-    const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+  if (!installed) {
+    installed = true
 
-    for (const shortcut of shortcuts) {
-      if (shortcut.page && route.name !== shortcut.page) continue
+    handleKeydown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
 
-      if (shortcut.key === 'Escape') {
-        if (shortcut.key === e.key) {
+      for (const shortcut of shortcuts) {
+        if (shortcut.page && route.name !== shortcut.page) continue
+
+        if (shortcut.key === 'Escape') {
+          if (shortcut.key === e.key) {
+            shortcut.action()
+            return
+          }
+          continue
+        }
+
+        if (isInput) continue
+
+        const keyMatch = shortcut.key.toLowerCase() === e.key.toLowerCase()
+        const ctrlMatch = shortcut.ctrl ? (e.ctrlKey || e.metaKey) : !(e.ctrlKey || e.metaKey)
+
+        if (keyMatch && ctrlMatch) {
+          e.preventDefault()
           shortcut.action()
           return
         }
-        continue
-      }
-
-      if (isInput) continue
-
-      const keyMatch = shortcut.key.toLowerCase() === e.key.toLowerCase()
-      const ctrlMatch = shortcut.ctrl ? (e.ctrlKey || e.metaKey) : !(e.ctrlKey || e.metaKey)
-
-      if (keyMatch && ctrlMatch) {
-        e.preventDefault()
-        shortcut.action()
-        return
       }
     }
-  }
 
-  onMounted(() => document.addEventListener('keydown', handleKeydown))
-  onBeforeUnmount(() => document.removeEventListener('keydown', handleKeydown))
+    onMounted(() => document.addEventListener('keydown', handleKeydown!))
+    onBeforeUnmount(() => {
+      if (handleKeydown) {
+        document.removeEventListener('keydown', handleKeydown)
+      }
+      installed = false
+      handleKeydown = null
+    })
+  }
 
   return { showHelp, shortcuts }
 }

@@ -52,12 +52,12 @@ async function handleSubmit() {
   success.value = false
 
   if (newPassword.value !== confirmPassword.value) {
-    error.value = t('changePassword.passwordsDoNotMatch')
+    error.value = t('changePassword.notMatch')
     return
   }
 
   if (newPassword.value.length < 6) {
-    error.value = t('changePassword.passwordTooShort')
+    error.value = t('changePassword.tooShort')
     return
   }
 
@@ -84,7 +84,7 @@ async function handleSubmit() {
 <template>
   <div>
     <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('changePassword.title') }}</h1>
-    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('changePassword.description') }}</p>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('changePassword.subtitle') }}</p>
 
     <form class="mt-6 max-w-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6" @submit.prevent="handleSubmit">
       <div class="space-y-4">
@@ -170,7 +170,7 @@ async function handleSubmit() {
             v-if="confirmPassword && newPassword !== confirmPassword"
             class="mt-1 text-xs text-red-500"
           >
-            {{ t('changePassword.passwordsDoNotMatch') }}
+            {{ t('changePassword.notMatch') }}
           </p>
         </div>
       </div>

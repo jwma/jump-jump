@@ -574,7 +574,7 @@ onMounted(() => fetchDashboardData())
             <BarChart3 class="h-4 w-4 text-orange-600 sm:h-5 sm:w-5" />
           </div>
         </div>
-        <p v-if="!loading && periodTrend" class="mt-1 text-xs text-gray-400">{{ t('dashboard.vsPreviousDays', { days: trendDays }) }}</p>
+        <p v-if="!loading && periodTrend" class="mt-1 text-xs text-gray-400">{{ t('dashboard.vsPrevious', { days: trendDays }) }}</p>
       </div>
     </div>
 

@@ -120,7 +120,7 @@ const router = createRouter({
         {
           path: 'preferences',
           name: 'preferences',
-          redirect: { name: 'dashboard' },
+          component: () => import('@/pages/PreferencesPage.vue'),
         },
         {
           path: 'change-password',
@@ -197,6 +197,10 @@ router.beforeEach(async (to) => {
 })
 
 router.afterEach(() => {
+  NProgress.done()
+})
+
+router.onError(() => {
   NProgress.done()
 })
 

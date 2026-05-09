@@ -121,27 +121,27 @@ onMounted(fetchDashboardData)
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
-            <tr v-for="t in recentTenants" :key="t.id" class="transition-colors hover:bg-gray-50">
+            <tr v-for="tenant in recentTenants" :key="tenant.id" class="transition-colors hover:bg-gray-50">
               <td class="px-5 py-3">
                 <router-link
-                  :to="{ name: 'super-tenant-detail', params: { id: t.id } }"
+                  :to="{ name: 'super-tenant-detail', params: { id: tenant.id } }"
                   class="font-medium text-blue-600 hover:text-blue-700"
                 >
-                  {{ t.name }}
+                  {{ tenant.name }}
                 </router-link>
               </td>
-              <td class="px-5 py-3 font-mono text-xs text-gray-600">{{ t.slug }}</td>
+              <td class="px-5 py-3 font-mono text-xs text-gray-600">{{ tenant.slug }}</td>
               <td class="px-5 py-3">
                 <span
                   class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  :class="t.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
+                  :class="tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
                 >
-                  <span class="h-1.5 w-1.5 rounded-full" :class="t.isActive ? 'bg-green-500' : 'bg-gray-400'" />
-                  {{ t.isActive ? $t('common.active') : $t('common.inactive') }}
+                  <span class="h-1.5 w-1.5 rounded-full" :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'" />
+                  {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
                 </span>
               </td>
               <td class="hidden whitespace-nowrap px-5 py-3 text-gray-500 md:table-cell">
-                {{ formatDate(t.createdAt) }}
+                {{ formatDate(tenant.createdAt) }}
               </td>
             </tr>
           </tbody>

@@ -6,7 +6,10 @@ const theme = ref<Theme>(loadTheme())
 const darkMode = ref(false)
 
 function loadTheme(): Theme {
-  return (localStorage.getItem('theme') as Theme) || 'system'
+  if (typeof localStorage !== 'undefined') {
+    return (localStorage.getItem('theme') as Theme) || 'system'
+  }
+  return 'system'
 }
 
 function applyDark(dark: boolean) {

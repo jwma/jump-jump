@@ -136,7 +136,7 @@ async function executeRoleChange() {
     confirmRoleChange.value = null
     await fetchMembers()
   } catch (e: unknown) {
-    roleError.value = (e as Error).message || t('members.failedToUpdateRole')
+    roleError.value = (e as Error).message || t('members.changeRoleFailed')
   } finally {
     roleLoading.value = false
   }

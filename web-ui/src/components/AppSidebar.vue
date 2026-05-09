@@ -35,7 +35,7 @@ const menuItems = computed(() => {
   if (isSuperRoute.value) {
     items.push(
       { icon: LayoutDashboard, label: t('nav.dashboard'), to: { name: 'super-dashboard' } },
-      { icon: Users, label: t('super.users.username'), to: { name: 'super-users' } },
+      { icon: Users, label: t('super.users.title'), to: { name: 'super-users' } },
       { icon: Building2, label: t('breadcrumb.tenants'), to: { name: 'super-tenants' } },
     )
   } else {

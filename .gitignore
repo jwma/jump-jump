@@ -1,5 +1,6 @@
 .DS_Store
 .idea/
+node_modules/
 
 # docker-compose 运行时 redis 的数据挂载目录
 /deployments/data/*

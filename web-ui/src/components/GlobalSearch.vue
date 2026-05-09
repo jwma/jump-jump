@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import type { SearchResult } from '@/composables/useGlobalSearch'
 import { Search, Link, Users, Loader2 } from 'lucide-vue-next'
@@ -42,7 +42,12 @@ function getResultIcon(type: SearchResult['type']) {
   return type === 'short-link' ? Link : Users
 }
 
+onMounted(() => {
+  document.addEventListener('open-global-search', openSearch)
+})
+
 onBeforeUnmount(() => {
+  document.removeEventListener('open-global-search', openSearch)
   closeSearch()
 })
 </script>

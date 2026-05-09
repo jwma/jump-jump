@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { showHelp } from '@/composables/useKeyboardShortcuts'
 import { X, Keyboard } from 'lucide-vue-next'
-
-const { showHelp } = useKeyboardShortcuts()
 
 function close() {
   showHelp.value = false

@@ -26,8 +26,15 @@ export function useGlobalSearch() {
   const hasResults = computed(() => results.value.length > 0)
 
   async function search(q: string) {
-    if (!q.trim() || !auth.currentTenantId) {
+    if (!q.trim()) {
       results.value = []
+      loading.value = false
+      return
+    }
+
+    if (!auth.currentTenantId) {
+      results.value = []
+      loading.value = false
       return
     }
 

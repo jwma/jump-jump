@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "nprogress": "^0.2.0"
-  },
-  "devDependencies": {
-    "@types/nprogress": "^0.2.3"
-  }
-}
