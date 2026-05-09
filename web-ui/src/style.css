@@ -1,4 +1,10 @@
 @import 'tailwindcss';
+@import 'nprogress/nprogress.css';
+
+#nprogress .bar {
+  background: #3b82f6;
+  height: 2px;
+}
 
 button,
 [type="button"],
