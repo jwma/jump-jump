@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { createShortLink } from '@/api/short-link'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { useUnsavedChanges } from '@/composables/useUnsavedChanges'
 import { UserRole } from '@/types/api'
 import type { ShortLinkData } from '@/types/api'
 import { ArrowLeft, Copy, Check, ExternalLink } from 'lucide-vue-next'
@@ -22,6 +23,12 @@ const loading = ref(false)
 const error = ref('')
 const createdLink = ref<ShortLinkData | null>(null)
 const copiedShortLink = ref(false)
+
+const isDirty = computed(() =>
+  !createdLink.value && (!!url.value || !!customId.value || !!description.value || !isEnable.value)
+)
+
+useUnsavedChanges(isDirty)
 
 const isAdmin = computed(() => auth.user?.role === UserRole.Admin)
 

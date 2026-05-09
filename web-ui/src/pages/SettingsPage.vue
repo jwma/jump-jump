@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { getTenant, updateTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
 import { getTenantConfig, updateTenantConfig } from '@/api/config'
 import { useToast } from '@/composables/useToast'
+import { useUnsavedChanges } from '@/composables/useUnsavedChanges'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import type { Tenant, TenantDomain } from '@/types/api'
 import {
   Settings,
@@ -56,13 +58,30 @@ const notFoundValue = ref('')
 const notFoundSaving = ref(false)
 const notFoundError = ref('')
 
+// Unsaved changes tracking
+const originalTenant = ref({ name: '', slug: '' })
+const originalConfig = ref({ idLength: 6, idMinimumLength: 2, idMaximumLength: 10, notFoundMode: 'content' as string, notFoundValue: '' })
+
+const isDirty = computed(() => {
+  if (!isAdmin.value || loading.value) return false
+  return (
+    (!!tenant.value && (editName.value !== originalTenant.value.name || editSlug.value !== originalTenant.value.slug)) ||
+    idLength.value !== originalConfig.value.idLength ||
+    idMinimumLength.value !== originalConfig.value.idMinimumLength ||
+    idMaximumLength.value !== originalConfig.value.idMaximumLength ||
+    notFoundMode.value !== originalConfig.value.notFoundMode ||
+    notFoundValue.value !== originalConfig.value.notFoundValue
+  )
+})
+
+useUnsavedChanges(isDirty)
+
 // Confirm dialog
 const confirmOpen = ref(false)
 const confirmTitle = ref('')
 const confirmMessage = ref('')
 const confirmAction = ref<(() => Promise<void>) | null>(null)
 const confirmSaving = ref(false)
-const dialogEl = ref<HTMLElement | null>(null)
 
 const isAdmin = computed(() => auth.isAdmin)
 
@@ -130,12 +149,20 @@ async function fetchAll() {
     tenant.value = t
     editName.value = t.name
     editSlug.value = t.slug
+    originalTenant.value = { name: t.name, slug: t.slug }
 
     idLength.value = configData.config.idConfig.idLength
     idMinimumLength.value = configData.config.idConfig.idMinimumLength
     idMaximumLength.value = configData.config.idConfig.idMaximumLength
     notFoundMode.value = configData.config.shortLinkNotFoundConfig.mode
     notFoundValue.value = configData.config.shortLinkNotFoundConfig.value
+    originalConfig.value = {
+      idLength: configData.config.idConfig.idLength,
+      idMinimumLength: configData.config.idConfig.idMinimumLength,
+      idMaximumLength: configData.config.idConfig.idMaximumLength,
+      notFoundMode: configData.config.shortLinkNotFoundConfig.mode,
+      notFoundValue: configData.config.shortLinkNotFoundConfig.value,
+    }
   } catch {
     pageError.value = 'Failed to load settings.'
   } finally {
@@ -170,6 +197,7 @@ async function handleSaveTenant() {
     tenant.value = updated
     editName.value = updated.name
     editSlug.value = updated.slug
+    originalTenant.value = { name: updated.name, slug: updated.slug }
     toast.success('Tenant information saved successfully')
     await auth.fetchAuthInfo()
   } catch (e: unknown) {
@@ -216,7 +244,6 @@ function openConfirm(title: string, message: string, action: () => Promise<void>
   confirmAction.value = action
   confirmSaving.value = false
   confirmOpen.value = true
-  nextTick(() => dialogEl.value?.focus())
 }
 
 function closeConfirm() {
@@ -235,25 +262,6 @@ async function executeConfirm() {
   }
 }
 
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') {
-    closeConfirm()
-    confirmDeleteDomain.value = null
-  }
-}
-
-watch([confirmOpen, confirmDeleteDomain], (values) => {
-  if (values.some(Boolean)) {
-    document.addEventListener('keydown', handleKeydown)
-  } else {
-    document.removeEventListener('keydown', handleKeydown)
-  }
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('keydown', handleKeydown)
-})
-
 function handleSaveIdConfig() {
   openConfirm(
     'Save ID Length Configuration',
@@ -268,6 +276,7 @@ async function doSaveIdConfig() {
   idError.value = ''
   try {
     await updateTenantConfig(auth.currentTenantId!, { idLength: idLength.value, idMinimumLength: idMinimumLength.value, idMaximumLength: idMaximumLength.value })
+    originalConfig.value = { ...originalConfig.value, idLength: idLength.value, idMinimumLength: idMinimumLength.value, idMaximumLength: idMaximumLength.value }
     toast.success('ID length configuration saved successfully')
   } catch {
     idError.value = 'Failed to save ID length configuration.'
@@ -291,6 +300,7 @@ async function doSaveNotFoundConfig() {
   notFoundError.value = ''
   try {
     await updateTenantConfig(auth.currentTenantId!, { notFoundMode: notFoundMode.value, notFoundValue: notFoundValue.value })
+    originalConfig.value = { ...originalConfig.value, notFoundMode: notFoundMode.value, notFoundValue: notFoundValue.value }
     toast.success('404 handling configuration saved successfully')
   } catch {
     notFoundError.value = 'Failed to save 404 handling configuration.'
@@ -650,66 +660,30 @@ onMounted(fetchAll)
     </template>
 
     <!-- Delete domain confirm -->
-    <Teleport to="body">
-      <div
-        v-if="confirmDeleteDomain"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-        @click.self="confirmDeleteDomain = null"
-      >
-        <div
-          ref="dialogEl"
-          role="dialog"
-          aria-modal="true"
-          tabindex="-1"
-          class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
-        >
-          <h3 class="text-lg font-semibold text-gray-900">Remove Domain</h3>
-          <p class="mt-2 text-sm text-gray-500">
-            Are you sure you want to remove
-            <span class="font-mono font-medium text-gray-700">{{ confirmDeleteDomain }}</span>?
-          </p>
-          <div class="mt-4 flex justify-end gap-2">
-            <button class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100" @click="confirmDeleteDomain = null">Cancel</button>
-            <button
-              :disabled="deleting"
-              class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-              @click="handleDeleteDomain(confirmDeleteDomain!)"
-            >
-              {{ deleting ? 'Removing...' : 'Remove' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDialog
+      :open="!!confirmDeleteDomain"
+      title="Remove Domain"
+      variant="danger"
+      :confirm-text="deleting ? 'Removing...' : 'Remove'"
+      :loading="deleting"
+      @confirm="handleDeleteDomain(confirmDeleteDomain!)"
+      @cancel="confirmDeleteDomain = null"
+    >
+      <p class="mt-2 text-sm text-gray-500">
+        Are you sure you want to remove
+        <span class="font-mono font-medium text-gray-700">{{ confirmDeleteDomain }}</span>?
+      </p>
+    </ConfirmDialog>
 
     <!-- Generic confirm dialog -->
-    <Teleport to="body">
-      <div
-        v-if="confirmOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-        @click.self="closeConfirm"
-      >
-        <div
-          ref="dialogEl"
-          role="dialog"
-          aria-modal="true"
-          tabindex="-1"
-          class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
-        >
-          <h3 class="text-lg font-semibold text-gray-900">{{ confirmTitle }}</h3>
-          <p class="mt-2 text-sm text-gray-600">{{ confirmMessage }}</p>
-          <div class="mt-5 flex justify-end gap-3">
-            <button class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100" @click="closeConfirm">Cancel</button>
-            <button
-              :disabled="confirmSaving"
-              class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              @click="executeConfirm"
-            >
-              {{ confirmSaving ? 'Saving...' : 'Confirm' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDialog
+      :open="confirmOpen"
+      :title="confirmTitle"
+      :message="confirmMessage"
+      :confirm-text="confirmSaving ? 'Saving...' : 'Confirm'"
+      :loading="confirmSaving"
+      @confirm="executeConfirm"
+      @cancel="closeConfirm"
+    />
   </div>
 </template>

@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listShortLinks, deleteShortLink, updateShortLink } from '@/api/short-link'
 import { useToast } from '@/composables/useToast'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import type { ShortLinkData } from '@/types/api'
 import {
   Plus,
@@ -618,37 +619,20 @@ onMounted(fetchLinks)
       </div>
     </div>
 
-    <!-- Delete confirmation modal -->
-    <Teleport to="body">
-      <div
-        v-if="confirmDeleteId"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-        @click.self="confirmDeleteId = null"
-      >
-        <div class="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
-          <h3 class="text-lg font-semibold text-gray-900">Delete Short Link</h3>
-          <p class="mt-2 text-sm text-gray-500">
-            Are you sure you want to delete
-            <span class="font-mono font-medium text-gray-700">{{ confirmDeleteId }}</span
-            >? This action cannot be undone.
-          </p>
-          <div class="mt-4 flex justify-end gap-2">
-            <button
-              class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-              @click="confirmDeleteId = null"
-            >
-              Cancel
-            </button>
-            <button
-              :disabled="deleting === confirmDeleteId"
-              class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
-              @click="handleDelete(confirmDeleteId!)"
-            >
-              {{ deleting === confirmDeleteId ? 'Deleting...' : 'Delete' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ConfirmDialog
+      :open="!!confirmDeleteId"
+      title="Delete Short Link"
+      variant="danger"
+      :confirm-text="deleting === confirmDeleteId ? 'Deleting...' : 'Delete'"
+      :loading="deleting === confirmDeleteId"
+      @confirm="handleDelete(confirmDeleteId!)"
+      @cancel="confirmDeleteId = null"
+    >
+      <p class="mt-2 text-sm text-gray-500">
+        Are you sure you want to delete
+        <span class="font-mono font-medium text-gray-700">{{ confirmDeleteId }}</span
+        >? This action cannot be undone.
+      </p>
+    </ConfirmDialog>
   </div>
 </template>
