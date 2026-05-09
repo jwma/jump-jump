@@ -321,7 +321,7 @@ onMounted(fetchAll)
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-4 sm:space-y-6">
     <!-- Header -->
     <div>
       <h1 class="flex items-center gap-2 text-xl font-semibold text-gray-900">
@@ -343,12 +343,12 @@ onMounted(fetchAll)
     <template v-else>
       <!-- Tenant Basic Info (admin only) -->
       <div v-if="isAdmin && tenant" class="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+        <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3 sm:px-5 sm:py-4">
           <Building2 class="h-4 w-4 text-blue-600" />
           <h2 class="text-base font-semibold text-gray-900">Tenant Information</h2>
         </div>
-        <div class="p-5">
-          <div class="max-w-md space-y-4">
+        <div class="p-4 sm:p-5">
+          <div class="space-y-4">
             <div>
               <label class="mb-1 block text-sm font-medium text-gray-700">Name</label>
               <input
@@ -385,14 +385,14 @@ onMounted(fetchAll)
 
       <!-- Domain Management (admin only) -->
       <div v-if="isAdmin" class="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+        <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3 sm:px-5 sm:py-4">
           <Globe class="h-4 w-4 text-green-600" />
           <h2 class="text-base font-semibold text-gray-900">Domains</h2>
           <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
             {{ domains.length }}
           </span>
         </div>
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
           <!-- Add domain form -->
           <div class="rounded-lg border bg-gray-50 p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -429,7 +429,50 @@ onMounted(fetchAll)
             <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
           </div>
           <div v-else-if="domains.length > 0" class="mt-4 overflow-hidden rounded-lg border">
-            <table class="w-full text-sm">
+            <!-- Mobile cards -->
+            <div class="divide-y lg:hidden">
+              <div
+                v-for="d in domains"
+                :key="d.id"
+                class="flex items-center justify-between px-4 py-3"
+              >
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <Globe class="h-4 w-4 text-gray-400" />
+                    <span class="font-mono text-sm text-gray-900">{{ d.domain }}</span>
+                  </div>
+                  <div class="mt-1 flex items-center gap-2 pl-6">
+                    <span v-if="d.isDefault" class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
+                      <Star class="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                      Default
+                    </span>
+                    <span class="text-xs text-gray-400">{{ formatDate(d.createdAt) }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <a
+                    :href="'https://' + d.domain"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                    title="Open domain"
+                    aria-label="Open domain"
+                  >
+                    <ExternalLink class="h-4 w-4" />
+                  </a>
+                  <button
+                    class="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                    title="Delete domain"
+                    aria-label="Delete domain"
+                    @click="confirmDeleteDomain = d.domain"
+                  >
+                    <Trash2 class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Desktop table -->
+            <table class="hidden w-full text-sm lg:table">
               <thead>
                 <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   <th class="px-4 py-3">Domain</th>
@@ -484,11 +527,11 @@ onMounted(fetchAll)
 
       <!-- ID Length Config (admin only) -->
       <div v-if="isAdmin" class="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+        <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3 sm:px-5 sm:py-4">
           <Hash class="h-4 w-4 text-blue-600" />
           <h2 class="text-base font-semibold text-gray-900">ID Length Configuration</h2>
         </div>
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
           <div class="max-w-md space-y-4">
             <div>
               <label class="mb-1 block text-sm font-medium text-gray-700">Default ID Length</label>
@@ -544,11 +587,11 @@ onMounted(fetchAll)
 
       <!-- 404 Config (admin only) -->
       <div v-if="isAdmin" class="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+        <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3 sm:px-5 sm:py-4">
           <AlertTriangle class="h-4 w-4 text-orange-500" />
           <h2 class="text-base font-semibold text-gray-900">404 Handling Configuration</h2>
         </div>
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
           <div class="max-w-md space-y-4">
             <div>
               <label id="mode-label" class="mb-1 block text-sm font-medium text-gray-700">Handling Mode</label>
@@ -608,11 +651,11 @@ onMounted(fetchAll)
 
       <!-- Config Preview (admin only) -->
       <div v-if="isAdmin" class="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+        <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-3 sm:px-5 sm:py-4">
           <Eye class="h-4 w-4 text-purple-600" />
           <h2 class="text-base font-semibold text-gray-900">Configuration Preview</h2>
         </div>
-        <div class="p-5">
+        <div class="p-4 sm:p-5">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
               <div class="mb-3 flex items-center justify-between">

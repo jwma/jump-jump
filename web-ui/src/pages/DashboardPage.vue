@@ -242,9 +242,9 @@ const chartOption = computed(() => {
     },
     grid: {
       top: 16,
-      right: 16,
+      right: 12,
       bottom: 40,
-      left: 48,
+      left: 36,
     },
     xAxis: {
       type: 'category' as const,
@@ -446,38 +446,39 @@ onMounted(() => fetchDashboardData())
     <!-- Welcome area -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">{{ greeting }}, {{ auth.username }}</h1>
+        <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">{{ greeting }}, {{ auth.username }}</h1>
         <p class="mt-1 text-sm text-gray-500">
           Here's an overview of your short links performance.
         </p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <button
           :disabled="loading || refreshing"
-          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 sm:px-4 sm:py-2.5"
+          aria-label="Refresh dashboard"
           @click="handleRefresh"
         >
           <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': refreshing }" />
-          Refresh
+          <span class="hidden sm:inline">Refresh</span>
         </button>
         <router-link
           :to="{ name: 'short-link-create' }"
-          class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+          class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:px-4 sm:py-2.5"
         >
           <Plus class="h-4 w-4" />
-          Create Short Link
+          Create
         </router-link>
       </div>
     </div>
 
     <!-- Stats cards -->
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       <!-- Total Links -->
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Total Links</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">
+            <p class="text-xs font-medium text-gray-500 sm:text-sm">Total Links</p>
+            <p class="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">
               <span
                 v-if="loading"
                 class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
@@ -485,18 +486,18 @@ onMounted(() => fetchDashboardData())
               <template v-else>{{ totalLinks.toLocaleString() }}</template>
             </p>
           </div>
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-            <Link class="h-5 w-5 text-blue-600" />
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 sm:h-10 sm:w-10">
+            <Link class="h-4 w-4 text-blue-600 sm:h-5 sm:w-5" />
           </div>
         </div>
       </div>
 
       <!-- Active Links -->
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Active Links</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">
+            <p class="text-xs font-medium text-gray-500 sm:text-sm">Active Links</p>
+            <p class="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">
               <span
                 v-if="loading"
                 class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
@@ -504,19 +505,19 @@ onMounted(() => fetchDashboardData())
               <template v-else>{{ activeLinks.toLocaleString() }}</template>
             </p>
           </div>
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
-            <LinkIcon class="h-5 w-5 text-green-600" />
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 sm:h-10 sm:w-10">
+            <LinkIcon class="h-4 w-4 text-green-600 sm:h-5 sm:w-5" />
           </div>
         </div>
       </div>
 
       <!-- Today's Visits -->
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Today's Visits</p>
+            <p class="text-xs font-medium text-gray-500 sm:text-sm">Today's Visits</p>
             <div class="mt-1 flex items-baseline gap-2">
-              <p class="text-2xl font-bold text-gray-900">
+              <p class="text-xl font-bold text-gray-900 sm:text-2xl">
                 <span
                   v-if="loading"
                   class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
@@ -535,20 +536,20 @@ onMounted(() => fetchDashboardData())
               </span>
             </div>
           </div>
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
-            <MousePointerClick class="h-5 w-5 text-purple-600" />
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 sm:h-10 sm:w-10">
+            <MousePointerClick class="h-4 w-4 text-purple-600 sm:h-5 sm:w-5" />
           </div>
         </div>
         <p v-if="!loading && todayTrend" class="mt-1 text-xs text-gray-400">vs yesterday</p>
       </div>
 
       <!-- Period Visits -->
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">{{ periodLabel }}</p>
+            <p class="text-xs font-medium text-gray-500 sm:text-sm">{{ periodLabel }}</p>
             <div class="mt-1 flex items-baseline gap-2">
-              <p class="text-2xl font-bold text-gray-900">
+              <p class="text-xl font-bold text-gray-900 sm:text-2xl">
                 <span
                   v-if="loading"
                   class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
@@ -567,8 +568,8 @@ onMounted(() => fetchDashboardData())
               </span>
             </div>
           </div>
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
-            <BarChart3 class="h-5 w-5 text-orange-600" />
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 sm:h-10 sm:w-10">
+            <BarChart3 class="h-4 w-4 text-orange-600 sm:h-5 sm:w-5" />
           </div>
         </div>
         <p v-if="!loading && periodTrend" class="mt-1 text-xs text-gray-400">vs previous {{ trendDays }} days</p>
@@ -576,9 +577,9 @@ onMounted(() => fetchDashboardData())
     </div>
 
     <!-- Chart + Recent Links -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-6">
       <!-- Visit Trend Chart -->
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm lg:col-span-3">
+      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5 lg:col-span-3">
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <TrendingUp class="h-4 w-4 text-gray-500" />
@@ -623,7 +624,7 @@ onMounted(() => fetchDashboardData())
             <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100" />
           </div>
         </div>
-        <div v-else class="h-64">
+        <div v-else class="h-48 sm:h-64">
           <VChart
             :option="chartOption"
             :autoresize="true"
@@ -635,7 +636,7 @@ onMounted(() => fetchDashboardData())
       </div>
 
       <!-- Recent Links -->
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm lg:col-span-2">
+      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5 lg:col-span-2">
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <Clock class="h-4 w-4 text-gray-500" />
@@ -725,55 +726,88 @@ onMounted(() => fetchDashboardData())
         <BarChart3 class="mx-auto h-8 w-8 text-gray-300" />
         <p class="mt-2 text-sm text-gray-400">No visit data available yet</p>
       </div>
-      <div v-else class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr
-              class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+      <div v-else>
+        <!-- Mobile cards -->
+        <div class="divide-y divide-gray-50 md:hidden">
+          <div
+            v-for="(item, index) in topLinks"
+            :key="item.link.id"
+            class="flex items-center gap-3 px-4 py-3"
+          >
+            <span
+              :class="[
+                'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                index < 3 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500',
+              ]"
             >
-              <th class="w-12 px-5 py-3">#</th>
-              <th class="px-5 py-3">Short Link</th>
-              <th class="hidden px-5 py-3 md:table-cell">Destination URL</th>
-              <th class="px-5 py-3 text-right">PV</th>
-              <th class="px-5 py-3 text-right">UV</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr
-              v-for="(item, index) in topLinks"
-              :key="item.link.id"
-              class="transition-colors hover:bg-gray-50"
-            >
-              <td class="px-5 py-3">
-                <span
-                  :class="[
-                    'inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold',
-                    index < 3 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500',
-                  ]"
-                >
-                  {{ index + 1 }}
-                </span>
-              </td>
-              <td class="px-5 py-3">
-                <router-link
-                  :to="{ name: 'short-link-detail', params: { id: item.link.id } }"
-                  class="inline-flex items-center gap-1 font-mono text-sm font-medium text-blue-600 hover:text-blue-700"
-                >
-                  {{ item.link.id }}
-                </router-link>
-              </td>
-              <td class="hidden max-w-[280px] truncate px-5 py-3 text-gray-500 md:table-cell">
-                {{ item.link.url }}
-              </td>
-              <td class="whitespace-nowrap px-5 py-3 text-right font-semibold text-gray-900">
-                {{ item.pv.toLocaleString() }}
-              </td>
-              <td class="whitespace-nowrap px-5 py-3 text-right text-gray-600">
-                {{ item.uv.toLocaleString() }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              {{ index + 1 }}
+            </span>
+            <div class="min-w-0 flex-1">
+              <router-link
+                :to="{ name: 'short-link-detail', params: { id: item.link.id } }"
+                class="font-mono text-sm font-medium text-blue-600 hover:text-blue-700"
+              >
+                {{ item.link.id }}
+              </router-link>
+              <p class="truncate text-xs text-gray-400">{{ item.link.url }}</p>
+            </div>
+            <div class="shrink-0 text-right text-sm">
+              <p class="font-semibold text-gray-900">{{ item.pv.toLocaleString() }}</p>
+              <p class="text-xs text-gray-400">{{ item.uv.toLocaleString() }} uv</p>
+            </div>
+          </div>
+        </div>
+        <!-- Desktop table -->
+        <div class="hidden overflow-x-auto md:block">
+          <table class="w-full text-sm">
+            <thead>
+              <tr
+                class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              >
+                <th class="w-12 px-5 py-3">#</th>
+                <th class="px-5 py-3">Short Link</th>
+                <th class="px-5 py-3">Destination URL</th>
+                <th class="px-5 py-3 text-right">PV</th>
+                <th class="px-5 py-3 text-right">UV</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <tr
+                v-for="(item, index) in topLinks"
+                :key="item.link.id"
+                class="transition-colors hover:bg-gray-50"
+              >
+                <td class="px-5 py-3">
+                  <span
+                    :class="[
+                      'inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold',
+                      index < 3 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500',
+                    ]"
+                  >
+                    {{ index + 1 }}
+                  </span>
+                </td>
+                <td class="px-5 py-3">
+                  <router-link
+                    :to="{ name: 'short-link-detail', params: { id: item.link.id } }"
+                    class="inline-flex items-center gap-1 font-mono text-sm font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    {{ item.link.id }}
+                  </router-link>
+                </td>
+                <td class="max-w-[280px] truncate px-5 py-3 text-gray-500">
+                  {{ item.link.url }}
+                </td>
+                <td class="whitespace-nowrap px-5 py-3 text-right font-semibold text-gray-900">
+                  {{ item.pv.toLocaleString() }}
+                </td>
+                <td class="whitespace-nowrap px-5 py-3 text-right text-gray-600">
+                  {{ item.uv.toLocaleString() }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

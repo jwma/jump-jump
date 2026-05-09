@@ -26,6 +26,9 @@ const parentRoutes: Record<string, { label: string; to: string }> = {
   'short-link-create': { label: 'Short Links', to: '/short-links' },
   'short-link-detail': { label: 'Short Links', to: '/short-links' },
   'short-link-edit': { label: 'Short Links', to: '/short-links' },
+  'tenant-create': { label: 'Tenants', to: '/tenants' },
+  'tenant-detail': { label: 'Tenants', to: '/tenants' },
+  'super-tenant-detail': { label: 'Tenants', to: '/super/tenants' },
 }
 
 const items = computed<BreadcrumbItem[]>(() => {
