@@ -15,7 +15,6 @@ import {
   Globe,
   Monitor,
   Loader2,
-  Compass,
   LayoutGrid,
   FileText,
 } from 'lucide-vue-next'
@@ -90,7 +89,8 @@ function formatShortDate(d: string) {
 const shortLinkUrl = computed(() => {
   if (!link.value) return ''
   if (landingHost.value) {
-    return `https://${landingHost.value}/${link.value.id}`
+    const protocol = landingHost.value === 'localhost' ? 'http://' : `${window.location.protocol}//`
+    return `${protocol}${landingHost.value}/${link.value.id}`
   }
   return `${window.location.origin}/${link.value.id}`
 })
