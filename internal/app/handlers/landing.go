@@ -54,7 +54,9 @@ func Redirect(c *gin.Context) {
 	go func() {
 		ua := user_agent.New(c.Request.UserAgent())
 		osInfo := ua.OSInfo()
-		rhRepo.Save(models.NewRequestHistory(s, c.ClientIP(), c.Request.UserAgent(), osInfo.Name))
+		browserName, _ := ua.Browser()
+		referer := c.Request.Referer()
+		rhRepo.Save(models.NewRequestHistory(s, c.ClientIP(), c.Request.UserAgent(), osInfo.Name, browserName, referer))
 	}()
 
 	c.Redirect(http.StatusTemporaryRedirect, s.Url)

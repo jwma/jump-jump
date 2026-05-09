@@ -307,12 +307,14 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			endTime = time.Date(endTime.Year(), endTime.Month(), endTime.Day(), 23, 59, 59, 0, time.Local)
 			rhRepo := repository.GetRequestHistoryRepo(db.GetRedisClient(), db.GetPostgresPool())
 			rhs := rhRepo.FindByDateRange(s.Id, startTime, endTime)
-			daily, osDist := rhRepo.GetAggregatedStats(s.Id, startTime, endTime)
+			daily, osDist, browserDist, refererDist := rhRepo.GetAggregatedStats(s.Id, startTime, endTime)
 
 			c.JSON(http.StatusOK, models.NewSuccessResponse(&models.ShortLinkDataAPIResponseData{
-				Histories: rhs,
-				Daily:     daily,
-				OSDist:    osDist,
+				Histories:   rhs,
+				Daily:       daily,
+				OSDist:      osDist,
+				BrowserDist: browserDist,
+				RefererDist: refererDist,
 			}))
 			return
 		} else if c.Param("action") == "/" {

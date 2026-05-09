@@ -337,6 +337,8 @@ type RequestHistory struct {
 	IP          string    `json:"ip"`
 	UA          string    `json:"ua"`
 	OS          string    `json:"os,omitempty"`
+	Browser     string    `json:"browser,omitempty"`
+	Referer     string    `json:"referer,omitempty"`
 	Time        time.Time `json:"time"`
 }
 
@@ -344,7 +346,7 @@ func (r *RequestHistory) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(r)
 }
 
-func NewRequestHistory(link *ShortLink, IP string, UA string, OS string) *RequestHistory {
+func NewRequestHistory(link *ShortLink, IP string, UA string, OS string, Browser string, Referer string) *RequestHistory {
 	return &RequestHistory{
 		ShortLinkID: link.Id,
 		TenantID:    link.TenantID,
@@ -352,13 +354,17 @@ func NewRequestHistory(link *ShortLink, IP string, UA string, OS string) *Reques
 		IP:          IP,
 		UA:          UA,
 		OS:          OS,
+		Browser:     Browser,
+		Referer:     Referer,
 	}
 }
 
 type ShortLinkDataAPIResponseData struct {
-	Histories []*RequestHistory `json:"histories"`
-	Daily     []*DailyStats     `json:"daily"`
-	OSDist    map[string]int    `json:"osDist"`
+	Histories   []*RequestHistory `json:"histories"`
+	Daily       []*DailyStats     `json:"daily"`
+	OSDist      map[string]int    `json:"osDist"`
+	BrowserDist map[string]int    `json:"browserDist"`
+	RefererDist map[string]int    `json:"refererDist"`
 }
 
 type DailyStats struct {

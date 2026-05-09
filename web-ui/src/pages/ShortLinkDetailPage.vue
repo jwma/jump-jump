@@ -2,7 +2,9 @@
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getShortLink, getShortLinkData } from '@/api/short-link'
-import type { ShortLinkData, RequestHistory } from '@/types/api'
+import { listDomains } from '@/api/tenant'
+import { useAuthStore } from '@/stores/auth'
+import type { ShortLinkData, RequestHistory, TenantDomain } from '@/types/api'
 import {
   ArrowLeft,
   ExternalLink,
@@ -13,6 +15,9 @@ import {
   Globe,
   Monitor,
   Loader2,
+  Compass,
+  LayoutGrid,
+  FileText,
 } from 'lucide-vue-next'
 
 const VChart = defineAsyncComponent(async () => {
@@ -35,14 +40,17 @@ defineOptions({ name: 'ShortLinkDetailPage' })
 
 const router = useRouter()
 const route = useRoute()
+const auth = useAuthStore()
 const id = route.params.id as string
 
 const link = ref<ShortLinkData | null>(null)
 const histories = ref<RequestHistory[]>([])
+const landingHost = ref('')
 const loading = ref(false)
 const chartLoading = ref(false)
 const notFound = ref(false)
 const copied = ref(false)
+const activeTab = ref<'trend' | 'records'>('trend')
 
 const daysAgo = ref(7)
 const startDate = ref('')
@@ -79,6 +87,14 @@ function formatShortDate(d: string) {
   return new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
+const shortLinkUrl = computed(() => {
+  if (!link.value) return ''
+  if (landingHost.value) {
+    return `https://${landingHost.value}/${link.value.id}`
+  }
+  return `${window.location.origin}/${link.value.id}`
+})
+
 const dailyVisits = computed(() => {
   const map = new Map<string, number>()
   const start = new Date(startDate.value)
@@ -109,15 +125,43 @@ const osDistribution = computed(() => {
     .map(([name, count]) => ({ name, count }))
 })
 
+const browserDistribution = computed(() => {
+  const map = new Map<string, number>()
+  for (const h of histories.value) {
+    const browser = h.browser || parseBrowser(h.ua)
+    if (browser) {
+      map.set(browser, (map.get(browser) || 0) + 1)
+    }
+  }
+  return [...map.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([name, count]) => ({ name, count }))
+})
+
+const refererDistribution = computed(() => {
+  const map = new Map<string, number>()
+  for (const h of histories.value) {
+    const ref = h.referer || 'Direct'
+    const source = extractRefererSource(ref)
+    map.set(source, (map.get(source) || 0) + 1)
+  }
+  return [...map.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([name, count]) => ({ name, count }))
+})
+
 const ipDistribution = computed(() => {
   const map = new Map<string, number>()
   for (const h of histories.value) {
     map.set(h.ip, (map.get(h.ip) || 0) + 1)
   }
+  const total = histories.value.length || 1
   return [...map.entries()]
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-    .map(([ip, count]) => ({ ip, count }))
+    .slice(0, 10)
+    .map(([ip, count]) => ({ ip, count, percent: ((count / total) * 100).toFixed(1) }))
 })
 
 const totalVisits = computed(() => histories.value.length)
@@ -133,13 +177,40 @@ function parseOS(ua: string): string {
   return 'Other'
 }
 
+function parseBrowser(ua: string): string {
+  if (ua.includes('Edg/')) return 'Edge'
+  if (ua.includes('OPR/') || ua.includes('Opera')) return 'Opera'
+  if (ua.includes('Firefox/')) return 'Firefox'
+  if (ua.includes('Chrome/')) return 'Chrome'
+  if (ua.includes('Safari/') && !ua.includes('Chrome')) return 'Safari'
+  return 'Other'
+}
+
+function extractRefererSource(referer: string): string {
+  if (!referer || referer === 'Direct') return 'Direct'
+  try {
+    const url = new URL(referer)
+    return url.hostname.replace(/^www\./, '')
+  } catch {
+    return referer.length > 40 ? referer.slice(0, 40) + '...' : referer
+  }
+}
+
+const tooltipBase = {
+  backgroundColor: '#fff',
+  borderColor: '#e5e7eb',
+  borderWidth: 1,
+  textStyle: { color: '#374151', fontSize: 13 },
+}
+
 const visitChartOption = computed(() => ({
   tooltip: {
+    ...tooltipBase,
     trigger: 'axis' as const,
-    backgroundColor: '#fff',
-    borderColor: '#e5e7eb',
-    borderWidth: 1,
-    textStyle: { color: '#374151', fontSize: 13 },
+    formatter: (params: { name: string; value: number }[]) => {
+      const p = params[0]
+      return `${p.name}<br/><b>${p.value}</b> 次访问`
+    },
   },
   grid: { top: 16, right: 16, bottom: 32, left: 48 },
   xAxis: {
@@ -169,15 +240,17 @@ const visitChartOption = computed(() => ({
   ],
 }))
 
-const osChartOption = computed(() => {
-  const data = osDistribution.value.map((o) => ({ name: o.name, value: o.count }))
+function makePieOption(
+  data: { name: string; count: number }[],
+  formatter: (name: string, value: number, total: number) => string,
+) {
+  const total = data.reduce((s, d) => s + d.count, 0) || 1
   return {
     tooltip: {
+      ...tooltipBase,
       trigger: 'item' as const,
-      backgroundColor: '#fff',
-      borderColor: '#e5e7eb',
-      borderWidth: 1,
-      textStyle: { color: '#374151', fontSize: 13 },
+      formatter: (params: { name: string; value: number }) =>
+        formatter(params.name, params.value, total),
     },
     legend: {
       bottom: 0,
@@ -195,26 +268,38 @@ const osChartOption = computed(() => {
         emphasis: {
           label: { show: true, fontSize: 14, fontWeight: 'bold' as const },
         },
-        data,
-        color: ['#2563eb', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#6b7280'],
+        data: data.map((d) => ({ name: d.name, value: d.count })),
+        color: ['#2563eb', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#6b7280', '#10b981', '#ec4899'],
       },
     ],
   }
-})
+}
+
+const osChartOption = computed(() =>
+  makePieOption(osDistribution.value, (name, value, total) =>
+    `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`),
+)
+
+const browserChartOption = computed(() =>
+  makePieOption(browserDistribution.value, (name, value, total) =>
+    `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`),
+)
+
+const refererChartOption = computed(() =>
+  makePieOption(refererDistribution.value, (name, value, total) =>
+    `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`),
+)
 
 function copyLink() {
   if (!link.value) return
-  const url = `${window.location.origin}/${link.value.id}`
-  navigator.clipboard.writeText(url).then(
+  navigator.clipboard.writeText(shortLinkUrl.value).then(
     () => {
       copied.value = true
       setTimeout(() => {
         copied.value = false
       }, 2000)
     },
-    () => {
-      // clipboard not available (non-HTTPS or no permission)
-    },
+    () => {},
   )
 }
 
@@ -227,6 +312,21 @@ async function fetchData() {
     notFound.value = true
   } finally {
     loading.value = false
+  }
+}
+
+async function fetchLandingHost() {
+  if (!auth.currentTenantId) return
+  try {
+    const domains = await listDomains(auth.currentTenantId)
+    const defaultDomain = (domains as TenantDomain[]).find((d) => d.isDefault)
+    if (defaultDomain) {
+      landingHost.value = defaultDomain.domain
+    } else if (domains.length > 0) {
+      landingHost.value = (domains as TenantDomain[])[0].domain
+    }
+  } catch {
+    // ignore
   }
 }
 
@@ -246,6 +346,7 @@ async function fetchHistory() {
 onMounted(() => {
   setDateRange(7)
   fetchData()
+  fetchLandingHost()
 })
 </script>
 
@@ -261,7 +362,7 @@ onMounted(() => {
       <div class="flex-1">
         <h1 class="text-xl font-semibold text-gray-900">Short Link Detail</h1>
         <p v-if="link" class="mt-0.5 text-sm text-gray-500">
-          <span class="font-mono font-medium text-gray-700">{{ link.id }}</span>
+          <span class="font-mono font-medium text-blue-600">{{ shortLinkUrl }}</span>
         </p>
       </div>
       <button
@@ -291,9 +392,16 @@ onMounted(() => {
       <div class="mt-4 rounded-lg border bg-white p-5">
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Short Link ID</label>
+            <label class="text-xs font-medium uppercase text-gray-400">Short Link</label>
             <div class="mt-1 flex items-center gap-2">
-              <span class="font-mono text-sm font-medium text-gray-900">{{ link.id }}</span>
+              <a
+                :href="shortLinkUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-mono text-sm font-medium text-blue-600 hover:underline"
+              >
+                {{ shortLinkUrl }}
+              </a>
               <button
                 class="rounded p-0.5 text-gray-400 transition-colors hover:text-blue-600"
                 @click="copyLink"
@@ -347,16 +455,18 @@ onMounted(() => {
       <div class="mt-6">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 class="text-lg font-semibold text-gray-900">Access Analytics</h2>
-          <div class="flex items-center gap-1 rounded-lg border bg-white p-1">
-            <button
-              v-for="d in [7, 14, 30]"
-              :key="d"
-              class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
-              :class="daysAgo === d ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
-              @click="setDateRange(d)"
-            >
-              {{ d }}d
-            </button>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 rounded-lg border bg-white p-1">
+              <button
+                v-for="d in [7, 14, 30]"
+                :key="d"
+                class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+                :class="daysAgo === d ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
+                @click="setDateRange(d)"
+              >
+                {{ d }}d
+              </button>
+            </div>
           </div>
         </div>
 
@@ -394,10 +504,30 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Charts row -->
-        <div class="mt-4 grid gap-4 lg:grid-cols-2">
+        <!-- Tab switcher -->
+        <div class="mt-6 flex gap-1 rounded-lg border bg-white p-1 w-fit">
+          <button
+            class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+            :class="activeTab === 'trend' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
+            @click="activeTab = 'trend'"
+          >
+            <LayoutGrid class="h-3.5 w-3.5" />
+            Charts
+          </button>
+          <button
+            class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+            :class="activeTab === 'records' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
+            @click="activeTab = 'records'"
+          >
+            <FileText class="h-3.5 w-3.5" />
+            Access Records
+          </button>
+        </div>
+
+        <!-- Charts tab -->
+        <template v-if="activeTab === 'trend'">
           <!-- Visit trend chart -->
-          <div class="rounded-lg border bg-white p-5">
+          <div class="mt-4 rounded-lg border bg-white p-5">
             <h3 class="mb-4 text-sm font-semibold text-gray-700">Visit Trend</h3>
             <div v-if="chartLoading" class="flex h-56 items-center justify-center">
               <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
@@ -419,57 +549,177 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- OS distribution -->
-          <div class="rounded-lg border bg-white p-5">
-            <h3 class="mb-4 text-sm font-semibold text-gray-700">OS Distribution</h3>
+          <!-- OS & Browser distribution charts -->
+          <div class="mt-4 grid gap-4 lg:grid-cols-2">
+            <div class="rounded-lg border bg-white p-5">
+              <h3 class="mb-4 text-sm font-semibold text-gray-700">OS Distribution</h3>
+              <div v-if="chartLoading" class="flex h-56 items-center justify-center">
+                <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
+              </div>
+              <div
+                v-else-if="osDistribution.length === 0"
+                class="flex h-56 items-center justify-center text-sm text-gray-400"
+              >
+                No data for this period.
+              </div>
+              <div v-else class="h-56">
+                <VChart
+                  :option="osChartOption"
+                  :autoresize="true"
+                  class="h-full w-full"
+                  role="img"
+                  aria-label="OS distribution pie chart"
+                />
+              </div>
+            </div>
+
+            <div class="rounded-lg border bg-white p-5">
+              <h3 class="mb-4 text-sm font-semibold text-gray-700">Browser Distribution</h3>
+              <div v-if="chartLoading" class="flex h-56 items-center justify-center">
+                <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
+              </div>
+              <div
+                v-else-if="browserDistribution.length === 0"
+                class="flex h-56 items-center justify-center text-sm text-gray-400"
+              >
+                No data for this period.
+              </div>
+              <div v-else class="h-56">
+                <VChart
+                  :option="browserChartOption"
+                  :autoresize="true"
+                  class="h-full w-full"
+                  role="img"
+                  aria-label="Browser distribution pie chart"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Referer distribution -->
+          <div class="mt-4 rounded-lg border bg-white p-5">
+            <h3 class="mb-4 text-sm font-semibold text-gray-700">Referer Sources</h3>
             <div v-if="chartLoading" class="flex h-56 items-center justify-center">
               <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
             </div>
             <div
-              v-else-if="osDistribution.length === 0"
+              v-else-if="refererDistribution.length === 0"
               class="flex h-56 items-center justify-center text-sm text-gray-400"
             >
               No data for this period.
             </div>
-            <div v-else class="h-56">
+            <div v-else class="h-64">
               <VChart
-                :option="osChartOption"
+                :option="refererChartOption"
                 :autoresize="true"
                 class="h-full w-full"
                 role="img"
-                aria-label="OS distribution pie chart"
+                aria-label="Referer source distribution pie chart"
               />
             </div>
           </div>
-        </div>
 
-        <!-- IP distribution -->
-        <div class="mt-4 rounded-lg border bg-white p-5">
-          <h3 class="mb-4 text-sm font-semibold text-gray-700">Top IPs</h3>
-          <div v-if="ipDistribution.length === 0" class="py-8 text-center text-sm text-gray-400">
-            No data for this period.
-          </div>
-          <div v-else class="space-y-3">
-            <div v-for="item in ipDistribution" :key="item.ip" class="flex items-center gap-3">
-              <span class="w-36 shrink-0 truncate font-mono text-sm text-gray-700">{{
-                item.ip
-              }}</span>
-              <div class="flex-1">
-                <div class="h-5 overflow-hidden rounded-full bg-gray-100">
-                  <div
-                    class="h-full rounded-full bg-emerald-500 transition-all"
-                    :style="{
-                      width: `${(item.count / ipDistribution[0].count) * 100}%`,
-                    }"
-                  />
-                </div>
-              </div>
-              <span class="w-10 text-right text-sm font-medium text-gray-600">{{
-                item.count
-              }}</span>
+          <!-- IP distribution table -->
+          <div class="mt-4 rounded-lg border bg-white p-5">
+            <h3 class="mb-4 text-sm font-semibold text-gray-700">Top IPs</h3>
+            <div v-if="ipDistribution.length === 0" class="py-8 text-center text-sm text-gray-400">
+              No data for this period.
             </div>
+            <table v-else class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b text-xs font-medium uppercase text-gray-400">
+                  <th class="pb-2 pr-4">IP Address</th>
+                  <th class="pb-2 pr-4 text-right">Visits</th>
+                  <th class="pb-2 text-right">Percentage</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="item in ipDistribution"
+                  :key="item.ip"
+                  class="border-b border-gray-50 last:border-0"
+                >
+                  <td class="py-2 pr-4 font-mono text-gray-700">{{ item.ip }}</td>
+                  <td class="py-2 pr-4 text-right font-medium text-gray-600">{{ item.count }}</td>
+                  <td class="py-2 text-right">
+                    <span class="inline-flex items-center gap-2">
+                      <span class="text-gray-500">{{ item.percent }}%</span>
+                      <span class="inline-block h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
+                        <span
+                          class="inline-block h-full rounded-full bg-emerald-500"
+                          :style="{ width: `${item.percent}%` }"
+                        />
+                      </span>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
+        </template>
+
+        <!-- Access records tab -->
+        <template v-if="activeTab === 'records'">
+          <div class="mt-4 rounded-lg border bg-white">
+            <div v-if="chartLoading" class="flex h-40 items-center justify-center">
+              <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
+            </div>
+            <div
+              v-else-if="histories.length === 0"
+              class="flex h-40 items-center justify-center text-sm text-gray-400"
+            >
+              No access records for this period.
+            </div>
+            <template v-else>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead>
+                    <tr class="border-b bg-gray-50 text-xs font-medium uppercase text-gray-400">
+                      <th class="px-4 py-3">Time</th>
+                      <th class="px-4 py-3">IP</th>
+                      <th class="px-4 py-3">Browser</th>
+                      <th class="px-4 py-3">OS</th>
+                      <th class="px-4 py-3">Referer</th>
+                      <th class="px-4 py-3">User Agent</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="h in histories"
+                      :key="h.id"
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                    >
+                      <td class="whitespace-nowrap px-4 py-2.5 text-gray-600">
+                        {{ formatDate(h.time) }}
+                      </td>
+                      <td class="whitespace-nowrap px-4 py-2.5 font-mono text-gray-700">
+                        {{ h.ip }}
+                      </td>
+                      <td class="whitespace-nowrap px-4 py-2.5 text-gray-600">
+                        {{ h.browser || parseBrowser(h.ua) || '—' }}
+                      </td>
+                      <td class="whitespace-nowrap px-4 py-2.5 text-gray-600">
+                        {{ parseOS(h.ua) }}
+                      </td>
+                      <td class="max-w-[200px] truncate px-4 py-2.5 text-gray-600">
+                        {{ h.referer ? extractRefererSource(h.referer) : 'Direct' }}
+                      </td>
+                      <td
+                        class="max-w-[300px] truncate px-4 py-2.5 text-xs text-gray-400"
+                        :title="h.ua"
+                      >
+                        {{ h.ua }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="border-t px-4 py-3 text-xs text-gray-400">
+                {{ histories.length }} record{{ histories.length !== 1 ? 's' : '' }}
+              </div>
+            </template>
+          </div>
+        </template>
       </div>
     </template>
   </div>
