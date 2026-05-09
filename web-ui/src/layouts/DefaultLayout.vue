@@ -5,7 +5,7 @@ import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 </script>
 
 <template>
-  <div class="flex h-screen overflow-hidden bg-gray-50">
+  <div class="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
     <AppSidebar />
 
     <div class="flex flex-1 flex-col overflow-hidden">

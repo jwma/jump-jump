@@ -58,15 +58,15 @@ async function handleReject(id: string) {
 <template>
   <div>
     <div class="mb-6 flex items-center gap-3">
-      <button class="rounded p-1 text-gray-400 hover:text-gray-600" @click="router.push({ name: 'dashboard' })">
+      <button class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" @click="router.push({ name: 'dashboard' })">
         <ArrowLeft class="h-5 w-5" />
       </button>
-      <h1 class="text-xl font-semibold text-gray-900">Invitations</h1>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Invitations</h1>
     </div>
 
-    <div v-if="loading" class="py-12 text-center text-gray-400">Loading...</div>
+    <div v-if="loading" class="py-12 text-center text-gray-400 dark:text-gray-500">Loading...</div>
 
-    <div v-else-if="invitations.length === 0" class="py-12 text-center text-gray-400">
+    <div v-else-if="invitations.length === 0" class="py-12 text-center text-gray-400 dark:text-gray-500">
       No pending invitations.
     </div>
 
@@ -74,11 +74,11 @@ async function handleReject(id: string) {
       <div
         v-for="inv in invitations"
         :key="inv.id"
-        class="flex items-center justify-between rounded-lg border bg-white p-4 shadow-sm"
+        class="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm"
       >
         <div>
-          <div class="font-medium text-gray-900">{{ inv.tenantName }}</div>
-          <div class="text-sm text-gray-500">
+          <div class="font-medium text-gray-900 dark:text-white">{{ inv.tenantName }}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">
             Invited by {{ inv.inviterUsername }} &middot; {{ formatTime(inv.createdAt) }}
           </div>
         </div>
@@ -94,7 +94,7 @@ async function handleReject(id: string) {
             </button>
             <button
               :disabled="actionLoading[inv.id]"
-              class="flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+              class="flex items-center gap-1 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
               @click="handleReject(inv.id)"
             >
               <X class="h-4 w-4" />
@@ -104,7 +104,7 @@ async function handleReject(id: string) {
           <span
             v-else
             class="rounded-full px-2.5 py-0.5 text-xs font-medium"
-            :class="inv.status === 'accepted' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
+            :class="inv.status === 'accepted' ? 'bg-green-50 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
           >
             {{ inv.status === 'accepted' ? 'Accepted' : 'Rejected' }}
           </span>

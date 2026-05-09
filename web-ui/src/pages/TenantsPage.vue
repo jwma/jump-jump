@@ -53,8 +53,8 @@ onMounted(fetchTenants)
   <div>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">Tenant Management</h1>
-        <p class="mt-1 text-sm text-gray-500">
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Tenant Management</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
           {{ tenants.length }} tenant{{ tenants.length !== 1 ? 's' : '' }} total
         </p>
       </div>
@@ -68,25 +68,25 @@ onMounted(fetchTenants)
     </div>
 
     <!-- Search -->
-    <div class="mt-4 flex flex-col gap-3 rounded-lg border bg-white p-4 sm:flex-row sm:items-center">
+    <div class="mt-4 flex flex-col gap-3 rounded-lg border bg-white dark:bg-gray-900 p-4 sm:flex-row sm:items-center">
       <div class="relative flex-1">
-        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
         <input
           v-model="search"
           type="text"
           placeholder="Search by name, slug, or ID..."
-          class="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          class="w-full rounded-md border border-gray-300 dark:border-gray-600 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
         />
       </div>
     </div>
 
     <!-- Table -->
-    <div class="mt-4 overflow-hidden rounded-lg border bg-white">
+    <div class="mt-4 overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:bg-gray-900">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr
-              class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500"
             >
               <th class="px-4 py-3">Name</th>
               <th class="px-4 py-3">Slug</th>
@@ -97,12 +97,12 @@ onMounted(fetchTenants)
           </thead>
           <tbody class="divide-y">
             <tr v-if="loading">
-              <td colspan="5" class="px-4 py-8 text-center text-gray-400">Loading...</td>
+              <td colspan="5" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">Loading...</td>
             </tr>
             <tr v-else-if="filteredTenants.length === 0">
-              <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+              <td colspan="5" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">
                 <div class="flex flex-col items-center gap-2">
-                  <Building2 class="h-8 w-8 text-gray-300" />
+                  <Building2 class="h-8 w-8 text-gray-300 dark:text-gray-600" />
                   <span>No tenants found.</span>
                 </div>
               </td>
@@ -110,7 +110,7 @@ onMounted(fetchTenants)
             <tr
               v-for="tenant in filteredTenants"
               :key="tenant.id"
-              class="transition-colors hover:bg-gray-50"
+              class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
             >
               <td class="px-4 py-3">
                 <div class="flex items-center gap-2">
@@ -120,13 +120,13 @@ onMounted(fetchTenants)
                     {{ tenant.name.charAt(0).toUpperCase() }}
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900">{{ tenant.name }}</p>
-                    <p class="text-xs text-gray-400">{{ tenant.id }}</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ tenant.name }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ tenant.id }}</p>
                   </div>
                 </div>
               </td>
               <td class="px-4 py-3">
-                <span class="font-mono text-sm text-gray-600">{{ tenant.slug }}</span>
+                <span class="font-mono text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">{{ tenant.slug }}</span>
               </td>
               <td class="px-4 py-3">
                 <span
@@ -134,7 +134,7 @@ onMounted(fetchTenants)
                   :class="
                     tenant.isActive
                       ? 'bg-green-50 text-green-700'
-                      : 'bg-gray-100 text-gray-500'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500'
                   "
                 >
                   <span
@@ -144,13 +144,13 @@ onMounted(fetchTenants)
                   {{ tenant.isActive ? 'Active' : 'Inactive' }}
                 </span>
               </td>
-              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 lg:table-cell">
+              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">
                 {{ formatDate(tenant.createdAt) }}
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center justify-end gap-1">
                   <button
-                    class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                    class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
                     title="View details"
                     @click="router.push({ name: 'tenant-detail', params: { id: tenant.id } })"
                   >

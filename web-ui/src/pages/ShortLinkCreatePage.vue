@@ -129,14 +129,14 @@ function goToLinks() {
   <div>
     <div class="flex items-center gap-3">
       <button
-        class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
         @click="router.push({ name: 'short-links' })"
       >
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">Create Short Link</h1>
-        <p class="mt-0.5 text-sm text-gray-500">Generate a new short link for your URL.</p>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Create Short Link</h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Generate a new short link for your URL.</p>
       </div>
     </div>
 
@@ -147,11 +147,11 @@ function goToLinks() {
     >
       <h2 class="text-lg font-semibold text-green-800">Short Link Created!</h2>
       <div class="mt-3 flex items-center gap-2 rounded-md bg-white p-3 shadow-sm">
-        <span class="font-mono text-sm font-medium text-gray-900">
+        <span class="font-mono text-sm font-medium text-gray-900 dark:text-white">
           {{ getShortLinkUrl(createdLink.id) }}
         </span>
         <button
-          class="rounded p-1 text-gray-400 transition-colors hover:text-green-600"
+          class="rounded p-1 text-gray-400 dark:text-gray-500 transition-colors hover:text-green-600"
           title="Copy short link"
           @click="copyCreatedLink"
         >
@@ -162,13 +162,13 @@ function goToLinks() {
           :href="getShortLinkUrl(createdLink.id)"
           target="_blank"
           rel="noopener noreferrer"
-          class="rounded p-1 text-gray-400 transition-colors hover:text-blue-600"
+          class="rounded p-1 text-gray-400 dark:text-gray-500 transition-colors hover:text-blue-600"
           title="Open short link"
         >
           <ExternalLink class="h-4 w-4" />
         </a>
       </div>
-      <p class="mt-2 text-sm text-gray-600">
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">
         Destination:
         <a
           :href="createdLink.url"
@@ -187,7 +187,7 @@ function goToLinks() {
           Create Another
         </button>
         <button
-          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
           @click="goToLinks"
         >
           View All Links
@@ -196,10 +196,10 @@ function goToLinks() {
     </div>
 
     <!-- Create form -->
-    <form v-else class="mt-6 max-w-lg rounded-lg border bg-white p-6" @submit.prevent="handleSubmit">
+    <form v-else class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6" @submit.prevent="handleSubmit">
       <div class="space-y-5">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
             Target URL <span class="text-red-500">*</span>
           </label>
           <input
@@ -207,55 +207,55 @@ function goToLinks() {
             type="text"
             required
             placeholder="example.com/long-url or https://example.com"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             :class="urlError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />
           <p v-if="urlError" class="mt-1 text-xs text-red-600">{{ urlError }}</p>
-          <p v-else class="mt-1 text-xs text-gray-400">
+          <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">
             https:// will be added automatically if omitted.
           </p>
         </div>
 
         <div v-if="isAdmin">
-          <label class="mb-1 block text-sm font-medium text-gray-700">
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
             Custom ID
-            <span class="text-xs font-normal text-gray-400">(optional)</span>
+            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(optional)</span>
           </label>
           <input
             v-model="customId"
             type="text"
             placeholder="my-custom-id"
             maxlength="64"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             :class="customIdError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />
           <p v-if="customIdError" class="mt-1 text-xs text-red-600">{{ customIdError }}</p>
-          <p v-else class="mt-1 text-xs text-gray-400">
+          <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">
             Letters, numbers, hyphens, underscores. 2–64 characters. Leave empty to auto-generate.
           </p>
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
             Description
-            <span class="text-xs font-normal text-gray-400">(optional)</span>
+            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(optional)</span>
           </label>
           <textarea
             v-model="description"
             rows="3"
             placeholder="Describe where this link points to..."
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         <div class="flex items-center gap-3">
-          <label class="text-sm font-medium text-gray-700">Enabled</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">Enabled</label>
           <button
             type="button"
             role="switch"
             :aria-checked="isEnable"
             class="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors"
-            :class="isEnable ? 'bg-blue-600' : 'bg-gray-200'"
+            :class="isEnable ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'"
             @click="isEnable = !isEnable"
           >
             <span
@@ -278,7 +278,7 @@ function goToLinks() {
         </button>
         <button
           type="button"
-          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
           @click="router.push({ name: 'short-links' })"
         >
           Cancel

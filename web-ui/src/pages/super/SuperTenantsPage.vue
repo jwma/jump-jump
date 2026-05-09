@@ -109,16 +109,16 @@ onMounted(fetchTenants)
 <template>
   <div>
     <div>
-      <h1 class="text-xl font-semibold text-gray-900">Tenant Management</h1>
-      <p class="mt-1 text-sm text-gray-500">{{ total }} tenant{{ total !== 1 ? 's' : '' }} total</p>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Tenant Management</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ total }} tenant{{ total !== 1 ? 's' : '' }} total</p>
     </div>
 
     <!-- Table -->
-    <div class="mt-4 overflow-hidden rounded-lg border bg-white">
+    <div class="mt-4 overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:bg-gray-900">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500">
               <th
                 class="px-4 py-3"
                 :aria-sort="sortField === 'name' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
@@ -152,21 +152,21 @@ onMounted(fetchTenants)
           </thead>
           <tbody class="divide-y">
             <tr v-if="loading">
-              <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+              <td colspan="5" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">
                 <Loader2 class="inline h-5 w-5 animate-spin" />
               </td>
             </tr>
             <tr v-else-if="tenants.length === 0">
               <td colspan="5" class="px-4 py-12 text-center">
-                <Building2 class="mx-auto h-10 w-10 text-gray-300" />
-                <p class="mt-3 text-sm font-medium text-gray-500">No tenants yet</p>
-                <p class="mt-1 text-sm text-gray-400">Tenants will appear here once created by users.</p>
+                <Building2 class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
+                <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">No tenants yet</p>
+                <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">Tenants will appear here once created by users.</p>
               </td>
             </tr>
             <tr
               v-for="tenant in sortedTenants"
               :key="tenant.id"
-              class="transition-colors hover:bg-gray-50"
+              class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
             >
               <td class="px-4 py-3">
                 <div class="flex items-center gap-2">
@@ -176,20 +176,20 @@ onMounted(fetchTenants)
                     {{ tenant.name.charAt(0).toUpperCase() }}
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900">{{ tenant.name }}</p>
-                    <p class="text-xs text-gray-400">{{ tenant.id }}</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ tenant.name }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ tenant.id }}</p>
                   </div>
                 </div>
               </td>
               <td class="px-4 py-3">
-                <span class="font-mono text-sm text-gray-600">{{ tenant.slug }}</span>
+                <span class="font-mono text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">{{ tenant.slug }}</span>
               </td>
               <td class="px-4 py-3">
                 <button
                   :disabled="toggleLoading === tenant.id"
                   class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors"
                   :class="[
-                    tenant.isActive ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-gray-100 text-gray-500 hover:bg-gray-200',
+                    tenant.isActive ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:bg-gray-700',
                     toggleLoading === tenant.id ? 'opacity-50' : 'cursor-pointer',
                   ]"
                   @click="handleToggleStatus(tenant)"
@@ -199,13 +199,13 @@ onMounted(fetchTenants)
                   {{ tenant.isActive ? 'Active' : 'Inactive' }}
                 </button>
               </td>
-              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 lg:table-cell">
+              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">
                 {{ formatDate(tenant.createdAt) }}
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center justify-end gap-1">
                   <button
-                    class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                    class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
                     title="View details"
                     @click="router.push({ name: 'super-tenant-detail', params: { id: tenant.id } })"
                   >
@@ -220,20 +220,20 @@ onMounted(fetchTenants)
 
       <!-- Pagination -->
       <div v-if="total > pageSize" class="flex items-center justify-between border-t px-4 py-3">
-        <p class="text-xs text-gray-500">
+        <p class="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
           Page {{ page }} of {{ Math.ceil(total / pageSize) }} ({{ total }} total)
         </p>
         <div class="flex items-center gap-1">
           <button
             :disabled="page <= 1"
-            class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50"
+            class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600 disabled:opacity-50"
             @click="goToPage(page - 1)"
           >
             <ChevronLeft class="h-4 w-4" />
           </button>
           <button
             :disabled="page >= Math.ceil(total / pageSize)"
-            class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50"
+            class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600 disabled:opacity-50"
             @click="goToPage(page + 1)"
           >
             <ChevronRight class="h-4 w-4" />

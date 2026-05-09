@@ -52,21 +52,21 @@ async function handleSubmit() {
   <div>
     <div class="flex items-center gap-3">
       <button
-        class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
         @click="router.push({ name: 'tenants' })"
       >
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">Create Tenant</h1>
-        <p class="mt-0.5 text-sm text-gray-500">Add a new tenant to the system.</p>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Create Tenant</h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Add a new tenant to the system.</p>
       </div>
     </div>
 
-    <form class="mt-6 max-w-lg rounded-lg border bg-white p-6" @submit.prevent="handleSubmit">
+    <form class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6" @submit.prevent="handleSubmit">
       <div class="space-y-5">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
             Name <span class="text-red-500">*</span>
           </label>
           <input
@@ -74,12 +74,12 @@ async function handleSubmit() {
             type="text"
             required
             placeholder="My Organization"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
             Slug <span class="text-red-500">*</span>
           </label>
           <input
@@ -87,11 +87,11 @@ async function handleSubmit() {
             type="text"
             required
             placeholder="my-organization"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             :class="slugError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />
           <p v-if="slugError" class="mt-1 text-xs text-red-600">{{ slugError }}</p>
-          <p v-else class="mt-1 text-xs text-gray-400">URL-friendly identifier (auto-generated from name).</p>
+          <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">URL-friendly identifier (auto-generated from name).</p>
         </div>
       </div>
 
@@ -107,7 +107,7 @@ async function handleSubmit() {
         </button>
         <button
           type="button"
-          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
           @click="router.push({ name: 'tenants' })"
         >
           Cancel

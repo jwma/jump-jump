@@ -446,15 +446,15 @@ onMounted(() => fetchDashboardData())
     <!-- Welcome area -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">{{ greeting }}, {{ auth.username }}</h1>
-        <p class="mt-1 text-sm text-gray-500">
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">{{ greeting }}, {{ auth.username }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Here's an overview of your short links performance.
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <button
           :disabled="loading || refreshing"
-          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 sm:px-4 sm:py-2.5"
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 sm:px-4 sm:py-2.5"
           aria-label="Refresh dashboard"
           @click="handleRefresh"
         >
@@ -474,14 +474,14 @@ onMounted(() => fetchDashboardData())
     <!-- Stats cards -->
     <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       <!-- Total Links -->
-      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
+      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 sm:text-sm">Total Links</p>
-            <p class="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">Total Links</p>
+            <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
               <span
                 v-if="loading"
-                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700"
               />
               <template v-else>{{ totalLinks.toLocaleString() }}</template>
             </p>
@@ -493,14 +493,14 @@ onMounted(() => fetchDashboardData())
       </div>
 
       <!-- Active Links -->
-      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
+      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 sm:text-sm">Active Links</p>
-            <p class="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">Active Links</p>
+            <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
               <span
                 v-if="loading"
-                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+                class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700"
               />
               <template v-else>{{ activeLinks.toLocaleString() }}</template>
             </p>
