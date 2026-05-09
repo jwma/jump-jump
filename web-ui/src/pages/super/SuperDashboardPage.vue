@@ -44,17 +44,17 @@ onMounted(fetchDashboardData)
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
-      <p class="mt-1 text-sm text-gray-500">Platform overview and statistics.</p>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Super Admin Dashboard</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Platform overview and statistics.</p>
     </div>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Total Tenants</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">
-              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tenants</p>
+            <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
               <template v-else>{{ totalTenants.toLocaleString() }}</template>
             </p>
           </div>
@@ -64,12 +64,12 @@ onMounted(fetchDashboardData)
         </div>
       </div>
 
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Total Users</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">
-              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</p>
+            <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
               <template v-else>{{ totalUsers.toLocaleString() }}</template>
             </p>
           </div>
@@ -80,11 +80,11 @@ onMounted(fetchDashboardData)
       </div>
     </div>
 
-    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+    <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
         <div class="flex items-center gap-2">
-          <Building2 class="h-4 w-4 text-gray-500" />
-          <h2 class="text-base font-semibold text-gray-900">Tenants</h2>
+          <Building2 class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tenants</h2>
         </div>
         <router-link
           :to="{ name: 'super-tenants' }"
@@ -97,9 +97,9 @@ onMounted(fetchDashboardData)
         <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
       </div>
       <div v-else-if="recentTenants.length === 0" class="px-5 py-12 text-center">
-        <Building2 class="mx-auto h-10 w-10 text-gray-300" />
-        <p class="mt-3 text-sm font-medium text-gray-500">No tenants yet</p>
-        <p class="mt-1 text-sm text-gray-400">Tenants will appear here once created.</p>
+        <Building2 class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
+        <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">No tenants yet</p>
+        <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">Tenants will appear here once created.</p>
         <router-link
           :to="{ name: 'super-tenants' }"
           class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"

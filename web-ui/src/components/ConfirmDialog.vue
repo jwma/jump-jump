@@ -63,15 +63,15 @@ onBeforeUnmount(() => {
         role="dialog"
         aria-modal="true"
         tabindex="-1"
-        class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
+        class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900"
       >
-        <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ title }}</h3>
         <slot>
-          <p v-if="message" class="mt-2 text-sm text-gray-600">{{ message }}</p>
+          <p v-if="message" class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ message }}</p>
         </slot>
         <div class="mt-4 flex justify-end gap-2">
           <button
-            class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+            class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             @click="emit('cancel')"
           >
             {{ cancelText }}

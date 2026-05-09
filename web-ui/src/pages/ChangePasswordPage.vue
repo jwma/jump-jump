@@ -81,25 +81,25 @@ async function handleSubmit() {
 
 <template>
   <div>
-    <h1 class="text-xl font-semibold text-gray-900">Change Password</h1>
-    <p class="mt-1 text-sm text-gray-500">Update your account password.</p>
+    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Change Password</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update your account password.</p>
 
-    <form class="mt-6 max-w-md rounded-lg border bg-white p-6" @submit.prevent="handleSubmit">
+    <form class="mt-6 max-w-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6" @submit.prevent="handleSubmit">
       <div class="space-y-4">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">Current Password</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Current Password</label>
           <div class="relative">
             <input
               v-model="currentPassword"
               :type="showCurrentPassword ? 'text' : 'password'"
               required
-              class="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             />
             <button
               type="button"
               :aria-label="showCurrentPassword ? 'Hide current password' : 'Show current password'"
               :aria-pressed="showCurrentPassword"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               @click="showCurrentPassword = !showCurrentPassword"
             >
               <Eye v-if="!showCurrentPassword" class="h-4 w-4" />
@@ -108,20 +108,20 @@ async function handleSubmit() {
           </div>
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">New Password</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label>
           <div class="relative">
             <input
               v-model="newPassword"
               :type="showNewPassword ? 'text' : 'password'"
               required
               minlength="6"
-              class="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             />
             <button
               type="button"
               :aria-label="showNewPassword ? 'Hide new password' : 'Show new password'"
               :aria-pressed="showNewPassword"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               @click="showNewPassword = !showNewPassword"
             >
               <Eye v-if="!showNewPassword" class="h-4 w-4" />
@@ -134,30 +134,30 @@ async function handleSubmit() {
                 v-for="i in 5"
                 :key="i"
                 class="h-1.5 flex-1 rounded-full"
-                :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200'"
+                :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200 dark:bg-gray-700'"
               />
             </div>
-            <p class="mt-1 text-xs text-gray-500">
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Strength: <span class="font-medium">{{ passwordStrength.label }}</span>
             </p>
           </div>
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">Confirm New Password</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm New Password</label>
           <div class="relative">
             <input
               v-model="confirmPassword"
               :type="showConfirmPassword ? 'text' : 'password'"
               required
               minlength="6"
-              class="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               :class="confirmPassword && newPassword !== confirmPassword ? 'border-red-300' : ''"
             />
             <button
               type="button"
               :aria-label="showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'"
               :aria-pressed="showConfirmPassword"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               @click="showConfirmPassword = !showConfirmPassword"
             >
               <Eye v-if="!showConfirmPassword" class="h-4 w-4" />

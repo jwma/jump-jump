@@ -55,15 +55,15 @@ const items = computed<BreadcrumbItem[]>(() => {
 
 <template>
   <nav v-if="items.length > 0" class="flex items-center gap-1 text-sm">
-    <router-link to="/" class="text-gray-400 hover:text-gray-600">
+    <router-link to="/" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
       <Home class="h-4 w-4" />
     </router-link>
     <template v-for="(item, i) in items" :key="i">
-      <ChevronRight class="h-3.5 w-3.5 text-gray-300" />
-      <router-link v-if="item.to" class="text-gray-500 hover:text-gray-700" :to="item.to">
+      <ChevronRight class="h-3.5 w-3.5 text-gray-300 dark:text-gray-600" />
+      <router-link v-if="item.to" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" :to="item.to">
         {{ item.label }}
       </router-link>
-      <span v-else class="font-medium text-gray-900">{{ item.label }}</span>
+      <span v-else class="font-medium text-gray-900 dark:text-white">{{ item.label }}</span>
     </template>
   </nav>
 </template>

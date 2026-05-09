@@ -199,21 +199,21 @@ onMounted(fetchMembers)
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <Users class="h-5 w-5 text-gray-500" />
-        <h1 class="text-xl font-semibold text-gray-900">Members</h1>
-        <span v-if="!loading" class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+        <Users class="h-5 w-5 text-gray-500 dark:text-gray-400 dark:text-gray-500" />
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Members</h1>
+        <span v-if="!loading" class="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500">
           {{ members.length }}
         </span>
       </div>
       <div class="flex items-center gap-2">
         <!-- Search -->
         <div class="relative">
-          <Search class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Search members..."
-            class="w-48 rounded-md border border-gray-300 py-2 pl-8 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-48 rounded-md border border-gray-300 dark:border-gray-600 py-2 pl-8 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           />
         </div>
         <button
@@ -229,14 +229,14 @@ onMounted(fetchMembers)
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-20">
-      <Loader2 class="h-6 w-6 animate-spin text-gray-400" />
+      <Loader2 class="h-6 w-6 animate-spin text-gray-400 dark:text-gray-500" />
     </div>
 
     <!-- Members table -->
-    <div v-else class="overflow-hidden rounded-lg border bg-white">
+    <div v-else class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:bg-gray-900">
       <table class="w-full text-sm">
         <thead>
-          <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500">
             <th class="px-4 py-3">User</th>
             <th class="px-4 py-3">Role</th>
             <th class="hidden px-4 py-3 sm:table-cell">Joined</th>
@@ -244,45 +244,45 @@ onMounted(fetchMembers)
           </tr>
         </thead>
         <tbody class="divide-y">
-          <tr v-for="m in filteredMembers" :key="m.userId" class="transition-colors hover:bg-gray-50">
+          <tr v-for="m in filteredMembers" :key="m.userId" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50">
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
                 <div
                   class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                  :class="m.role === UserRole.Admin ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'"
+                  :class="m.role === UserRole.Admin ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-500'"
                 >
                   {{ m.username.charAt(0).toUpperCase() }}
                 </div>
                 <div>
-                  <span class="font-medium text-gray-900">{{ m.username }}</span>
-                  <span v-if="m.userId === auth.authUser?.id" class="ml-1 text-xs text-gray-400">(you)</span>
+                  <span class="font-medium text-gray-900 dark:text-white">{{ m.username }}</span>
+                  <span v-if="m.userId === auth.authUser?.id" class="ml-1 text-xs text-gray-400 dark:text-gray-500">(you)</span>
                 </div>
               </div>
             </td>
             <td class="px-4 py-3">
               <span
                 class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="m.role === UserRole.Admin ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-600'"
+                :class="m.role === UserRole.Admin ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-500'"
               >
                 <Shield v-if="m.role === UserRole.Admin" class="h-3 w-3" />
                 <User v-else class="h-3 w-3" />
                 {{ m.role }}
               </span>
             </td>
-            <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 sm:table-cell">
+            <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 sm:table-cell">
               {{ formatDate(m.joinedAt) }}
             </td>
             <td v-if="auth.isAdmin" class="px-4 py-3">
               <div v-if="m.userId !== auth.authUser?.id" class="flex items-center justify-end gap-1">
                 <button
-                  class="rounded p-1.5 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                  class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600"
                   title="Change role"
                   @click="requestRoleChange(m)"
                 >
                   <ArrowLeftRight class="h-4 w-4" />
                 </button>
                 <button
-                  class="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                  class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
                   title="Remove member"
                   @click="requestRemoveMember(m)"
                 >
@@ -294,13 +294,13 @@ onMounted(fetchMembers)
         </tbody>
       </table>
 
-      <div v-if="filteredMembers.length === 0 && members.length > 0" class="py-12 text-center text-sm text-gray-400">
+      <div v-if="filteredMembers.length === 0 && members.length > 0" class="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
         No members match "{{ searchQuery }}".
       </div>
       <div v-else-if="members.length === 0" class="py-12 text-center">
-        <Users class="mx-auto h-10 w-10 text-gray-300" />
-        <p class="mt-3 text-sm font-medium text-gray-500">No members yet</p>
-        <p class="mt-1 text-sm text-gray-400">Invite a member to start collaborating.</p>
+        <Users class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
+        <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">No members yet</p>
+        <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">Invite a member to start collaborating.</p>
         <button
           v-if="auth.isAdmin"
           class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
@@ -315,7 +315,7 @@ onMounted(fetchMembers)
     <!-- Leave tenant (subtle placement) -->
     <div v-if="!loading" class="mt-6 text-right">
       <button
-        class="text-sm text-gray-400 transition-colors hover:text-gray-600"
+        class="text-sm text-gray-400 dark:text-gray-500 transition-colors hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
         @click="requestLeaveTenant"
       >
         Leave this tenant
@@ -329,26 +329,26 @@ onMounted(fetchMembers)
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
         @click.self="showInvite = false"
       >
-        <div class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
+        <div class="mx-4 w-full max-w-sm rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl">
           <div class="mb-4 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Invite Member</h3>
-            <button class="rounded p-1 text-gray-400 hover:text-gray-600" @click="showInvite = false">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Invite Member</h3>
+            <button class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600" @click="showInvite = false">
               <X class="h-4 w-4" />
             </button>
           </div>
 
           <form @submit.prevent="handleInvite">
             <div class="mb-3">
-              <label for="invite-username-input" class="mb-1 block text-sm font-medium text-gray-700">Username</label>
+              <label for="invite-username-input" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">Username</label>
               <input
                 id="invite-username-input"
                 v-model="inviteUsername"
                 type="text"
                 required
                 placeholder="Enter username to invite"
-                class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               />
-              <p class="mt-1 text-xs text-gray-400">The user will receive an invitation to join this tenant.</p>
+              <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">The user will receive an invitation to join this tenant.</p>
             </div>
 
             <p v-if="inviteError" class="mb-3 text-sm text-red-600">{{ inviteError }}</p>
@@ -356,7 +356,7 @@ onMounted(fetchMembers)
             <div class="flex justify-end gap-2">
               <button
                 type="button"
-                class="rounded-md border px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+                class="rounded-md border px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
                 @click="showInvite = false"
               >
                 Cancel
@@ -383,22 +383,22 @@ onMounted(fetchMembers)
       @confirm="executeRoleChange"
       @cancel="confirmRoleChange = null"
     >
-      <p class="mt-2 text-sm text-gray-600">
-        Change <span class="font-medium text-gray-900">{{ confirmRoleChange?.username }}</span>'s role from
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">
+        Change <span class="font-medium text-gray-900 dark:text-white">{{ confirmRoleChange?.username }}</span>'s role from
         <span class="font-mono font-medium">{{ confirmRoleChange?.currentRole }}</span> to
         <span class="font-mono font-medium">{{ confirmRoleChange?.newRole }}</span>?
       </p>
-      <div class="mt-3 rounded-lg border bg-gray-50 p-3 text-xs text-gray-600">
-        <p class="font-medium text-gray-700">
+      <div class="mt-3 rounded-lg border bg-gray-50 dark:bg-gray-800/50 p-3 text-xs text-gray-600 dark:text-gray-400 dark:text-gray-500">
+        <p class="font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
           {{ confirmRoleChange?.newRole === UserRole.Admin ? 'Admin' : 'Member' }} permissions:
         </p>
-        <ul v-if="confirmRoleChange?.newRole === UserRole.Admin" class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
+        <ul v-if="confirmRoleChange?.newRole === UserRole.Admin" class="mt-1 list-inside list-disc space-y-0.5 text-gray-500 dark:text-gray-400 dark:text-gray-500">
           <li>Manage tenant settings and domains</li>
           <li>Invite and remove members</li>
           <li>Change member roles</li>
           <li>Create, edit, and delete short links</li>
         </ul>
-        <ul v-else class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
+        <ul v-else class="mt-1 list-inside list-disc space-y-0.5 text-gray-500 dark:text-gray-400 dark:text-gray-500">
           <li>Create, edit, and delete short links</li>
           <li>View member list</li>
         </ul>
@@ -416,9 +416,9 @@ onMounted(fetchMembers)
       @confirm="executeRemoveMember"
       @cancel="confirmRemove = null"
     >
-      <p class="mt-2 text-sm text-gray-600">
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">
         Are you sure you want to remove
-        <span class="font-medium text-gray-900">{{ confirmRemove?.username }}</span> from this tenant?
+        <span class="font-medium text-gray-900 dark:text-white">{{ confirmRemove?.username }}</span> from this tenant?
         This action cannot be undone.
       </p>
       <p v-if="removeError" class="mt-2 text-sm text-red-600">{{ removeError }}</p>
@@ -434,8 +434,8 @@ onMounted(fetchMembers)
       @confirm="executeLeaveTenant"
       @cancel="confirmLeave = false"
     >
-      <p class="mt-2 text-sm text-gray-600">
-        Are you sure you want to leave <span class="font-medium text-gray-900">{{ auth.currentTenant?.tenantName }}</span>?
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">
+        Are you sure you want to leave <span class="font-medium text-gray-900 dark:text-white">{{ auth.currentTenant?.tenantName }}</span>?
         You will need to be re-invited to join again.
       </p>
       <p v-if="leaveError" class="mt-2 text-sm text-red-600">{{ leaveError }}</p>
