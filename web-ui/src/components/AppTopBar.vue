@@ -61,6 +61,9 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
       <div class="topbar-dropdown relative">
         <button
           class="relative rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+          aria-label="Open notifications"
+          aria-haspopup="menu"
+          :aria-expanded="notifDropdownOpen"
           @click.stop="notifDropdownOpen = !notifDropdownOpen"
         >
           <Bell class="h-5 w-5" />
@@ -81,6 +84,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
             <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
             <button
               class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              aria-label="Close notifications"
               @click="notifDropdownOpen = false"
             >
               <X class="h-4 w-4" />
@@ -129,6 +133,9 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
       <div class="topbar-dropdown relative">
         <button
           class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-100"
+          aria-label="User menu"
+          aria-haspopup="menu"
+          :aria-expanded="userDropdownOpen"
           @click.stop="userDropdownOpen = !userDropdownOpen"
         >
           <div

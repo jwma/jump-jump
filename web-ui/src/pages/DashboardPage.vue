@@ -455,6 +455,7 @@ onMounted(() => fetchDashboardData())
         <button
           :disabled="loading || refreshing"
           class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 sm:px-4 sm:py-2.5"
+          aria-label="Refresh dashboard"
           @click="handleRefresh"
         >
           <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': refreshing }" />

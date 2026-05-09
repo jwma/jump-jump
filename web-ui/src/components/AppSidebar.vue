@@ -217,6 +217,7 @@ async function handleLogout() {
         <li v-for="item in menuItems" :key="item.label" class="sidebar-tooltip-wrapper">
           <router-link
             :to="item.to"
+            :aria-label="layout.sidebarCollapsed ? item.label : undefined"
             :class="[
               'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
               isActive(item.to)
@@ -302,7 +303,8 @@ async function handleLogout() {
   border-right-color: #1f2937;
 }
 
-.sidebar-tooltip-wrapper:hover .sidebar-tooltip {
+.sidebar-tooltip-wrapper:hover .sidebar-tooltip,
+.sidebar-tooltip-wrapper:focus-within .sidebar-tooltip {
   opacity: 1;
 }
 </style>

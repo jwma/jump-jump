@@ -406,6 +406,8 @@ onMounted(fetchLinks)
             <span class="font-mono text-sm font-medium text-gray-900">{{ link.id }}</span>
             <button
               class="rounded p-0.5 text-gray-400 hover:text-blue-600"
+              title="Copy short link"
+              aria-label="Copy short link"
               @click="copyLink(link.id)"
             >
               <Copy v-if="copiedId !== link.id" class="h-3.5 w-3.5" />
@@ -440,18 +442,24 @@ onMounted(fetchLinks)
           <div class="flex items-center gap-1">
             <button
               class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              title="View details"
+              aria-label="View details"
               @click="router.push({ name: 'short-link-detail', params: { id: link.id } })"
             >
               <Eye class="h-4 w-4" />
             </button>
             <button
               class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              title="Edit"
+              aria-label="Edit"
               @click="router.push({ name: 'short-link-edit', params: { id: link.id } })"
             >
               <Pencil class="h-4 w-4" />
             </button>
             <button
               class="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+              title="Delete"
+              aria-label="Delete"
               @click="confirmDeleteId = link.id"
             >
               <Trash2 class="h-4 w-4" />
@@ -472,6 +480,7 @@ onMounted(fetchLinks)
           <button
             :disabled="page <= 1"
             class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 disabled:opacity-30"
+            aria-label="Previous page"
             @click="goPage(page - 1)"
           >
             <ChevronLeft class="h-5 w-5" />
@@ -480,6 +489,7 @@ onMounted(fetchLinks)
           <button
             :disabled="page >= totalPages"
             class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 disabled:opacity-30"
+            aria-label="Next page"
             @click="goPage(page + 1)"
           >
             <ChevronRight class="h-5 w-5" />

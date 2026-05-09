@@ -455,11 +455,15 @@ onMounted(fetchAll)
                     target="_blank"
                     rel="noopener noreferrer"
                     class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                    title="Open domain"
+                    aria-label="Open domain"
                   >
                     <ExternalLink class="h-4 w-4" />
                   </a>
                   <button
                     class="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                    title="Delete domain"
+                    aria-label="Delete domain"
                     @click="confirmDeleteDomain = d.domain"
                   >
                     <Trash2 class="h-4 w-4" />
