@@ -514,22 +514,22 @@ onMounted(() => fetchDashboardData())
       </div>
 
       <!-- Today's Visits -->
-      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
+      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 sm:text-sm">{{ t('dashboard.todayVisits') }}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">{{ t('dashboard.todayVisits') }}</p>
             <div class="mt-1 flex items-baseline gap-2">
-              <p class="text-xl font-bold text-gray-900 sm:text-2xl">
+              <p class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                 <span
                   v-if="loading"
-                  class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+                  class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700"
                 />
                 <template v-else>{{ todayVisits.toLocaleString() }}</template>
               </p>
               <span
                 v-if="!loading && todayTrend"
                 class="inline-flex items-center gap-0.5 text-xs font-medium"
-                :class="todayTrend.dir === 'up' ? 'text-green-600' : todayTrend.dir === 'down' ? 'text-red-500' : 'text-gray-400'"
+                :class="todayTrend.dir === 'up' ? 'text-green-600 dark:text-green-400' : todayTrend.dir === 'down' ? 'text-red-500 dark:text-red-400' : 'text-gray-400'"
               >
                 <TrendingUp v-if="todayTrend.dir === 'up'" class="h-3 w-3" />
                 <TrendingDown v-else-if="todayTrend.dir === 'down'" class="h-3 w-3" />
@@ -538,7 +538,7 @@ onMounted(() => fetchDashboardData())
               </span>
             </div>
           </div>
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 sm:h-10 sm:w-10">
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/20 sm:h-10 sm:w-10">
             <MousePointerClick class="h-4 w-4 text-purple-600 sm:h-5 sm:w-5" />
           </div>
         </div>
@@ -546,22 +546,22 @@ onMounted(() => fetchDashboardData())
       </div>
 
       <!-- Period Visits -->
-      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
+      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 sm:text-sm">{{ periodLabel }}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">{{ periodLabel }}</p>
             <div class="mt-1 flex items-baseline gap-2">
-              <p class="text-xl font-bold text-gray-900 sm:text-2xl">
+              <p class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                 <span
                   v-if="loading"
-                  class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200"
+                  class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700"
                 />
                 <template v-else>{{ periodVisits.toLocaleString() }}</template>
               </p>
               <span
                 v-if="!loading && periodTrend"
                 class="inline-flex items-center gap-0.5 text-xs font-medium"
-                :class="periodTrend.dir === 'up' ? 'text-green-600' : periodTrend.dir === 'down' ? 'text-red-500' : 'text-gray-400'"
+                :class="periodTrend.dir === 'up' ? 'text-green-600 dark:text-green-400' : periodTrend.dir === 'down' ? 'text-red-500 dark:text-red-400' : 'text-gray-400'"
               >
                 <TrendingUp v-if="periodTrend.dir === 'up'" class="h-3 w-3" />
                 <TrendingDown v-else-if="periodTrend.dir === 'down'" class="h-3 w-3" />
@@ -570,7 +570,7 @@ onMounted(() => fetchDashboardData())
               </span>
             </div>
           </div>
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 sm:h-10 sm:w-10">
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/20 sm:h-10 sm:w-10">
             <BarChart3 class="h-4 w-4 text-orange-600 sm:h-5 sm:w-5" />
           </div>
         </div>
@@ -581,17 +581,17 @@ onMounted(() => fetchDashboardData())
     <!-- Chart + Recent Links -->
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-6">
       <!-- Visit Trend Chart -->
-      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5 lg:col-span-3">
+      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5 lg:col-span-3">
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <TrendingUp class="h-4 w-4 text-gray-500" />
-            <h2 class="text-base font-semibold text-gray-900">{{ t('dashboard.visitTrends') }}</h2>
+            <TrendingUp class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('dashboard.visitTrends') }}</h2>
           </div>
-          <div class="flex rounded-lg border border-gray-200 p-0.5">
+          <div class="flex rounded-lg border border-gray-200 dark:border-gray-700 p-0.5">
             <button
               :class="[
                 'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                trendDays === 7 ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-gray-700',
+                trendDays === 7 ? 'bg-blue-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
               ]"
               @click="switchTrend(7)"
             >
@@ -600,7 +600,7 @@ onMounted(() => fetchDashboardData())
             <button
               :class="[
                 'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                trendDays === 30 ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-gray-700',
+                trendDays === 30 ? 'bg-blue-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
               ]"
               @click="switchTrend(30)"
             >
@@ -611,19 +611,19 @@ onMounted(() => fetchDashboardData())
         <div v-if="chartLoading" class="h-64">
           <!-- Chart skeleton -->
           <div class="flex h-full items-end gap-3 px-2 pt-4">
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 55%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 75%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 45%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 85%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 65%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 40%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100" style="height: 70%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 55%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 75%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 45%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 85%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 65%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 40%" />
+            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 70%" />
           </div>
           <div class="mt-3 flex justify-between px-2">
-            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100" />
-            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100" />
-            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100" />
-            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100" />
+            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+            <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
           </div>
         </div>
         <div v-else class="h-48 sm:h-64">
@@ -638,22 +638,22 @@ onMounted(() => fetchDashboardData())
       </div>
 
       <!-- Recent Links -->
-      <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5 lg:col-span-2">
+      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5 lg:col-span-2">
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <Clock class="h-4 w-4 text-gray-500" />
-            <h2 class="text-base font-semibold text-gray-900">{{ t('dashboard.recentLinks') }}</h2>
+            <Clock class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('dashboard.recentLinks') }}</h2>
           </div>
           <router-link
             :to="{ name: 'short-links' }"
-            class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+            class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
           >
             {{ t('dashboard.viewAll') }}
             <ArrowRight class="h-3 w-3" />
           </router-link>
         </div>
         <div v-if="loading" class="space-y-3">
-          <div v-for="i in 5" :key="i" class="h-12 animate-pulse rounded-lg bg-gray-100" />
+          <div v-for="i in 5" :key="i" class="h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
         </div>
         <div v-else-if="recentLinks.length === 0" class="py-8 text-center">
           <Link class="mx-auto h-8 w-8 text-gray-300" />
@@ -666,7 +666,7 @@ onMounted(() => fetchDashboardData())
             {{ t('dashboard.createFirstLink') }}
           </router-link>
         </div>
-        <ul v-else class="divide-y divide-gray-100">
+        <ul v-else class="divide-y divide-gray-100 dark:divide-gray-800">
           <li
             v-for="link in recentLinks"
             :key="link.id"
@@ -674,23 +674,23 @@ onMounted(() => fetchDashboardData())
           >
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
-                <span class="font-mono text-sm font-medium text-gray-900">{{ link.id }}</span>
+                <span class="font-mono text-sm font-medium text-gray-900 dark:text-white">{{ link.id }}</span>
                 <span
                   class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium"
                   :class="
-                    link.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
+                    link.isEnable ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                   "
                 >
                   {{ link.isEnable ? t('common.active') : t('common.inactive') }}
                 </span>
               </div>
-              <p class="mt-0.5 truncate text-xs text-gray-500">{{ link.url }}</p>
+              <p class="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">{{ link.url }}</p>
             </div>
             <div
               class="ml-3 flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
             >
               <button
-                class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
                 :title="t('dashboard.copyShortLink')"
                 @click="copyLink(link.id)"
               >
@@ -698,7 +698,7 @@ onMounted(() => fetchDashboardData())
                 <Check v-else class="h-3.5 w-3.5 text-green-500" />
               </button>
               <button
-                class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
                 :title="t('dashboard.viewDetails')"
                 @click="router.push({ name: 'short-link-detail', params: { id: link.id } })"
               >
@@ -711,17 +711,17 @@ onMounted(() => fetchDashboardData())
     </div>
 
     <!-- Top 10 Links -->
-    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+      <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-5 py-4">
         <div class="flex items-center gap-2">
           <BarChart3 class="h-4 w-4 text-gray-500" />
-          <h2 class="text-base font-semibold text-gray-900">{{ t('dashboard.topLinks') }}</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('dashboard.topLinks') }}</h2>
         </div>
         <span class="text-xs text-gray-400">{{ t('dashboard.basedOnDays', { days: trendDays }) }}</span>
       </div>
       <div v-if="loading" class="p-6">
         <div class="space-y-3">
-          <div v-for="i in 5" :key="i" class="h-10 animate-pulse rounded-lg bg-gray-100" />
+          <div v-for="i in 5" :key="i" class="h-10 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
         </div>
       </div>
       <div v-else-if="topLinks.length === 0" class="px-5 py-12 text-center">
@@ -730,7 +730,7 @@ onMounted(() => fetchDashboardData())
       </div>
       <div v-else>
         <!-- Mobile cards -->
-        <div class="divide-y divide-gray-50 md:hidden">
+        <div class="divide-y divide-gray-50 dark:divide-gray-800 md:hidden">
           <div
             v-for="(item, index) in topLinks"
             :key="item.link.id"
@@ -739,7 +739,7 @@ onMounted(() => fetchDashboardData())
             <span
               :class="[
                 'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                index < 3 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500',
+                index < 3 ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
               ]"
             >
               {{ index + 1 }}
@@ -747,14 +747,14 @@ onMounted(() => fetchDashboardData())
             <div class="min-w-0 flex-1">
               <router-link
                 :to="{ name: 'short-link-detail', params: { id: item.link.id } }"
-                class="font-mono text-sm font-medium text-blue-600 hover:text-blue-700"
+                class="font-mono text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
               >
                 {{ item.link.id }}
               </router-link>
               <p class="truncate text-xs text-gray-400">{{ item.link.url }}</p>
             </div>
             <div class="shrink-0 text-right text-sm">
-              <p class="font-semibold text-gray-900">{{ item.pv.toLocaleString() }}</p>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ item.pv.toLocaleString() }}</p>
               <p class="text-xs text-gray-400">{{ item.uv.toLocaleString() }} uv</p>
             </div>
           </div>
@@ -764,7 +764,7 @@ onMounted(() => fetchDashboardData())
           <table class="w-full text-sm">
             <thead>
               <tr
-                class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                class="border-b border-gray-100 dark:border-gray-800 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
               >
                 <th class="w-12 px-5 py-3">#</th>
                 <th class="px-5 py-3">{{ t('dashboard.shortLink') }}</th>
@@ -773,17 +773,17 @@ onMounted(() => fetchDashboardData())
                 <th class="px-5 py-3 text-right">UV</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-50">
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
               <tr
                 v-for="(item, index) in topLinks"
                 :key="item.link.id"
-                class="transition-colors hover:bg-gray-50"
+                class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 <td class="px-5 py-3">
                   <span
                     :class="[
                       'inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold',
-                      index < 3 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500',
+                      index < 3 ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
                     ]"
                   >
                     {{ index + 1 }}
@@ -792,18 +792,18 @@ onMounted(() => fetchDashboardData())
                 <td class="px-5 py-3">
                   <router-link
                     :to="{ name: 'short-link-detail', params: { id: item.link.id } }"
-                    class="inline-flex items-center gap-1 font-mono text-sm font-medium text-blue-600 hover:text-blue-700"
+                    class="inline-flex items-center gap-1 font-mono text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                   >
                     {{ item.link.id }}
                   </router-link>
                 </td>
-                <td class="max-w-[280px] truncate px-5 py-3 text-gray-500">
+                <td class="max-w-[280px] truncate px-5 py-3 text-gray-500 dark:text-gray-400">
                   {{ item.link.url }}
                 </td>
-                <td class="whitespace-nowrap px-5 py-3 text-right font-semibold text-gray-900">
+                <td class="whitespace-nowrap px-5 py-3 text-right font-semibold text-gray-900 dark:text-white">
                   {{ item.pv.toLocaleString() }}
                 </td>
-                <td class="whitespace-nowrap px-5 py-3 text-right text-gray-600">
+                <td class="whitespace-nowrap px-5 py-3 text-right text-gray-600 dark:text-gray-400">
                   {{ item.uv.toLocaleString() }}
                 </td>
               </tr>
