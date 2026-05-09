@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import NProgress from 'nprogress'
 import { useAuthStore } from '@/stores/auth'
 import { UserRole } from '@/types/api'
+
+NProgress.configure({ showSpinner: false })
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -117,7 +120,7 @@ const router = createRouter({
         {
           path: 'preferences',
           name: 'preferences',
-          redirect: { name: 'dashboard' },
+          component: () => import('@/pages/PreferencesPage.vue'),
         },
         {
           path: 'change-password',
@@ -146,6 +149,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
+  NProgress.start()
   const auth = useAuthStore()
 
   if (to.meta.requiresAuth !== false && !auth.isLoggedIn) {
@@ -190,6 +194,14 @@ router.beforeEach(async (to) => {
   if (to.name === 'login' && auth.isLoggedIn) {
     return { name: auth.currentTenantId ? 'dashboard' : 'select-tenant' }
   }
+})
+
+router.afterEach(() => {
+  NProgress.done()
+})
+
+router.onError(() => {
+  NProgress.done()
 })
 
 export default router

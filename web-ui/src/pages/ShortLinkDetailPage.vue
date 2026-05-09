@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getShortLink, getShortLinkData } from '@/api/short-link'
@@ -354,14 +356,14 @@ onMounted(() => {
   <div>
     <div class="flex items-center gap-3">
       <button
-        class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
         @click="router.push({ name: 'short-links' })"
       >
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div class="flex-1">
-        <h1 class="text-xl font-semibold text-gray-900">Short Link Detail</h1>
-        <p v-if="link" class="mt-0.5 text-sm text-gray-500">
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('shortLinkDetail.title') }}</h1>
+        <p v-if="link" class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
           <span class="font-mono font-medium text-blue-600">{{ shortLinkUrl }}</span>
         </p>
       </div>
@@ -375,9 +377,9 @@ onMounted(() => {
       </button>
     </div>
 
-    <div v-if="loading" class="mt-6 text-center text-gray-400">Loading...</div>
+    <div v-if="loading" class="mt-6 text-center text-gray-400 dark:text-gray-500">Loading...</div>
 
-    <div v-else-if="notFound" class="mt-6 text-center text-gray-400">
+    <div v-else-if="notFound" class="mt-6 text-center text-gray-400 dark:text-gray-500">
       Short link not found.
       <button
         class="ml-2 text-blue-600 hover:underline"
@@ -389,10 +391,10 @@ onMounted(() => {
 
     <template v-else-if="link">
       <!-- Basic info card -->
-      <div class="mt-4 rounded-lg border bg-white p-5">
+      <div class="mt-4 rounded-lg border bg-white dark:bg-gray-900 p-5">
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Short Link</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.shortLink') }}</label>
             <div class="mt-1 flex items-center gap-2">
               <a
                 :href="shortLinkUrl"
@@ -403,7 +405,7 @@ onMounted(() => {
                 {{ shortLinkUrl }}
               </a>
               <button
-                class="rounded p-0.5 text-gray-400 transition-colors hover:text-blue-600"
+                class="rounded p-0.5 text-gray-400 dark:text-gray-500 transition-colors hover:text-blue-600"
                 @click="copyLink"
               >
                 <Copy v-if="!copied" class="h-3.5 w-3.5" />
@@ -412,7 +414,7 @@ onMounted(() => {
             </div>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Target URL</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.targetUrl') }}</label>
             <a
               :href="link.url"
               target="_blank"
@@ -424,29 +426,29 @@ onMounted(() => {
             </a>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Description</label>
-            <p class="mt-1 text-sm text-gray-700">{{ link.description || '—' }}</p>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.description') }}</label>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ link.description || '—' }}</p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Status</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.status') }}</label>
             <span
               class="mt-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-              :class="link.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
+              :class="link.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500'"
             >
               <span
                 class="h-1.5 w-1.5 rounded-full"
                 :class="link.isEnable ? 'bg-green-500' : 'bg-gray-400'"
               />
-              {{ link.isEnable ? 'Enabled' : 'Disabled' }}
+              {{ link.isEnable ? t('common.enabled') : t('common.disabled') }}
             </span>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Created By</label>
-            <p class="mt-1 text-sm text-gray-700">{{ link.createdBy }}</p>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.createdBy') }}</label>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ link.createdBy }}</p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Created</label>
-            <p class="mt-1 text-sm text-gray-700">{{ formatDate(link.createTime) }}</p>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.created') }}</label>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ formatDate(link.createTime) }}</p>
           </div>
         </div>
       </div>
@@ -454,14 +456,14 @@ onMounted(() => {
       <!-- Analytics section -->
       <div class="mt-6">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">Access Analytics</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('shortLinkDetail.accessAnalytics') }}</h2>
           <div class="flex items-center gap-2">
-            <div class="flex items-center gap-1 rounded-lg border bg-white p-1">
+            <div class="flex items-center gap-1 rounded-lg border bg-white dark:bg-gray-900 p-1">
               <button
                 v-for="d in [7, 14, 30]"
                 :key="d"
                 class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
-                :class="daysAgo === d ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
+                :class="daysAgo === d ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'"
                 @click="setDateRange(d)"
               >
                 {{ d }}d
@@ -472,43 +474,43 @@ onMounted(() => {
 
         <!-- Stats cards -->
         <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div class="rounded-lg border bg-white p-4">
-            <div class="flex items-center gap-2 text-gray-400">
+          <div class="rounded-lg border bg-white dark:bg-gray-900 p-4">
+            <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
               <Calendar class="h-4 w-4" />
-              <span class="text-xs font-medium uppercase">Total Visits</span>
+              <span class="text-xs font-medium uppercase">{{ t('shortLinkDetail.totalVisits') }}</span>
             </div>
-            <p class="mt-2 text-2xl font-bold text-gray-900">{{ totalVisits }}</p>
+            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ totalVisits }}</p>
           </div>
-          <div class="rounded-lg border bg-white p-4">
-            <div class="flex items-center gap-2 text-gray-400">
+          <div class="rounded-lg border bg-white dark:bg-gray-900 p-4">
+            <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
               <Globe class="h-4 w-4" />
-              <span class="text-xs font-medium uppercase">Unique IPs</span>
+              <span class="text-xs font-medium uppercase">{{ t('shortLinkDetail.uniqueIps') }}</span>
             </div>
-            <p class="mt-2 text-2xl font-bold text-gray-900">{{ uniqueIps }}</p>
+            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ uniqueIps }}</p>
           </div>
-          <div class="rounded-lg border bg-white p-4">
-            <div class="flex items-center gap-2 text-gray-400">
+          <div class="rounded-lg border bg-white dark:bg-gray-900 p-4">
+            <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
               <Monitor class="h-4 w-4" />
-              <span class="text-xs font-medium uppercase">Platforms</span>
+              <span class="text-xs font-medium uppercase">{{ t('shortLinkDetail.platforms') }}</span>
             </div>
-            <p class="mt-2 text-2xl font-bold text-gray-900">{{ osDistribution.length }}</p>
+            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ osDistribution.length }}</p>
           </div>
-          <div class="rounded-lg border bg-white p-4">
-            <div class="flex items-center gap-2 text-gray-400">
+          <div class="rounded-lg border bg-white dark:bg-gray-900 p-4">
+            <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
               <Calendar class="h-4 w-4" />
-              <span class="text-xs font-medium uppercase">Avg/Day</span>
+              <span class="text-xs font-medium uppercase">{{ t('shortLinkDetail.avgDay') }}</span>
             </div>
-            <p class="mt-2 text-2xl font-bold text-gray-900">
+            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
               {{ daysAgo > 0 ? (totalVisits / daysAgo).toFixed(1) : 0 }}
             </p>
           </div>
         </div>
 
         <!-- Tab switcher -->
-        <div class="mt-6 flex gap-1 rounded-lg border bg-white p-1 w-fit">
+        <div class="mt-6 flex gap-1 rounded-lg border bg-white dark:bg-gray-900 p-1 w-fit">
           <button
             class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="activeTab === 'trend' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
+            :class="activeTab === 'trend' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'"
             @click="activeTab = 'trend'"
           >
             <LayoutGrid class="h-3.5 w-3.5" />
@@ -516,7 +518,7 @@ onMounted(() => {
           </button>
           <button
             class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="activeTab === 'records' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
+            :class="activeTab === 'records' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'"
             @click="activeTab = 'records'"
           >
             <FileText class="h-3.5 w-3.5" />
@@ -527,14 +529,14 @@ onMounted(() => {
         <!-- Charts tab -->
         <template v-if="activeTab === 'trend'">
           <!-- Visit trend chart -->
-          <div class="mt-4 rounded-lg border bg-white p-5">
-            <h3 class="mb-4 text-sm font-semibold text-gray-700">Visit Trend</h3>
+          <div class="mt-4 rounded-lg border bg-white dark:bg-gray-900 p-5">
+            <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkDetail.visitTrend') }}</h3>
             <div v-if="chartLoading" class="flex h-56 items-center justify-center">
-              <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
+              <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
             </div>
             <div
               v-else-if="totalVisits === 0"
-              class="flex h-56 items-center justify-center text-sm text-gray-400"
+              class="flex h-56 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
             >
               No data for this period.
             </div>
@@ -551,14 +553,14 @@ onMounted(() => {
 
           <!-- OS & Browser distribution charts -->
           <div class="mt-4 grid gap-4 lg:grid-cols-2">
-            <div class="rounded-lg border bg-white p-5">
-              <h3 class="mb-4 text-sm font-semibold text-gray-700">OS Distribution</h3>
+            <div class="rounded-lg border bg-white dark:bg-gray-900 p-5">
+              <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkDetail.osDistribution') }}</h3>
               <div v-if="chartLoading" class="flex h-56 items-center justify-center">
-                <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
+                <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
               </div>
               <div
                 v-else-if="osDistribution.length === 0"
-                class="flex h-56 items-center justify-center text-sm text-gray-400"
+                class="flex h-56 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
               >
                 No data for this period.
               </div>
@@ -573,14 +575,14 @@ onMounted(() => {
               </div>
             </div>
 
-            <div class="rounded-lg border bg-white p-5">
-              <h3 class="mb-4 text-sm font-semibold text-gray-700">Browser Distribution</h3>
+            <div class="rounded-lg border bg-white dark:bg-gray-900 p-5">
+              <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkDetail.browserDistribution') }}</h3>
               <div v-if="chartLoading" class="flex h-56 items-center justify-center">
-                <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
+                <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
               </div>
               <div
                 v-else-if="browserDistribution.length === 0"
-                class="flex h-56 items-center justify-center text-sm text-gray-400"
+                class="flex h-56 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
               >
                 No data for this period.
               </div>
@@ -597,14 +599,14 @@ onMounted(() => {
           </div>
 
           <!-- Referer distribution -->
-          <div class="mt-4 rounded-lg border bg-white p-5">
-            <h3 class="mb-4 text-sm font-semibold text-gray-700">Referer Sources</h3>
+          <div class="mt-4 rounded-lg border bg-white dark:bg-gray-900 p-5">
+            <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkDetail.refererSources') }}</h3>
             <div v-if="chartLoading" class="flex h-56 items-center justify-center">
-              <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
+              <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
             </div>
             <div
               v-else-if="refererDistribution.length === 0"
-              class="flex h-56 items-center justify-center text-sm text-gray-400"
+              class="flex h-56 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
             >
               No data for this period.
             </div>
@@ -620,31 +622,31 @@ onMounted(() => {
           </div>
 
           <!-- IP distribution table -->
-          <div class="mt-4 rounded-lg border bg-white p-5">
-            <h3 class="mb-4 text-sm font-semibold text-gray-700">Top IPs</h3>
-            <div v-if="ipDistribution.length === 0" class="py-8 text-center text-sm text-gray-400">
+          <div class="mt-4 rounded-lg border bg-white dark:bg-gray-900 p-5">
+            <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkDetail.topIps') }}</h3>
+            <div v-if="ipDistribution.length === 0" class="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
               No data for this period.
             </div>
             <table v-else class="w-full text-left text-sm">
               <thead>
-                <tr class="border-b text-xs font-medium uppercase text-gray-400">
-                  <th class="pb-2 pr-4">IP Address</th>
-                  <th class="pb-2 pr-4 text-right">Visits</th>
-                  <th class="pb-2 text-right">Percentage</th>
+                <tr class="border-b text-xs font-medium uppercase text-gray-400 dark:text-gray-500">
+                  <th class="pb-2 pr-4">{{ t('shortLinkDetail.ipAddress') }}</th>
+                  <th class="pb-2 pr-4 text-right">{{ t('shortLinkDetail.visits') }}</th>
+                  <th class="pb-2 text-right">{{ t('shortLinkDetail.percentage') }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
                   v-for="item in ipDistribution"
                   :key="item.ip"
-                  class="border-b border-gray-50 last:border-0"
+                  class="border-b border-gray-50 dark:border-gray-800 last:border-0"
                 >
-                  <td class="py-2 pr-4 font-mono text-gray-700">{{ item.ip }}</td>
-                  <td class="py-2 pr-4 text-right font-medium text-gray-600">{{ item.count }}</td>
+                  <td class="py-2 pr-4 font-mono text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ item.ip }}</td>
+                  <td class="py-2 pr-4 text-right font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500">{{ item.count }}</td>
                   <td class="py-2 text-right">
                     <span class="inline-flex items-center gap-2">
-                      <span class="text-gray-500">{{ item.percent }}%</span>
-                      <span class="inline-block h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
+                      <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ item.percent }}%</span>
+                      <span class="inline-block h-1.5 w-16 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
                         <span
                           class="inline-block h-full rounded-full bg-emerald-500"
                           :style="{ width: `${item.percent}%` }"
@@ -660,13 +662,13 @@ onMounted(() => {
 
         <!-- Access records tab -->
         <template v-if="activeTab === 'records'">
-          <div class="mt-4 rounded-lg border bg-white">
+          <div class="mt-4 rounded-lg border bg-white dark:bg-gray-900">
             <div v-if="chartLoading" class="flex h-40 items-center justify-center">
-              <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
+              <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
             </div>
             <div
               v-else-if="histories.length === 0"
-              class="flex h-40 items-center justify-center text-sm text-gray-400"
+              class="flex h-40 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
             >
               No access records for this period.
             </div>
@@ -674,38 +676,38 @@ onMounted(() => {
               <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
                   <thead>
-                    <tr class="border-b bg-gray-50 text-xs font-medium uppercase text-gray-400">
-                      <th class="px-4 py-3">Time</th>
-                      <th class="px-4 py-3">IP</th>
-                      <th class="px-4 py-3">Browser</th>
-                      <th class="px-4 py-3">OS</th>
-                      <th class="px-4 py-3">Referer</th>
-                      <th class="px-4 py-3">User Agent</th>
+                    <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-xs font-medium uppercase text-gray-400 dark:text-gray-500">
+                      <th class="px-4 py-3">{{ t('shortLinkDetail.time') }}</th>
+                      <th class="px-4 py-3">{{ t('shortLinkDetail.ip') }}</th>
+                      <th class="px-4 py-3">{{ t('shortLinkDetail.browser') }}</th>
+                      <th class="px-4 py-3">{{ t('shortLinkDetail.os') }}</th>
+                      <th class="px-4 py-3">{{ t('shortLinkDetail.referer') }}</th>
+                      <th class="px-4 py-3">{{ t('shortLinkDetail.userAgent') }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr
                       v-for="h in histories"
                       :key="h.id"
-                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      class="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50/50"
                     >
-                      <td class="whitespace-nowrap px-4 py-2.5 text-gray-600">
+                      <td class="whitespace-nowrap px-4 py-2.5 text-gray-600 dark:text-gray-400 dark:text-gray-500">
                         {{ formatDate(h.time) }}
                       </td>
-                      <td class="whitespace-nowrap px-4 py-2.5 font-mono text-gray-700">
+                      <td class="whitespace-nowrap px-4 py-2.5 font-mono text-gray-700 dark:text-gray-300 dark:text-gray-600">
                         {{ h.ip }}
                       </td>
-                      <td class="whitespace-nowrap px-4 py-2.5 text-gray-600">
+                      <td class="whitespace-nowrap px-4 py-2.5 text-gray-600 dark:text-gray-400 dark:text-gray-500">
                         {{ h.browser || parseBrowser(h.ua) || '—' }}
                       </td>
-                      <td class="whitespace-nowrap px-4 py-2.5 text-gray-600">
+                      <td class="whitespace-nowrap px-4 py-2.5 text-gray-600 dark:text-gray-400 dark:text-gray-500">
                         {{ parseOS(h.ua) }}
                       </td>
-                      <td class="max-w-[200px] truncate px-4 py-2.5 text-gray-600">
+                      <td class="max-w-[200px] truncate px-4 py-2.5 text-gray-600 dark:text-gray-400 dark:text-gray-500">
                         {{ h.referer ? extractRefererSource(h.referer) : 'Direct' }}
                       </td>
                       <td
-                        class="max-w-[300px] truncate px-4 py-2.5 text-xs text-gray-400"
+                        class="max-w-[300px] truncate px-4 py-2.5 text-xs text-gray-400 dark:text-gray-500"
                         :title="h.ua"
                       >
                         {{ h.ua }}
@@ -714,7 +716,7 @@ onMounted(() => {
                   </tbody>
                 </table>
               </div>
-              <div class="border-t px-4 py-3 text-xs text-gray-400">
+              <div class="border-t px-4 py-3 text-xs text-gray-400 dark:text-gray-500">
                 {{ histories.length }} record{{ histories.length !== 1 ? 's' : '' }}
               </div>
             </template>

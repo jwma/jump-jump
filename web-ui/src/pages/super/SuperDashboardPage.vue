@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { listSuperUsers, listSuperTenants } from '@/api/super'
 import { Building2, Users, Loader2 } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 defineOptions({ name: 'SuperDashboardPage' })
 
@@ -44,17 +47,17 @@ onMounted(fetchDashboardData)
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
-      <p class="mt-1 text-sm text-gray-500">Platform overview and statistics.</p>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('super.dashboard.title') }}</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('super.dashboard.subtitle') }}</p>
     </div>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Total Tenants</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">
-              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('super.dashboard.totalTenants') }}</p>
+            <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
               <template v-else>{{ totalTenants.toLocaleString() }}</template>
             </p>
           </div>
@@ -64,12 +67,12 @@ onMounted(fetchDashboardData)
         </div>
       </div>
 
-      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Total Users</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">
-              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200" />
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('super.dashboard.totalUsers') }}</p>
+            <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+              <span v-if="loading" class="inline-block h-7 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
               <template v-else>{{ totalUsers.toLocaleString() }}</template>
             </p>
           </div>
@@ -80,65 +83,65 @@ onMounted(fetchDashboardData)
       </div>
     </div>
 
-    <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+    <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+      <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
         <div class="flex items-center gap-2">
-          <Building2 class="h-4 w-4 text-gray-500" />
-          <h2 class="text-base font-semibold text-gray-900">Tenants</h2>
+          <Building2 class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('super.dashboard.tenants') }}</h2>
         </div>
         <router-link
           :to="{ name: 'super-tenants' }"
           class="text-xs font-medium text-blue-600 hover:text-blue-700"
         >
-          View all
+          {{ t('common.viewAll') }}
         </router-link>
       </div>
       <div v-if="loading" class="flex items-center justify-center p-8">
         <Loader2 class="h-5 w-5 animate-spin text-gray-400" />
       </div>
       <div v-else-if="recentTenants.length === 0" class="px-5 py-12 text-center">
-        <Building2 class="mx-auto h-10 w-10 text-gray-300" />
-        <p class="mt-3 text-sm font-medium text-gray-500">No tenants yet</p>
-        <p class="mt-1 text-sm text-gray-400">Tenants will appear here once created.</p>
+        <Building2 class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
+        <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('super.dashboard.noTenants') }}</p>
+        <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">{{ t('super.dashboard.tenantsWillAppear') }}</p>
         <router-link
           :to="{ name: 'super-tenants' }"
           class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
         >
-          View all tenants
+          {{ t('super.dashboard.viewAllTenants') }}
         </router-link>
       </div>
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-              <th class="px-5 py-3">Name</th>
-              <th class="px-5 py-3">Slug</th>
-              <th class="px-5 py-3">Status</th>
-              <th class="hidden px-5 py-3 md:table-cell">Created</th>
+              <th class="px-5 py-3">{{ t('common.name') }}</th>
+              <th class="px-5 py-3">{{ t('common.slug') }}</th>
+              <th class="px-5 py-3">{{ t('common.status') }}</th>
+              <th class="hidden px-5 py-3 md:table-cell">{{ t('common.created') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
-            <tr v-for="t in recentTenants" :key="t.id" class="transition-colors hover:bg-gray-50">
+            <tr v-for="tenant in recentTenants" :key="tenant.id" class="transition-colors hover:bg-gray-50">
               <td class="px-5 py-3">
                 <router-link
-                  :to="{ name: 'super-tenant-detail', params: { id: t.id } }"
+                  :to="{ name: 'super-tenant-detail', params: { id: tenant.id } }"
                   class="font-medium text-blue-600 hover:text-blue-700"
                 >
-                  {{ t.name }}
+                  {{ tenant.name }}
                 </router-link>
               </td>
-              <td class="px-5 py-3 font-mono text-xs text-gray-600">{{ t.slug }}</td>
+              <td class="px-5 py-3 font-mono text-xs text-gray-600">{{ tenant.slug }}</td>
               <td class="px-5 py-3">
                 <span
                   class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  :class="t.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
+                  :class="tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
                 >
-                  <span class="h-1.5 w-1.5 rounded-full" :class="t.isActive ? 'bg-green-500' : 'bg-gray-400'" />
-                  {{ t.isActive ? 'Active' : 'Inactive' }}
+                  <span class="h-1.5 w-1.5 rounded-full" :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'" />
+                  {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
                 </span>
               </td>
               <td class="hidden whitespace-nowrap px-5 py-3 text-gray-500 md:table-cell">
-                {{ formatDate(t.createdAt) }}
+                {{ formatDate(tenant.createdAt) }}
               </td>
             </tr>
           </tbody>

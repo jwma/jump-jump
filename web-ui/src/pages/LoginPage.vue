@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { Eye, EyeOff, Link2 } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
@@ -28,7 +30,7 @@ async function handleLogin() {
     const redirect = (route.query.redirect as string) || ''
     router.push({ name: 'select-tenant', query: redirect ? { redirect } : undefined })
   } catch {
-    error.value = 'Login failed. Please check your credentials.'
+    error.value = t('auth.loginFailed')
   } finally {
     loading.value = false
   }
@@ -36,40 +38,40 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gray-50">
+  <div class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-800/50">
     <div class="w-full max-w-sm">
       <div class="mb-8 text-center">
         <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600">
           <Link2 class="h-7 w-7 text-white" />
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">Jump Jump</h1>
-        <p class="mt-1 text-sm text-gray-500">Short URL Management Platform</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('auth.appName') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('auth.appTagline') }}</p>
       </div>
-      <form class="rounded-lg border bg-white p-6 shadow-sm" @submit.prevent="handleLogin">
+      <form class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm" @submit.prevent="handleLogin">
         <div class="mb-4">
-          <label class="mb-1 block text-sm font-medium text-gray-700">Username</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('auth.username') }}</label>
           <input
             v-model="username"
             type="text"
             required
             autofocus
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           />
         </div>
         <div class="mb-4">
-          <label class="mb-1 block text-sm font-medium text-gray-700">Password</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('auth.password') }}</label>
           <div class="relative">
             <input
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
               required
-              class="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             />
             <button
               type="button"
-              :aria-label="showPassword ? 'Hide password' : 'Show password'"
+              :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
               :aria-pressed="showPassword"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               @click="togglePassword"
             >
               <Eye v-if="!showPassword" class="h-4 w-4" />
@@ -84,7 +86,7 @@ async function handleLogin() {
             type="checkbox"
             class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label for="remember-me" class="ml-2 text-sm text-gray-600">Remember me</label>
+          <label for="remember-me" class="ml-2 text-sm text-gray-600 dark:text-gray-300">{{ t('auth.rememberMe') }}</label>
         </div>
         <p v-if="error" class="mb-4 text-sm text-red-600">{{ error }}</p>
         <button
@@ -92,7 +94,7 @@ async function handleLogin() {
           :disabled="loading"
           class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {{ loading ? 'Signing in...' : 'Sign in' }}
+          {{ loading ? t('auth.signingIn') : t('auth.signIn') }}
         </button>
       </form>
     </div>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getShortLink, updateShortLink } from '@/api/short-link'
@@ -68,7 +70,7 @@ async function fetchData() {
     if (e instanceof ApiError && e.status === 404) {
       notFound.value = true
     } else {
-      error.value = 'Failed to load short link. Please try again.'
+      error.value = t('shortLinkEdit.loadFailed')
     }
   } finally {
     loading.value = false
@@ -88,9 +90,9 @@ async function handleSubmit() {
       isEnable: isEnable.value,
     })
     originalData.value = { url: normalizedUrl, description: description.value, isEnable: isEnable.value }
-    toast.success('Short link updated successfully')
+    toast.success(t('shortLinkEdit.updated'))
   } catch {
-    error.value = 'Failed to update short link. Please try again.'
+    error.value = t('shortLinkEdit.updateFailed')
   } finally {
     saving.value = false
   }
@@ -113,45 +115,45 @@ onMounted(fetchData)
   <div>
     <div class="flex items-center gap-3">
       <button
-        class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
         @click="router.push({ name: 'short-links' })"
       >
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">Edit Short Link</h1>
-        <p class="mt-0.5 text-sm text-gray-500">
-          Editing <span class="font-mono font-medium text-gray-700">{{ id }}</span>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('shortLinkEdit.title') }}</h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
+          Editing <span class="font-mono font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ id }}</span>
         </p>
       </div>
     </div>
 
     <!-- Skeleton loading -->
-    <div v-if="loading" class="mt-6 max-w-lg rounded-lg border bg-white p-6">
-      <div class="mb-5 rounded-md bg-gray-50 p-3">
+    <div v-if="loading" class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6">
+      <div class="mb-5 rounded-md bg-gray-50 dark:bg-gray-800/50 p-3">
         <div class="grid grid-cols-2 gap-2">
-          <div class="h-4 w-32 animate-pulse rounded bg-gray-200" />
-          <div class="h-4 w-28 animate-pulse rounded bg-gray-200" />
-          <div class="col-span-2 h-4 w-48 animate-pulse rounded bg-gray-200" />
+          <div class="h-4 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-4 w-28 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="col-span-2 h-4 w-48 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
         </div>
       </div>
       <div class="space-y-5">
         <div>
-          <div class="mb-1 h-4 w-16 animate-pulse rounded bg-gray-200" />
-          <div class="h-9 w-full animate-pulse rounded-md bg-gray-200" />
+          <div class="mb-1 h-4 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-9 w-full animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
         </div>
         <div>
-          <div class="mb-1 h-4 w-20 animate-pulse rounded bg-gray-200" />
-          <div class="h-20 w-full animate-pulse rounded-md bg-gray-200" />
+          <div class="mb-1 h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-20 w-full animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
         </div>
         <div class="flex items-center gap-3">
-          <div class="h-4 w-14 animate-pulse rounded bg-gray-200" />
-          <div class="h-6 w-11 animate-pulse rounded-full bg-gray-200" />
+          <div class="h-4 w-14 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+          <div class="h-6 w-11 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
         </div>
       </div>
     </div>
 
-    <div v-else-if="notFound" class="mt-6 text-center text-gray-400">
+    <div v-else-if="notFound" class="mt-6 text-center text-gray-400 dark:text-gray-500">
       Short link not found.
       <button
         class="ml-2 text-blue-600 hover:underline"
@@ -163,30 +165,30 @@ onMounted(fetchData)
 
     <form
       v-else
-      class="mt-6 max-w-lg rounded-lg border bg-white p-6"
+      class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6"
       @submit.prevent="handleSubmit"
     >
       <!-- Read-only info -->
-      <div class="mb-5 rounded-md bg-gray-50 p-3">
+      <div class="mb-5 rounded-md bg-gray-50 dark:bg-gray-800/50 p-3">
         <div class="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <span class="text-gray-500">ID:</span>
-            <span class="ml-1 font-mono font-medium text-gray-900">{{ id }}</span>
+            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinkEdit.infoId') }}</span>
+            <span class="ml-1 font-mono font-medium text-gray-900 dark:text-white">{{ id }}</span>
           </div>
           <div>
-            <span class="text-gray-500">Created by:</span>
-            <span class="ml-1 text-gray-700">{{ createdBy }}</span>
+            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinkEdit.infoCreatedBy') }}</span>
+            <span class="ml-1 text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ createdBy }}</span>
           </div>
           <div class="col-span-2">
-            <span class="text-gray-500">Created:</span>
-            <span class="ml-1 text-gray-700">{{ formatDate(createTime) }}</span>
+            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinkEdit.infoCreated') }}</span>
+            <span class="ml-1 text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ formatDate(createTime) }}</span>
           </div>
         </div>
       </div>
 
       <div class="space-y-5">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
             Target URL <span class="text-red-500">*</span>
           </label>
           <input
@@ -194,32 +196,32 @@ onMounted(fetchData)
             type="text"
             required
             placeholder="example.com/long-url or https://example.com"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             :class="urlError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />
           <p v-if="urlError" class="mt-1 text-xs text-red-600">{{ urlError }}</p>
-          <p v-else class="mt-1 text-xs text-gray-400">
+          <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">
             https:// will be added automatically if omitted.
           </p>
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">Description</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkEdit.description') }}</label>
           <textarea
             v-model="description"
             rows="3"
-            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         <div class="flex items-center gap-3">
-          <label class="text-sm font-medium text-gray-700">Enabled</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkEdit.enabled') }}</label>
           <button
             type="button"
             role="switch"
             :aria-checked="isEnable"
             class="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors"
-            :class="isEnable ? 'bg-blue-600' : 'bg-gray-200'"
+            :class="isEnable ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'"
             @click="isEnable = !isEnable"
           >
             <span
@@ -242,7 +244,7 @@ onMounted(fetchData)
         </button>
         <button
           type="button"
-          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
           @click="router.push({ name: 'short-links' })"
         >
           Cancel

@@ -2,10 +2,14 @@
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppTopBar from '@/components/AppTopBar.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
+import ShortcutHelp from '@/components/ShortcutHelp.vue'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+
+useKeyboardShortcuts()
 </script>
 
 <template>
-  <div class="flex h-screen overflow-hidden bg-gray-50">
+  <div class="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
     <AppSidebar />
 
     <div class="flex flex-1 flex-col overflow-hidden">
@@ -23,6 +27,8 @@ import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
         </router-view>
       </main>
     </div>
+
+    <ShortcutHelp />
   </div>
 </template>
 

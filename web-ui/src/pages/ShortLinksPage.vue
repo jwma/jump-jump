@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { listShortLinks, deleteShortLink, updateShortLink } from '@/api/short-link'
 import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -27,6 +28,7 @@ defineOptions({ name: 'ShortLinksPage' })
 
 const router = useRouter()
 const toast = useToast()
+const { t } = useI18n()
 
 const links = ref<ShortLinkData[]>([])
 const total = ref(0)
@@ -178,13 +180,13 @@ async function handleDelete(id: string) {
     links.value = links.value.filter((l) => l.id !== id)
     total.value--
     confirmDeleteId.value = null
-    toast.success('Short link deleted')
+    toast.success(t('shortLinks.deleted'))
     if (links.value.length === 0 && page.value > 1) {
       page.value--
       fetchLinks()
     }
   } catch (e: unknown) {
-    toast.error((e as Error).message || 'Failed to delete short link')
+    toast.error((e as Error).message || t('shortLinks.deleteFailed'))
     deleting.value = null
   }
 }
@@ -198,9 +200,9 @@ async function handleBatchDelete() {
     links.value = links.value.filter((l) => !selectedIds.value.has(l.id))
     total.value -= count
     selectedIds.value.clear()
-    toast.success(`${count} short link${count !== 1 ? 's' : ''} deleted`)
+    toast.success(t('shortLinks.deletedCount', { count, suffix: count !== 1 ? 's' : '' }))
   } catch (e: unknown) {
-    toast.error((e as Error).message || 'Failed to delete some short links')
+    toast.error((e as Error).message || t('shortLinks.deleteSomeFailed'))
     await fetchLinks()
   } finally {
     deleting.value = null
@@ -227,9 +229,9 @@ async function handleBatchToggleEnable(enable: boolean) {
         }
       }),
     )
-    toast.success(`${updated} short link${updated !== 1 ? 's' : ''} ${enable ? 'enabled' : 'disabled'}`)
+    toast.success(t(enable ? 'shortLinks.batchEnabled' : 'shortLinks.batchDisabled', { count: updated, suffix: updated !== 1 ? 's' : '' }))
   } catch (e: unknown) {
-    toast.error((e as Error).message || `Failed to ${enable ? 'enable' : 'disable'} some short links`)
+    toast.error((e as Error).message || t('shortLinks.enableDisableFailed', { action: enable ? t('common.enabled') : t('common.disabled') }))
   } finally {
     batchUpdating.value = false
   }
@@ -286,66 +288,67 @@ onMounted(fetchLinks)
   <div>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">Short Links</h1>
-        <p class="mt-1 text-sm text-gray-500">{{ total }} link{{ total !== 1 ? 's' : '' }} total</p>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('shortLinks.title') }}</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinks.linkCountTotal', { count: total, suffix: total !== 1 ? 's' : '' }) }}</p>
       </div>
       <router-link
         :to="{ name: 'short-link-create' }"
         class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
       >
         <Plus class="h-4 w-4" />
-        Create Link
+        {{ t('shortLinks.createLink') }}
       </router-link>
     </div>
 
     <!-- Search & Filters -->
     <div
-      class="mt-4 flex flex-col gap-3 rounded-lg border bg-white p-4 sm:flex-row sm:items-center"
+      class="mt-4 flex flex-col gap-3 rounded-lg border bg-white dark:bg-gray-900 p-4 sm:flex-row sm:items-center"
     >
       <div class="relative flex-1">
-        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
         <input
           v-model="searchId"
           type="text"
-          placeholder="Search by ID..."
-          class="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          data-shortcut-search
+          :placeholder="t('shortLinks.searchById')"
+          class="w-full rounded-md border border-gray-300 dark:border-gray-600 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
         />
       </div>
       <div class="relative flex-1">
-        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
         <input
           v-model="searchUrl"
           type="text"
-          placeholder="Search by URL..."
-          class="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          :placeholder="t('shortLinks.searchByUrl')"
+          class="w-full rounded-md border border-gray-300 dark:border-gray-600 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
         />
       </div>
       <select
         v-model="filterEnabled"
-        class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none sm:w-auto"
+        class="rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none sm:w-auto"
       >
-        <option value="">All Status</option>
-        <option value="true">Enabled</option>
-        <option value="false">Disabled</option>
+        <option value="">{{ t('shortLinks.allStatus') }}</option>
+        <option value="true">{{ t('common.enabled') }}</option>
+        <option value="false">{{ t('common.disabled') }}</option>
       </select>
     </div>
 
     <!-- Batch actions -->
     <div v-if="selectedIds.size > 0" class="mt-3 flex flex-wrap items-center gap-2">
-      <span class="text-sm text-gray-600">{{ selectedIds.size }} selected</span>
+      <span class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinks.selected', { count: selectedIds.size }) }}</span>
       <button
         :disabled="batchUpdating"
         class="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-3 py-1.5 text-sm font-medium text-green-600 transition-colors hover:bg-green-100 disabled:opacity-50"
         @click="handleBatchToggleEnable(true)"
       >
-        Enable Selected
+        {{ t('shortLinks.enableSelected') }}
       </button>
       <button
         :disabled="batchUpdating"
-        class="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200 disabled:opacity-50"
+        class="inline-flex items-center gap-1.5 rounded-md bg-gray-100 dark:bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
         @click="handleBatchToggleEnable(false)"
       >
-        Disable Selected
+        {{ t('shortLinks.disableSelected') }}
       </button>
       <button
         :disabled="deleting === 'batch'"
@@ -353,7 +356,7 @@ onMounted(fetchLinks)
         @click="handleBatchDelete"
       >
         <Trash2 class="h-3.5 w-3.5" />
-        {{ deleting === 'batch' ? 'Deleting...' : 'Delete Selected' }}
+        {{ deleting === 'batch' ? t('common.deleting') : t('shortLinks.deleteSelected') }}
       </button>
     </div>
 
@@ -361,38 +364,38 @@ onMounted(fetchLinks)
     <div class="mt-4 space-y-3 md:hidden">
       <!-- Loading skeleton -->
       <template v-if="loading">
-        <div v-for="i in 5" :key="`skel-${i}`" class="rounded-lg border bg-white p-4">
+        <div v-for="i in 5" :key="`skel-${i}`" class="rounded-lg border bg-white dark:bg-gray-900 p-4">
           <div class="flex items-center justify-between">
-            <div class="h-4 w-24 animate-pulse rounded bg-gray-200" />
-            <div class="h-5 w-16 animate-pulse rounded-full bg-gray-200" />
+            <div class="h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+            <div class="h-5 w-16 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
           </div>
-          <div class="mt-2 h-3 w-full animate-pulse rounded bg-gray-100" />
+          <div class="mt-2 h-3 w-full animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
           <div class="mt-2 flex items-center justify-between">
-            <div class="h-3 w-20 animate-pulse rounded bg-gray-100" />
-            <div class="h-6 w-6 animate-pulse rounded bg-gray-100" />
+            <div class="h-3 w-20 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+            <div class="h-6 w-6 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
           </div>
         </div>
       </template>
       <!-- Empty state -->
-      <div v-else-if="filteredLinks.length === 0 && total === 0" class="rounded-lg border bg-white py-12 text-center">
-        <Link class="mx-auto h-10 w-10 text-gray-300" />
-        <p class="mt-3 text-sm font-medium text-gray-500">No short links yet</p>
+      <div v-else-if="filteredLinks.length === 0 && total === 0" class="rounded-lg border bg-white dark:bg-gray-900 py-12 text-center">
+        <Link class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
+        <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinks.noLinksYet') }}</p>
         <router-link
           :to="{ name: 'short-link-create' }"
           class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           <Plus class="h-4 w-4" />
-          Create your first link
+          {{ t('shortLinks.createFirst') }}
         </router-link>
       </div>
-      <div v-else-if="filteredLinks.length === 0" class="rounded-lg border bg-white py-8 text-center text-sm text-gray-400">
-        No short links match your search.
+      <div v-else-if="filteredLinks.length === 0" class="rounded-lg border bg-white dark:bg-gray-900 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+        {{ t('shortLinks.noMatch') }}
       </div>
       <!-- Link cards -->
       <div
         v-for="link in sortedLinks"
         :key="link.id"
-        class="rounded-lg border bg-white transition-colors"
+        class="rounded-lg border bg-white dark:bg-gray-900 transition-colors"
         :class="{ 'border-blue-200 bg-blue-50/30': selectedIds.has(link.id) }"
       >
         <div class="flex items-center justify-between p-4">
@@ -400,13 +403,13 @@ onMounted(fetchLinks)
             <input
               type="checkbox"
               :checked="selectedIds.has(link.id)"
-              class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
               @change="toggleSelect(link.id)"
             />
-            <span class="font-mono text-sm font-medium text-gray-900">{{ link.id }}</span>
+            <span class="font-mono text-sm font-medium text-gray-900 dark:text-white">{{ link.id }}</span>
             <button
-              class="rounded p-0.5 text-gray-400 hover:text-blue-600"
-              title="Copy short link"
+              class="rounded p-0.5 text-gray-400 dark:text-gray-500 hover:text-blue-600"
+              :title="t('shortLinkCreate.copyTitle')"
               aria-label="Copy short link"
               @click="copyLink(link.id)"
             >
@@ -417,12 +420,12 @@ onMounted(fetchLinks)
           <button
             :disabled="togglingId === link.id"
             class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
-            :class="link.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
+            :class="link.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500'"
             @click="handleToggleEnable(link)"
           >
             <Loader2 v-if="togglingId === link.id" class="h-3 w-3 animate-spin" />
             <span v-else class="h-1.5 w-1.5 rounded-full" :class="link.isEnable ? 'bg-green-500' : 'bg-gray-400'" />
-            {{ link.isEnable ? 'On' : 'Off' }}
+            {{ link.isEnable ? t('common.on') : t('common.off') }}
           </button>
         </div>
         <div class="border-t px-4 py-3">
@@ -435,30 +438,30 @@ onMounted(fetchLinks)
             <span class="truncate">{{ link.url }}</span>
             <ExternalLink class="h-3 w-3 shrink-0" />
           </a>
-          <p v-if="link.description" class="mt-1 truncate text-xs text-gray-400">{{ link.description }}</p>
+          <p v-if="link.description" class="mt-1 truncate text-xs text-gray-400 dark:text-gray-500">{{ link.description }}</p>
         </div>
         <div class="flex items-center justify-between border-t px-4 py-2">
-          <span class="text-xs text-gray-400">{{ formatDate(link.createTime) }}</span>
+          <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatDate(link.createTime) }}</span>
           <div class="flex items-center gap-1">
             <button
-              class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-              title="View details"
+              class="rounded p-1.5 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+              :title="t('common.viewDetails')"
               aria-label="View details"
               @click="router.push({ name: 'short-link-detail', params: { id: link.id } })"
             >
               <Eye class="h-4 w-4" />
             </button>
             <button
-              class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-              title="Edit"
+              class="rounded p-1.5 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+              :title="t('common.edit')"
               aria-label="Edit"
               @click="router.push({ name: 'short-link-edit', params: { id: link.id } })"
             >
               <Pencil class="h-4 w-4" />
             </button>
             <button
-              class="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
-              title="Delete"
+              class="rounded p-1.5 text-gray-400 dark:text-gray-500 hover:bg-red-50 hover:text-red-600"
+              :title="t('common.delete')"
               aria-label="Delete"
               @click="confirmDeleteId = link.id"
             >
@@ -473,22 +476,22 @@ onMounted(fetchLinks)
         v-if="totalPages > 1"
         class="mt-3 flex items-center justify-between"
       >
-        <span class="text-xs text-gray-400">
+        <span class="text-xs text-gray-400 dark:text-gray-500">
           {{ (page - 1) * pageSize + 1 }}–{{ Math.min(page * pageSize, total) }} of {{ total }}
         </span>
         <div class="flex items-center gap-1">
           <button
             :disabled="page <= 1"
-            class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 disabled:opacity-30"
+            class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 disabled:opacity-30"
             aria-label="Previous page"
             @click="goPage(page - 1)"
           >
             <ChevronLeft class="h-5 w-5" />
           </button>
-          <span class="min-w-[60px] text-center text-sm font-medium text-gray-700">{{ page }} / {{ totalPages }}</span>
+          <span class="min-w-[60px] text-center text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ page }} / {{ totalPages }}</span>
           <button
             :disabled="page >= totalPages"
-            class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 disabled:opacity-30"
+            class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 disabled:opacity-30"
             aria-label="Next page"
             @click="goPage(page + 1)"
           >
@@ -499,18 +502,18 @@ onMounted(fetchLinks)
     </div>
 
     <!-- Desktop table (hidden below md) -->
-    <div class="mt-4 hidden overflow-hidden rounded-lg border bg-white md:block">
+    <div class="mt-4 hidden overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:bg-gray-900 md:block">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr
-              class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+              class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500"
             >
               <th class="w-10 px-4 py-3">
                 <input
                   type="checkbox"
                   :checked="allSelected"
-                  class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                   @change="toggleSelectAll"
                 />
               </th>
@@ -520,9 +523,9 @@ onMounted(fetchLinks)
                   <component :is="SortIcon({ field: 'id' })" class="h-3.5 w-3.5" />
                 </div>
               </th>
-              <th class="px-4 py-3">URL</th>
-              <th class="hidden px-4 py-3 md:table-cell">Description</th>
-              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">{{ t('shortLinkDetail.targetUrl') }}</th>
+              <th class="hidden px-4 py-3 md:table-cell">{{ t('common.description') }}</th>
+              <th class="px-4 py-3">{{ t('common.status') }}</th>
               <th
                 class="hidden cursor-pointer select-none px-4 py-3 lg:table-cell"
                 @click="toggleSort('createTime')"
@@ -541,7 +544,7 @@ onMounted(fetchLinks)
                   <component :is="SortIcon({ field: 'updateTime' })" class="h-3.5 w-3.5" />
                 </div>
               </th>
-              <th class="px-4 py-3 text-right">Actions</th>
+              <th class="px-4 py-3 text-right">{{ t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y">
@@ -549,37 +552,37 @@ onMounted(fetchLinks)
             <template v-if="loading">
               <tr v-for="i in 5" :key="`skeleton-${i}`">
                 <td class="px-4 py-3">
-                  <div class="h-4 w-4 animate-pulse rounded bg-gray-200" />
+                  <div class="h-4 w-4 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
                 </td>
                 <td class="px-4 py-3">
-                  <div class="h-4 w-20 animate-pulse rounded bg-gray-200" />
+                  <div class="h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
                 </td>
                 <td class="px-4 py-3">
-                  <div class="h-4 w-40 animate-pulse rounded bg-gray-200" />
+                  <div class="h-4 w-40 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
                 </td>
                 <td class="hidden px-4 py-3 md:table-cell">
-                  <div class="h-4 w-32 animate-pulse rounded bg-gray-200" />
+                  <div class="h-4 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
                 </td>
                 <td class="px-4 py-3">
-                  <div class="h-5 w-16 animate-pulse rounded-full bg-gray-200" />
+                  <div class="h-5 w-16 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
                 </td>
                 <td class="hidden px-4 py-3 lg:table-cell">
-                  <div class="h-4 w-28 animate-pulse rounded bg-gray-200" />
+                  <div class="h-4 w-28 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
                 </td>
                 <td class="hidden px-4 py-3 lg:table-cell">
-                  <div class="h-4 w-28 animate-pulse rounded bg-gray-200" />
+                  <div class="h-4 w-28 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
                 </td>
                 <td class="px-4 py-3">
-                  <div class="ml-auto h-4 w-20 animate-pulse rounded bg-gray-200" />
+                  <div class="ml-auto h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
                 </td>
               </tr>
             </template>
             <!-- Empty state -->
             <tr v-else-if="filteredLinks.length === 0 && total === 0">
               <td colspan="8" class="px-4 py-12 text-center">
-                <Link class="mx-auto h-10 w-10 text-gray-300" />
-                <p class="mt-3 text-sm font-medium text-gray-500">No short links yet</p>
-                <p class="mt-1 text-sm text-gray-400">
+                <Link class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
+                <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinks.noLinksYet') }}</p>
+                <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
                   Create your first short link to get started.
                 </p>
                 <router-link
@@ -592,31 +595,31 @@ onMounted(fetchLinks)
               </td>
             </tr>
             <tr v-else-if="filteredLinks.length === 0">
-              <td colspan="8" class="px-4 py-8 text-center text-gray-400">
-                No short links match your search.
+              <td colspan="8" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">
+                {{ t('shortLinks.noMatch') }}
               </td>
             </tr>
             <!-- Data rows -->
             <tr
               v-for="link in sortedLinks"
               :key="link.id"
-              class="transition-colors hover:bg-gray-50"
+              class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
               :class="{ 'bg-blue-50/50': selectedIds.has(link.id) }"
             >
               <td class="px-4 py-3">
                 <input
                   type="checkbox"
                   :checked="selectedIds.has(link.id)"
-                  class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                   @change="toggleSelect(link.id)"
                 />
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center gap-1.5">
-                  <span class="font-mono text-xs font-medium text-gray-900">{{ link.id }}</span>
+                  <span class="font-mono text-xs font-medium text-gray-900 dark:text-white">{{ link.id }}</span>
                   <button
-                    class="rounded p-0.5 text-gray-400 transition-colors hover:text-blue-600"
-                    title="Copy short link"
+                    class="rounded p-0.5 text-gray-400 dark:text-gray-500 transition-colors hover:text-blue-600"
+                    :title="t('shortLinkCreate.copyTitle')"
                     @click="copyLink(link.id)"
                   >
                     <Copy v-if="copiedId !== link.id" class="h-3.5 w-3.5" />
@@ -635,7 +638,7 @@ onMounted(fetchLinks)
                   <ExternalLink class="h-3 w-3 shrink-0" />
                 </a>
               </td>
-              <td class="hidden max-w-[180px] truncate px-4 py-3 text-gray-500 md:table-cell">
+              <td class="hidden max-w-[180px] truncate px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 md:table-cell">
                 {{ link.description || '—' }}
               </td>
               <td class="px-4 py-3">
@@ -645,7 +648,7 @@ onMounted(fetchLinks)
                   :class="
                     link.isEnable
                       ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:bg-gray-700'
                   "
                   @click="handleToggleEnable(link)"
                 >
@@ -658,31 +661,31 @@ onMounted(fetchLinks)
                   {{ link.isEnable ? 'Enabled' : 'Disabled' }}
                 </button>
               </td>
-              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 lg:table-cell">
+              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">
                 {{ formatDate(link.createTime) }}
               </td>
-              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 lg:table-cell">
+              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">
                 {{ formatDate(link.updateTime) }}
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center justify-end gap-1">
                   <button
-                    class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                    title="View details"
+                    class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+                    :title="t('common.viewDetails')"
                     @click="router.push({ name: 'short-link-detail', params: { id: link.id } })"
                   >
                     <Eye class="h-4 w-4" />
                   </button>
                   <button
-                    class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                    title="Edit"
+                    class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+                    :title="t('common.edit')"
                     @click="router.push({ name: 'short-link-edit', params: { id: link.id } })"
                   >
                     <Pencil class="h-4 w-4" />
                   </button>
                   <button
-                    class="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                    title="Delete"
+                    class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                    :title="t('common.delete')"
                     @click="confirmDeleteId = link.id"
                   >
                     <Trash2 class="h-4 w-4" />
@@ -700,38 +703,38 @@ onMounted(fetchLinks)
         class="flex flex-col items-center justify-between gap-3 border-t px-4 py-3 sm:flex-row"
       >
         <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">Show</span>
+          <span class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Show</span>
           <select
             v-model="pageSize"
-            class="rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="rounded-md border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             @change="handlePageSizeChange"
           >
             <option v-for="size in pageSizeOptions" :key="size" :value="size">
               {{ size }}
             </option>
           </select>
-          <span class="text-sm text-gray-500">per page</span>
-          <span class="ml-2 text-sm text-gray-400">
+          <span class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">per page</span>
+          <span class="ml-2 text-sm text-gray-400 dark:text-gray-500">
             {{ (page - 1) * pageSize + 1 }}–{{ Math.min(page * pageSize, total) }} of {{ total }}
           </span>
         </div>
         <div v-if="totalPages > 1" class="flex items-center gap-1">
           <button
             :disabled="page <= 1"
-            class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30"
+            class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600 disabled:opacity-30"
             @click="goPage(page - 1)"
           >
             <ChevronLeft class="h-5 w-5" />
           </button>
           <template v-for="(p, idx) in pageNumbers" :key="`page-${idx}`">
-            <span v-if="p === '...'" class="px-1 text-sm text-gray-400">...</span>
+            <span v-if="p === '...'" class="px-1 text-sm text-gray-400 dark:text-gray-500">...</span>
             <button
               v-else
               :class="[
                 'min-w-[32px] rounded px-2 py-1 text-sm font-medium transition-colors',
                 p === page
                   ? 'bg-blue-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100',
+                  : 'text-gray-600 dark:text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800',
               ]"
               @click="goPage(p as number)"
             >
@@ -740,19 +743,19 @@ onMounted(fetchLinks)
           </template>
           <button
             :disabled="page >= totalPages"
-            class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30"
+            class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600 disabled:opacity-30"
             @click="goPage(page + 1)"
           >
             <ChevronRight class="h-5 w-5" />
           </button>
           <div class="ml-2 flex items-center gap-1">
-            <span class="text-sm text-gray-400">Go to</span>
+            <span class="text-sm text-gray-400 dark:text-gray-500">Go to</span>
             <input
               v-model="pageJump"
               type="number"
               :min="1"
               :max="totalPages"
-              class="w-14 rounded-md border border-gray-300 px-2 py-1 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              class="w-14 rounded-md border border-gray-300 dark:border-gray-600 px-2 py-1 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               @keyup.enter="handlePageJump"
             />
           </div>
@@ -769,9 +772,9 @@ onMounted(fetchLinks)
       @confirm="handleDelete(confirmDeleteId!)"
       @cancel="confirmDeleteId = null"
     >
-      <p class="mt-2 text-sm text-gray-500">
+      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
         Are you sure you want to delete
-        <span class="font-mono font-medium text-gray-700">{{ confirmDeleteId }}</span
+        <span class="font-mono font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ confirmDeleteId }}</span
         >? This action cannot be undone.
       </p>
     </ConfirmDialog>
