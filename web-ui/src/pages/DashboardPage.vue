@@ -145,7 +145,7 @@ function aggregateFromHistories(histories: RequestHistory[]): {
 
 interface LinkStatsResult {
   allDaily: Record<string, { pv: number; uv: number }>
-  linkStats: { link: ShortLinkData; pv: number; uv: number }[]
+  linkDaily: { link: ShortLinkData; daily: Record<string, { pv: number; uv: number }> }[]
   totalPv: number
   todayPv: number
 }
@@ -156,7 +156,7 @@ async function fetchLinkStats(
   endDate: string,
 ): Promise<LinkStatsResult> {
   const allDaily: Record<string, { pv: number; uv: number }> = {}
-  const linkStats: { link: ShortLinkData; pv: number; uv: number }[] = []
+  const linkDaily: { link: ShortLinkData; daily: Record<string, { pv: number; uv: number }> }[] = []
   let totalPv = 0
   let todayPv = 0
 
@@ -170,8 +170,6 @@ async function fetchLinkStats(
       const { daily, totalPv: linkTotalPv, todayPv: linkTodayPv } = aggregateFromHistories(
         result.value.histories,
       )
-      let linkPv = 0
-      let linkUv = 0
 
       for (const [date, stats] of Object.entries(daily)) {
         if (!allDaily[date]) {
@@ -179,20 +177,39 @@ async function fetchLinkStats(
         }
         allDaily[date].pv += stats.pv
         allDaily[date].uv += stats.uv
-        linkPv += stats.pv
-        linkUv += stats.uv
       }
 
       totalPv += linkTotalPv
       todayPv += linkTodayPv
 
-      if (linkPv > 0) {
-        linkStats.push({ link: links[i], pv: linkPv, uv: linkUv })
+      if (Object.keys(daily).length > 0) {
+        linkDaily.push({ link: links[i], daily })
       }
     }
   }
 
-  return { allDaily, linkStats, totalPv, todayPv }
+  return { allDaily, linkDaily, totalPv, todayPv }
+}
+
+function computeTopLinks(
+  linkDaily: { link: ShortLinkData; daily: Record<string, { pv: number; uv: number }> }[],
+  startDate: string,
+): { link: ShortLinkData; pv: number; uv: number }[] {
+  const result: { link: ShortLinkData; pv: number; uv: number }[] = []
+  for (const entry of linkDaily) {
+    let pv = 0
+    let uv = 0
+    for (const [date, stats] of Object.entries(entry.daily)) {
+      if (date >= startDate) {
+        pv += stats.pv
+        uv += stats.uv
+      }
+    }
+    if (pv > 0) {
+      result.push({ link: entry.link, pv, uv })
+    }
+  }
+  return result.sort((a, b) => b.pv - a.pv).slice(0, 10)
 }
 
 function dailyToTrend(allDaily: Record<string, { pv: number; uv: number }>): DailyStats[] {
@@ -356,7 +373,7 @@ async function fetchDashboardData(isRefresh = false) {
     prevTodayVisits.value = yesterdayData ? yesterdayData.pv : 0
 
     trendData.value = dailyToTrend(currentDaily)
-    topLinks.value = stats.linkStats.sort((a, b) => b.pv - a.pv).slice(0, 10)
+    topLinks.value = computeTopLinks(stats.linkDaily, currentStartDate)
   } catch {
     // error handled by interceptor
   } finally {
@@ -393,7 +410,7 @@ async function fetchTrendData() {
     periodVisits.value = currentPeriodPv
     prevPeriodVisits.value = previousPeriodPv
     trendData.value = dailyToTrend(currentDaily)
-    topLinks.value = stats.linkStats.sort((a, b) => b.pv - a.pv).slice(0, 10)
+    topLinks.value = computeTopLinks(stats.linkDaily, startDate)
   } catch {
     // error handled by interceptor
   } finally {
@@ -436,7 +453,7 @@ onMounted(() => fetchDashboardData())
       </div>
       <div class="flex items-center gap-2">
         <button
-          :disabled="refreshing"
+          :disabled="loading || refreshing"
           class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
           @click="handleRefresh"
         >
