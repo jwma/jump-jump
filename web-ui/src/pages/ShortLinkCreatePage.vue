@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { createShortLink } from '@/api/short-link'
@@ -39,7 +41,7 @@ const customIdError = computed(() => {
   if (!customId.value) return ''
   if (customId.value.length < 2) return 'Custom ID must be at least 2 characters'
   if (customId.value.length > CUSTOM_ID_MAX_LENGTH)
-    return `Custom ID must be at most ${CUSTOM_ID_MAX_LENGTH} characters`
+    return t('shortLinkCreate.customIdMaxLength')
   if (!CUSTOM_ID_REGEX.test(customId.value))
     return 'Custom ID can only contain letters, numbers, hyphens, and underscores'
   return ''
@@ -84,7 +86,7 @@ function copyCreatedLink() {
       }, 2000)
     },
     () => {
-      toast.error('Failed to copy link to clipboard')
+      toast.error(t('shortLinkCreate.copyFailed'))
     },
   )
 }
@@ -103,9 +105,9 @@ async function handleSubmit() {
       ...(isAdmin.value && customId.value ? { id: customId.value } : {}),
     })
     createdLink.value = result.shortLink
-    toast.success('Short link created successfully')
+    toast.success(t('shortLinkCreate.created'))
   } catch {
-    error.value = 'Failed to create short link. Please try again.'
+    error.value = t('shortLinkCreate.failed')
   } finally {
     loading.value = false
   }
@@ -135,7 +137,7 @@ function goToLinks() {
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">Create Short Link</h1>
+        <h1 class="text-xl font-semibold text-gray-900">{{ ('shortLinkCreate.title') }}</h1>
         <p class="mt-0.5 text-sm text-gray-500">Generate a new short link for your URL.</p>
       </div>
     </div>
@@ -145,7 +147,7 @@ function goToLinks() {
       v-if="createdLink"
       class="mt-6 max-w-lg rounded-lg border border-green-200 bg-green-50 p-6"
     >
-      <h2 class="text-lg font-semibold text-green-800">Short Link Created!</h2>
+      <h2 class="text-lg font-semibold text-green-800">{{ ('shortLinkCreate.success') }}</h2>
       <div class="mt-3 flex items-center gap-2 rounded-md bg-white p-3 shadow-sm">
         <span class="font-mono text-sm font-medium text-gray-900">
           {{ getShortLinkUrl(createdLink.id) }}
@@ -219,7 +221,7 @@ function goToLinks() {
         <div v-if="isAdmin">
           <label class="mb-1 block text-sm font-medium text-gray-700">
             Custom ID
-            <span class="text-xs font-normal text-gray-400">(optional)</span>
+            <span class="text-xs font-normal text-gray-400">{{ ('shortLinkCreate.optional') }}</span>
           </label>
           <input
             v-model="customId"
@@ -238,7 +240,7 @@ function goToLinks() {
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">
             Description
-            <span class="text-xs font-normal text-gray-400">(optional)</span>
+            <span class="text-xs font-normal text-gray-400">{{ ('shortLinkCreate.optional') }}</span>
           </label>
           <textarea
             v-model="description"
@@ -249,7 +251,7 @@ function goToLinks() {
         </div>
 
         <div class="flex items-center gap-3">
-          <label class="text-sm font-medium text-gray-700">Enabled</label>
+          <label class="text-sm font-medium text-gray-700">{{ ('shortLinkCreate.enabled') }}</label>
           <button
             type="button"
             role="switch"

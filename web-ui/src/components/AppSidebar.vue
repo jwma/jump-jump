@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useLayoutStore } from '@/stores/layout'
 import { UserRole } from '@/types/api'
@@ -21,6 +22,7 @@ import {
   UserPlus,
 } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const layout = useLayoutStore()
 const route = useRoute()
@@ -32,26 +34,26 @@ const menuItems = computed(() => {
 
   if (isSuperRoute.value) {
     items.push(
-      { icon: LayoutDashboard, label: 'Dashboard', to: { name: 'super-dashboard' } },
-      { icon: Users, label: 'Users', to: { name: 'super-users' } },
-      { icon: Building2, label: 'Tenants', to: { name: 'super-tenants' } },
+      { icon: LayoutDashboard, label: t('nav.dashboard'), to: { name: 'super-dashboard' } },
+      { icon: Users, label: t('super.users.username'), to: { name: 'super-users' } },
+      { icon: Building2, label: t('breadcrumb.tenants'), to: { name: 'super-tenants' } },
     )
   } else {
     items.push(
-      { icon: LayoutDashboard, label: 'Dashboard', to: { name: 'dashboard' } },
-      { icon: Link, label: 'Short Links', to: { name: 'short-links' } },
-      { icon: UserPlus, label: 'Members', to: { name: 'members' } },
+      { icon: LayoutDashboard, label: t('nav.dashboard'), to: { name: 'dashboard' } },
+      { icon: Link, label: t('nav.shortLinks'), to: { name: 'short-links' } },
+      { icon: UserPlus, label: t('nav.members'), to: { name: 'members' } },
     )
 
     if (auth.user?.role === UserRole.Admin) {
       items.push(
-        { icon: Settings, label: 'Settings', to: { name: 'settings' } },
+        { icon: Settings, label: t('nav.settings'), to: { name: 'settings' } },
       )
     }
   }
 
   items.push(
-    { icon: KeyRound, label: 'Change Password', to: { name: 'change-password' } },
+    { icon: KeyRound, label: t('nav.changePassword'), to: { name: 'change-password' } },
   )
 
   return items
@@ -128,7 +130,7 @@ async function handleLogout() {
           v-show="!layout.sidebarCollapsed"
           class="whitespace-nowrap text-base font-semibold text-gray-900"
         >
-          Jump Jump
+          {{ t('auth.appName') }}
         </span>
       </router-link>
 
@@ -153,12 +155,12 @@ async function handleLogout() {
     <div v-if="layout.sidebarCollapsed" class="sidebar-tooltip-wrapper">
       <button
         class="absolute -right-3 top-4 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm text-gray-400 hover:text-gray-600 lg:flex"
-        aria-label="Expand sidebar"
+        :aria-label="t('nav.expandSidebar')"
         @click="layout.toggleSidebar"
       >
         <ChevronLeft class="h-3 w-3 rotate-180" />
       </button>
-      <span class="sidebar-tooltip" style="left: calc(100% + 16px); top: 16px; transform: none;">Expand sidebar</span>
+      <span class="sidebar-tooltip" style="left: calc(100% + 16px); top: 16px; transform: none;">{{ t('nav.expandSidebar') }}</span>
     </div>
 
     <!-- Tenant switcher (hidden on super admin routes) -->
@@ -168,9 +170,9 @@ async function handleLogout() {
         @click="tenantDropdownOpen = !tenantDropdownOpen"
       >
         <div class="min-w-0 flex-1">
-          <div class="truncate text-xs text-gray-400">Current tenant</div>
+          <div class="truncate text-xs text-gray-400">{{ t('nav.currentTenant') }}</div>
           <div class="truncate font-medium text-gray-700">
-            {{ auth.currentTenant?.tenantName || (auth.isSuper ? 'Super Admin' : 'Not selected') }}
+            {{ auth.currentTenant?.tenantName || (auth.isSuper ? t('nav.superAdmin') : t('nav.notSelected')) }}
           </div>
         </div>
         <ChevronDown class="h-4 w-4 shrink-0 text-gray-400" />
@@ -193,7 +195,7 @@ async function handleLogout() {
           @click="tenantDropdownOpen = false; layout.closeMobileMenu()"
         >
           <ChevronRight class="h-3 w-3" />
-          Manage tenants
+          {{ t('nav.manageTenants') }}
         </router-link>
       </div>
     </div>
@@ -206,9 +208,9 @@ async function handleLogout() {
         @click="isSuperRoute ? router.push({ name: auth.currentTenantId ? 'dashboard' : 'select-tenant' }) : router.push({ name: 'super-dashboard' })"
       >
         <Shield class="h-4 w-4 shrink-0" />
-        <span v-show="!layout.sidebarCollapsed">{{ isSuperRoute ? 'Back to App' : 'Super Admin' }}</span>
+        <span v-show="!layout.sidebarCollapsed">{{ isSuperRoute ? t('nav.backToApp') : t('nav.superAdmin') }}</span>
       </button>
-      <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{ isSuperRoute ? 'Back to App' : 'Super Admin' }}</span>
+      <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{ isSuperRoute ? t('nav.backToApp') : t('nav.superAdmin') }}</span>
     </div>
 
     <!-- Navigation -->

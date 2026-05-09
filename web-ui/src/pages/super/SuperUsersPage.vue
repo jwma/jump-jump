@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { ref, computed, onMounted } from 'vue'
 import {
   listSuperUsers,
@@ -155,8 +157,8 @@ onMounted(fetchUsers)
   <div>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">User Management</h1>
-        <p class="mt-1 text-sm text-gray-500">{{ total }} user{{ total !== 1 ? 's' : '' }} total</p>
+        <h1 class="text-xl font-semibold text-gray-900">{{ $t('super.users.title') }}</h1>
+        <p class="mt-1 text-sm text-gray-500">{{ t('super.users.userCount', { count: total, suffix: total !== 1 ? 's' : '' }) }}</p>
       </div>
       <button
         class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
@@ -174,7 +176,7 @@ onMounted(fetchUsers)
         <input
           v-model="search"
           type="text"
-          placeholder="Search by username..."
+          :placeholder="t('super.users.searchPlaceholder')"
           class="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           @keydown.enter="handleSearch"
         />
@@ -193,11 +195,11 @@ onMounted(fetchUsers)
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-              <th class="px-4 py-3">Username</th>
-              <th class="px-4 py-3">Status</th>
-              <th class="hidden px-4 py-3 md:table-cell">Super Admin</th>
-              <th class="hidden px-4 py-3 lg:table-cell">Created</th>
-              <th class="px-4 py-3 text-right">Actions</th>
+              <th class="px-4 py-3">{{ $t('super.users.username')}}}</th>
+              <th class="px-4 py-3">{{ $t('common.status')}}}</th>
+              <th class="hidden px-4 py-3 md:table-cell">{{ $t('super.users.superAdmin')}}}</th>
+              <th class="hidden px-4 py-3 lg:table-cell">{{ $t('common.created')}}}</th>
+              <th class="px-4 py-3 text-right">{{ $t('common.actions')}}}</th>
             </tr>
           </thead>
           <tbody class="divide-y">
@@ -209,8 +211,8 @@ onMounted(fetchUsers)
             <tr v-else-if="users.length === 0">
               <td colspan="5" class="px-4 py-12 text-center">
                 <Users class="mx-auto h-10 w-10 text-gray-300" />
-                <p class="mt-3 text-sm font-medium text-gray-500">No users yet</p>
-                <p class="mt-1 text-sm text-gray-400">Create a new user to get started.</p>
+                <p class="mt-3 text-sm font-medium text-gray-500">{{ $t('super.users.noUsers')}}}</p>
+                <p class="mt-1 text-sm text-gray-400">{{ $t('super.users.createToStart')}}}</p>
                 <button
                   class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                   @click="showCreateModal = true"
@@ -248,7 +250,7 @@ onMounted(fetchUsers)
                 >
                   <Loader2 v-if="toggleLoading === user.id" class="h-3 w-3 animate-spin" />
                   <span v-else class="h-1.5 w-1.5 rounded-full" :class="user.isActive ? 'bg-green-500' : 'bg-gray-400'" />
-                  {{ user.isActive ? 'Active' : 'Disabled' }}
+                  {{ user.isActive ? t('common.active') : t('common.disabled') }}
                 </button>
               </td>
               <td class="hidden px-4 py-3 md:table-cell">
@@ -287,7 +289,7 @@ onMounted(fetchUsers)
       <!-- Pagination -->
       <div v-if="total > pageSize" class="flex items-center justify-between border-t px-4 py-3">
         <p class="text-xs text-gray-500">
-          Page {{ page }} of {{ Math.ceil(total / pageSize) }} ({{ total }} total)
+          {{ t('super.users.pageOf', { current: page, total: Math.ceil(total / pageSize), count: total }) }}
         </p>
         <div class="flex items-center gap-1">
           <button
@@ -317,14 +319,14 @@ onMounted(fetchUsers)
       >
         <div class="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Create User</h3>
+            <h3 class="text-lg font-semibold text-gray-900">{{ $t('super.users.createUser') }}</h3>
             <button class="rounded p-1 text-gray-400 hover:text-gray-600" @click="showCreateModal = false">
               <X class="h-5 w-5" />
             </button>
           </div>
           <div class="mt-4 space-y-4">
             <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700">Username</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700">{{ $t('super.users.username')}}}</label>
               <input
                 v-model="newUsername"
                 type="text"
@@ -333,7 +335,7 @@ onMounted(fetchUsers)
               />
             </div>
             <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700">Password</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700">{{ $t('auth.password')}}}</label>
               <input
                 v-model="newPassword"
                 type="password"
@@ -372,16 +374,16 @@ onMounted(fetchUsers)
       >
         <div class="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Reset Password</h3>
+            <h3 class="text-lg font-semibold text-gray-900">{{ $t('super.users.resetPassword')}}}</h3>
             <button class="rounded p-1 text-gray-400 hover:text-gray-600" @click="showResetModal = false">
               <X class="h-5 w-5" />
             </button>
           </div>
           <p class="mt-2 text-sm text-gray-500">
-            Reset password for <span class="font-medium text-gray-700">{{ resetUsername }}</span>
+            {{ t('super.users.resetFor', { username: resetUsername }) }}
           </p>
           <div class="mt-4">
-            <label class="mb-1 block text-sm font-medium text-gray-700">New Password</label>
+            <label class="mb-1 block text-sm font-medium text-gray-700">{{ $t('super.users.newPassword')}}}</label>
             <input
               v-model="resetNewPassword"
               type="password"
@@ -419,7 +421,7 @@ onMounted(fetchUsers)
       >
         <div class="mx-4 w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">User Details</h3>
+            <h3 class="text-lg font-semibold text-gray-900">{{ $t('super.users.userDetail')}}}</h3>
             <button class="rounded p-1 text-gray-400 hover:text-gray-600" @click="showDetailModal = false">
               <X class="h-5 w-5" />
             </button>
@@ -444,7 +446,7 @@ onMounted(fetchUsers)
                   :class="userDetail.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
                 >
                   <span class="h-1.5 w-1.5 rounded-full" :class="userDetail.isActive ? 'bg-green-500' : 'bg-gray-400'" />
-                  {{ userDetail.isActive ? 'Active' : 'Disabled' }}
+                  {{ userDetail.isActive ? t('common.active') : t('common.disabled') }}
                 </span>
               </div>
 
@@ -453,7 +455,7 @@ onMounted(fetchUsers)
                   <div>
                     <span class="text-xs text-gray-400">Super Admin</span>
                     <p class="font-medium" :class="userDetail.isSuper ? 'text-indigo-600' : 'text-gray-600'">
-                      {{ userDetail.isSuper ? 'Yes' : 'No' }}
+                      {{ userDetail.isSuper ? t('common.default') : 'No' }}
                     </p>
                   </div>
                   <div>
@@ -464,9 +466,9 @@ onMounted(fetchUsers)
               </div>
 
               <div>
-                <h4 class="mb-2 text-sm font-medium text-gray-700">Tenant Memberships</h4>
+                <h4 class="mb-2 text-sm font-medium text-gray-700">{{ t('super.users.tenantMemberships') }}</h4>
                 <div v-if="userDetail.tenants.length === 0" class="text-sm text-gray-400">
-                  No tenant memberships.
+                  {{ t('super.users.noMemberships') }}
                 </div>
                 <div v-else class="space-y-1.5">
                   <div

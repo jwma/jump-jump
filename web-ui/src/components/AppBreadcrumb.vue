@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ChevronRight, Home } from 'lucide-vue-next'
@@ -10,25 +12,31 @@ interface BreadcrumbItem {
   to?: string
 }
 
-const routeTitles: Record<string, string> = {
-  dashboard: 'Dashboard',
-  'short-links': 'Short Links',
-  'short-link-create': 'Create',
-  'short-link-detail': 'Detail',
-  'short-link-edit': 'Edit',
-  config: 'System Config',
-  tenants: 'Tenants',
-  preferences: 'Preferences',
-  'change-password': 'Change Password',
+function routeTitle(name: string): string {
+  const map: Record<string, string> = {
+    dashboard: t('breadcrumb.dashboard'),
+    'short-links': t('breadcrumb.shortLinks'),
+    'short-link-create': t('breadcrumb.create'),
+    'short-link-detail': t('breadcrumb.detail'),
+    'short-link-edit': t('breadcrumb.edit'),
+    config: t('settings.title'),
+    tenants: t('breadcrumb.tenants'),
+    preferences: t('breadcrumb.preferences'),
+    'change-password': t('breadcrumb.changePassword'),
+  }
+  return map[name] || name
 }
 
-const parentRoutes: Record<string, { label: string; to: string }> = {
-  'short-link-create': { label: 'Short Links', to: '/short-links' },
-  'short-link-detail': { label: 'Short Links', to: '/short-links' },
-  'short-link-edit': { label: 'Short Links', to: '/short-links' },
-  'tenant-create': { label: 'Tenants', to: '/tenants' },
-  'tenant-detail': { label: 'Tenants', to: '/tenants' },
-  'super-tenant-detail': { label: 'Tenants', to: '/super/tenants' },
+function parentRoute(name: string): { label: string; to: string } | undefined {
+  const map: Record<string, { label: string; to: string }> = {
+    'short-link-create': { label: t('breadcrumb.shortLinks'), to: '/short-links' },
+    'short-link-detail': { label: t('breadcrumb.shortLinks'), to: '/short-links' },
+    'short-link-edit': { label: t('breadcrumb.shortLinks'), to: '/short-links' },
+    'tenant-create': { label: t('breadcrumb.tenants'), to: '/tenants' },
+    'tenant-detail': { label: t('breadcrumb.tenants'), to: '/tenants' },
+    'super-tenant-detail': { label: t('breadcrumb.tenants'), to: '/super/tenants' },
+  }
+  return map[name]
 }
 
 const items = computed<BreadcrumbItem[]>(() => {
@@ -38,11 +46,11 @@ const items = computed<BreadcrumbItem[]>(() => {
   const crumbs: BreadcrumbItem[] = []
   for (let i = 0; i < matched.length; i++) {
     const r = matched[i]
-    const label = (r.meta.title as string) || routeTitles[r.name as string] || (r.name as string)
+    const label = (r.meta.title as string) || routeTitle(r.name as string) || (r.name as string)
     if (i < matched.length - 1) {
       crumbs.push({ label, to: r.path })
     } else {
-      const parent = parentRoutes[r.name as string]
+      const parent = parentRoute(r.name as string)
       if (parent) {
         crumbs.push({ label: parent.label, to: parent.to })
       }

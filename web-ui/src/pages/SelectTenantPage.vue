@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { createTenant } from '@/api/tenant'
 import { ArrowRight, Plus, Shield, Building2, Loader2 } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 const auth = useAuthStore()
 
 const loading = ref(!auth.authUser)
@@ -79,7 +81,7 @@ async function handleCreateTenant() {
     auth.selectTenant(tenant.id)
     router.push({ name: 'dashboard' })
   } catch (e: unknown) {
-    createError.value = (e as Error).message || 'Failed to create tenant'
+    createError.value = (e as Error).message || t('selectTenant.failedToCreate')
   } finally {
     createLoading.value = false
   }
@@ -97,13 +99,13 @@ async function handleLogout() {
       <template v-if="loading">
         <div class="flex flex-col items-center gap-3">
           <Loader2 class="h-8 w-8 animate-spin text-blue-600" />
-          <p class="text-sm text-gray-500">Loading...</p>
+          <p class="text-sm text-gray-500">{{ t('common.loading') }}</p>
         </div>
       </template>
       <template v-else>
-        <h1 class="mb-2 text-center text-2xl font-bold">Select Tenant</h1>
+        <h1 class="mb-2 text-center text-2xl font-bold">{{ t('selectTenant.title') }}</h1>
         <p class="mb-6 text-center text-sm text-gray-500">
-          Welcome, {{ auth.authUser?.username }}. Choose a tenant to continue.
+          {{ t('selectTenant.welcome', { username: auth.authUser?.username }) }}
         </p>
 
         <div class="space-y-3">
@@ -138,7 +140,7 @@ async function handleLogout() {
         >
           <div class="flex items-center gap-3">
             <Shield class="h-5 w-5 text-amber-600" />
-            <span class="font-medium text-amber-700">Super Admin Panel</span>
+            <span class="font-medium text-amber-700">{{ t('selectTenant.superAdminPanel') }}</span>
           </div>
           <ArrowRight class="h-4 w-4 text-amber-400" />
         </button>
@@ -148,12 +150,12 @@ async function handleLogout() {
           @click="openCreateDialog"
         >
           <Plus class="h-4 w-4" />
-          Create New Tenant
+          {{ t('selectTenant.createNewTenant') }}
         </button>
 
         <div class="mt-6 text-center">
           <button class="text-sm text-gray-400 hover:text-gray-600" @click="handleLogout">
-            Sign out
+            {{ t('selectTenant.signOut') }}
           </button>
         </div>
 
@@ -164,10 +166,10 @@ async function handleLogout() {
           @click.self="showCreateDialog = false"
         >
           <div class="w-full max-w-sm rounded-lg border bg-white p-6 shadow-lg">
-            <h2 class="mb-4 text-lg font-semibold">Create Tenant</h2>
+            <h2 class="mb-4 text-lg font-semibold">{{ t('selectTenant.createTenant') }}</h2>
             <form @submit.prevent="handleCreateTenant">
               <div class="mb-3">
-                <label class="mb-1 block text-sm font-medium text-gray-700">Name</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700">{{ t('selectTenant.name') }}</label>
                 <input
                   v-model="createForm.name"
                   type="text"
@@ -177,7 +179,7 @@ async function handleLogout() {
                 />
               </div>
               <div class="mb-3">
-                <label class="mb-1 block text-sm font-medium text-gray-700">Slug</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700">{{ t('selectTenant.slug') }}</label>
                 <input
                   v-model="createForm.slug"
                   type="text"
@@ -186,7 +188,7 @@ async function handleLogout() {
                   class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   @input="slugManuallyEdited = true"
                 />
-                <p class="mt-1 text-xs text-gray-400">Auto-generated from name. Edit to customize.</p>
+                <p class="mt-1 text-xs text-gray-400">{{ t('selectTenant.slugHint') }}</p>
               </div>
               <p v-if="createError" class="mb-3 text-sm text-red-600">{{ createError }}</p>
               <div class="flex justify-end gap-2">
@@ -195,14 +197,14 @@ async function handleLogout() {
                   class="rounded-md border px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
                   @click="showCreateDialog = false"
                 >
-                  Cancel
+                  {{ t('common.cancel') }}
                 </button>
                 <button
                   type="submit"
                   :disabled="createLoading"
                   class="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {{ createLoading ? 'Creating...' : 'Create' }}
+                  {{ createLoading ? t('selectTenant.creating') : t('selectTenant.create') }}
                 </button>
               </div>
             </form>

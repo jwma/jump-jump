@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
@@ -173,7 +175,7 @@ onMounted(fetchTenant)
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div class="flex-1">
-        <h1 class="text-xl font-semibold text-gray-900">Tenant Detail</h1>
+        <h1 class="text-xl font-semibold text-gray-900">{{ ('super.tenantDetail.title') }}</h1>
         <p v-if="tenant" class="mt-0.5 text-sm text-gray-500">
           <span class="font-mono font-medium text-gray-700">{{ tenant.id }}</span>
         </p>
@@ -226,7 +228,7 @@ onMounted(fetchTenant)
             :class="tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
           >
             <span class="h-1.5 w-1.5 rounded-full" :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'" />
-            {{ tenant.isActive ? 'Active' : 'Inactive' }}
+            {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
           </span>
           <button
             :disabled="toggleLoading"
@@ -237,20 +239,20 @@ onMounted(fetchTenant)
             @click="handleToggleStatus"
           >
             <Loader2 v-if="toggleLoading" class="mr-1 inline h-3 w-3 animate-spin" />
-            {{ tenant.isActive ? 'Disable' : 'Enable' }}
+            {{ tenant.isActive ? t('common.disabled') : t('common.enabled') }}
           </button>
         </div>
         <div class="mt-4 grid gap-4 sm:grid-cols-3">
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Tenant ID</label>
+            <label class="text-xs font-medium uppercase text-gray-400">{{ ('super.tenantDetail.tenantId') }}</label>
             <p class="mt-1 font-mono text-sm text-gray-900">{{ tenant.id }}</p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Created</label>
+            <label class="text-xs font-medium uppercase text-gray-400">{{ ('common.created') }}</label>
             <p class="mt-1 text-sm text-gray-700">{{ formatDate(tenant.createdAt) }}</p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400">Updated</label>
+            <label class="text-xs font-medium uppercase text-gray-400">{{ ('common.updated') }}</label>
             <p class="mt-1 text-sm text-gray-700">{{ formatDate(tenant.updatedAt) }}</p>
           </div>
         </div>
@@ -279,11 +281,11 @@ onMounted(fetchTenant)
         <div v-if="activeTab === 'info'" class="rounded-lg border bg-white p-5">
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="text-xs font-medium uppercase text-gray-400">Name</label>
+              <label class="text-xs font-medium uppercase text-gray-400">{{ ('common.name') }}</label>
               <p class="mt-1 text-sm text-gray-900">{{ tenant.name }}</p>
             </div>
             <div>
-              <label class="text-xs font-medium uppercase text-gray-400">Slug</label>
+              <label class="text-xs font-medium uppercase text-gray-400">{{ ('common.slug') }}</label>
               <p class="mt-1 font-mono text-sm text-gray-900">{{ tenant.slug }}</p>
             </div>
           </div>
@@ -298,9 +300,9 @@ onMounted(fetchTenant)
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  <th class="px-4 py-3">Username</th>
-                  <th class="px-4 py-3">Role</th>
-                  <th class="hidden px-4 py-3 lg:table-cell">Joined</th>
+                  <th class="px-4 py-3">{{ ('super.users.username') }}</th>
+                  <th class="px-4 py-3">{{ ('members.role') }}</th>
+                  <th class="hidden px-4 py-3 lg:table-cell">{{ ('members.joined') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y">
@@ -342,11 +344,11 @@ onMounted(fetchTenant)
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  <th class="px-4 py-3">ID</th>
-                  <th class="hidden px-4 py-3 md:table-cell">URL</th>
-                  <th class="px-4 py-3">Status</th>
-                  <th class="hidden px-4 py-3 lg:table-cell">Created By</th>
-                  <th class="hidden px-4 py-3 lg:table-cell">Created</th>
+                  <th class="px-4 py-3">{{ ('common.name') }}</th>
+                  <th class="hidden px-4 py-3 md:table-cell">{{ ('shortLinkDetail.targetUrl') }}</th>
+                  <th class="px-4 py-3">{{ ('common.status') }}</th>
+                  <th class="hidden px-4 py-3 lg:table-cell">{{ ('shortLinkDetail.createdBy') }}</th>
+                  <th class="hidden px-4 py-3 lg:table-cell">{{ ('common.created') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y">
@@ -362,7 +364,7 @@ onMounted(fetchTenant)
                       :class="sl.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
                     >
                       <span class="h-1.5 w-1.5 rounded-full" :class="sl.isEnable ? 'bg-green-500' : 'bg-gray-400'" />
-                      {{ sl.isEnable ? 'Active' : 'Inactive' }}
+                      {{ sl.isEnable ? t('common.active') : t('common.inactive') }}
                     </span>
                   </td>
                   <td class="hidden px-4 py-3 text-gray-500 lg:table-cell">{{ sl.createdBy }}</td>
@@ -371,7 +373,7 @@ onMounted(fetchTenant)
               </tbody>
             </table>
             <div v-if="shortLinksTotal > 20" class="border-t px-4 py-3 text-center text-xs text-gray-400">
-              Showing 20 of {{ shortLinksTotal }}
+              {{ t('super.tenantDetail.showingOf', { shown: 20, total: shortLinksTotal }) }}
             </div>
           </div>
         </div>
@@ -382,7 +384,7 @@ onMounted(fetchTenant)
           <div class="mb-4 rounded-lg border bg-white p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
               <div class="flex-1">
-                <label class="mb-1 block text-sm font-medium text-gray-700">Domain</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700">{{ ('common.domain') }}</label>
                 <input
                   v-model="newDomain"
                   type="text"
@@ -410,10 +412,10 @@ onMounted(fetchTenant)
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  <th class="px-4 py-3">Domain</th>
-                  <th class="px-4 py-3">Default</th>
-                  <th class="hidden px-4 py-3 lg:table-cell">Created</th>
-                  <th class="px-4 py-3 text-right">Actions</th>
+                  <th class="px-4 py-3">{{ ('common.domain') }}</th>
+                  <th class="px-4 py-3">{{ ('common.default') }}</th>
+                  <th class="hidden px-4 py-3 lg:table-cell">{{ ('common.created') }}</th>
+                  <th class="px-4 py-3 text-right">{{ ('common.actions') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y">
@@ -469,7 +471,7 @@ onMounted(fetchTenant)
         @click.self="confirmDeleteDomain = null"
       >
         <div class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
-          <h3 class="text-lg font-semibold text-gray-900">Remove Domain</h3>
+          <h3 class="text-lg font-semibold text-gray-900">{{ ('settings.removeDomain') }}</h3>
           <p class="mt-2 text-sm text-gray-500">
             Are you sure you want to remove
             <span class="font-mono font-medium text-gray-700">{{ confirmDeleteDomain }}</span>?

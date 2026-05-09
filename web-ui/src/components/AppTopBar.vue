@@ -81,7 +81,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
           @click.stop
         >
           <div class="flex items-center justify-between border-b px-4 py-3">
-            <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
+            <h3 class="text-sm font-semibold text-gray-900">{{ ('topbar.notifications') }}</h3>
             <button
               class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               aria-label="Close notifications"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { listShortLinks, getShortLinkData } from '@/api/short-link'
 import type { ShortLinkData, DailyStats, RequestHistory } from '@/types/api'
@@ -42,6 +43,7 @@ defineOptions({ name: 'DashboardPage' })
 
 const router = useRouter()
 const auth = useAuthStore()
+const { t } = useI18n()
 
 const loading = ref(true)
 const refreshing = ref(false)
@@ -60,10 +62,10 @@ const prevPeriodVisits = ref(0)
 
 const greeting = computed(() => {
   const h = new Date().getHours()
-  if (h < 6) return 'Good night'
-  if (h < 12) return 'Good morning'
-  if (h < 18) return 'Good afternoon'
-  return 'Good evening'
+  if (h < 6) return t('dashboard.greeting.night')
+  if (h < 12) return t('dashboard.greeting.morning')
+  if (h < 18) return t('dashboard.greeting.afternoon')
+  return t('dashboard.greeting.evening')
 })
 
 const todayStr = computed(() => {
@@ -78,7 +80,7 @@ const yesterdayStr = computed(() => {
 })
 
 const periodLabel = computed(() => {
-  return `Last ${trendDays.value} Days Visits`
+  return t('dashboard.periodVisits', { days: trendDays.value })
 })
 
 const todayTrend = computed(() => {
@@ -448,25 +450,25 @@ onMounted(() => fetchDashboardData())
       <div>
         <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">{{ greeting }}, {{ auth.username }}</h1>
         <p class="mt-1 text-sm text-gray-500">
-          Here's an overview of your short links performance.
+          {{ t('dashboard.overview') }}
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <button
           :disabled="loading || refreshing"
           class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 sm:px-4 sm:py-2.5"
-          aria-label="Refresh dashboard"
+          :aria-label="t('dashboard.refresh')"
           @click="handleRefresh"
         >
           <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': refreshing }" />
-          <span class="hidden sm:inline">Refresh</span>
+          <span class="hidden sm:inline">{{ t('dashboard.refresh') }}</span>
         </button>
         <router-link
           :to="{ name: 'short-link-create' }"
           class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:px-4 sm:py-2.5"
         >
           <Plus class="h-4 w-4" />
-          Create
+          {{ t('dashboard.create') }}
         </router-link>
       </div>
     </div>
@@ -477,7 +479,7 @@ onMounted(() => fetchDashboardData())
       <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 sm:text-sm">Total Links</p>
+            <p class="text-xs font-medium text-gray-500 sm:text-sm">{{ t('dashboard.totalLinks') }}</p>
             <p class="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">
               <span
                 v-if="loading"
@@ -496,7 +498,7 @@ onMounted(() => fetchDashboardData())
       <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 sm:text-sm">Active Links</p>
+            <p class="text-xs font-medium text-gray-500 sm:text-sm">{{ t('dashboard.activeLinks') }}</p>
             <p class="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">
               <span
                 v-if="loading"
@@ -515,7 +517,7 @@ onMounted(() => fetchDashboardData())
       <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 sm:text-sm">Today's Visits</p>
+            <p class="text-xs font-medium text-gray-500 sm:text-sm">{{ t('dashboard.todayVisits') }}</p>
             <div class="mt-1 flex items-baseline gap-2">
               <p class="text-xl font-bold text-gray-900 sm:text-2xl">
                 <span
@@ -540,7 +542,7 @@ onMounted(() => fetchDashboardData())
             <MousePointerClick class="h-4 w-4 text-purple-600 sm:h-5 sm:w-5" />
           </div>
         </div>
-        <p v-if="!loading && todayTrend" class="mt-1 text-xs text-gray-400">vs yesterday</p>
+        <p v-if="!loading && todayTrend" class="mt-1 text-xs text-gray-400">{{ t('dashboard.vsYesterday') }}</p>
       </div>
 
       <!-- Period Visits -->
@@ -572,7 +574,7 @@ onMounted(() => fetchDashboardData())
             <BarChart3 class="h-4 w-4 text-orange-600 sm:h-5 sm:w-5" />
           </div>
         </div>
-        <p v-if="!loading && periodTrend" class="mt-1 text-xs text-gray-400">vs previous {{ trendDays }} days</p>
+        <p v-if="!loading && periodTrend" class="mt-1 text-xs text-gray-400">{{ t('dashboard.vsPreviousDays', { days: trendDays }) }}</p>
       </div>
     </div>
 
@@ -583,7 +585,7 @@ onMounted(() => fetchDashboardData())
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <TrendingUp class="h-4 w-4 text-gray-500" />
-            <h2 class="text-base font-semibold text-gray-900">Visit Trends</h2>
+            <h2 class="text-base font-semibold text-gray-900">{{ t('dashboard.visitTrends') }}</h2>
           </div>
           <div class="flex rounded-lg border border-gray-200 p-0.5">
             <button
@@ -593,7 +595,7 @@ onMounted(() => fetchDashboardData())
               ]"
               @click="switchTrend(7)"
             >
-              7 Days
+              {{ t('dashboard.sevenDays') }}
             </button>
             <button
               :class="[
@@ -602,7 +604,7 @@ onMounted(() => fetchDashboardData())
               ]"
               @click="switchTrend(30)"
             >
-              30 Days
+              {{ t('dashboard.thirtyDays') }}
             </button>
           </div>
         </div>
@@ -629,7 +631,7 @@ onMounted(() => fetchDashboardData())
             :option="chartOption"
             :autoresize="true"
             class="h-full w-full"
-            aria-label="Visit trend chart showing PV and UV over time"
+            :aria-label="t('dashboard.chartAriaLabel')"
             role="img"
           />
         </div>
@@ -640,13 +642,13 @@ onMounted(() => fetchDashboardData())
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <Clock class="h-4 w-4 text-gray-500" />
-            <h2 class="text-base font-semibold text-gray-900">Recent Links</h2>
+            <h2 class="text-base font-semibold text-gray-900">{{ t('dashboard.recentLinks') }}</h2>
           </div>
           <router-link
             :to="{ name: 'short-links' }"
             class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
           >
-            View all
+            {{ t('dashboard.viewAll') }}
             <ArrowRight class="h-3 w-3" />
           </router-link>
         </div>
@@ -655,13 +657,13 @@ onMounted(() => fetchDashboardData())
         </div>
         <div v-else-if="recentLinks.length === 0" class="py-8 text-center">
           <Link class="mx-auto h-8 w-8 text-gray-300" />
-          <p class="mt-2 text-sm text-gray-400">No short links yet</p>
+          <p class="mt-2 text-sm text-gray-400">{{ t('dashboard.noShortLinks') }}</p>
           <router-link
             :to="{ name: 'short-link-create' }"
             class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
           >
             <Plus class="h-3.5 w-3.5" />
-            Create your first link
+            {{ t('dashboard.createFirstLink') }}
           </router-link>
         </div>
         <ul v-else class="divide-y divide-gray-100">
@@ -679,7 +681,7 @@ onMounted(() => fetchDashboardData())
                     link.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
                   "
                 >
-                  {{ link.isEnable ? 'Active' : 'Inactive' }}
+                  {{ link.isEnable ? t('common.active') : t('common.inactive') }}
                 </span>
               </div>
               <p class="mt-0.5 truncate text-xs text-gray-500">{{ link.url }}</p>
@@ -689,7 +691,7 @@ onMounted(() => fetchDashboardData())
             >
               <button
                 class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                title="Copy short link"
+                :title="t('dashboard.copyShortLink')"
                 @click="copyLink(link.id)"
               >
                 <Copy v-if="copiedId !== link.id" class="h-3.5 w-3.5" />
@@ -697,7 +699,7 @@ onMounted(() => fetchDashboardData())
               </button>
               <button
                 class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                title="View details"
+                :title="t('dashboard.viewDetails')"
                 @click="router.push({ name: 'short-link-detail', params: { id: link.id } })"
               >
                 <ExternalLink class="h-3.5 w-3.5" />
@@ -713,9 +715,9 @@ onMounted(() => fetchDashboardData())
       <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
         <div class="flex items-center gap-2">
           <BarChart3 class="h-4 w-4 text-gray-500" />
-          <h2 class="text-base font-semibold text-gray-900">Top Links by Visits</h2>
+          <h2 class="text-base font-semibold text-gray-900">{{ t('dashboard.topLinks') }}</h2>
         </div>
-        <span class="text-xs text-gray-400">Based on {{ trendDays }}-day data</span>
+        <span class="text-xs text-gray-400">{{ t('dashboard.basedOnDays', { days: trendDays }) }}</span>
       </div>
       <div v-if="loading" class="p-6">
         <div class="space-y-3">
@@ -724,7 +726,7 @@ onMounted(() => fetchDashboardData())
       </div>
       <div v-else-if="topLinks.length === 0" class="px-5 py-12 text-center">
         <BarChart3 class="mx-auto h-8 w-8 text-gray-300" />
-        <p class="mt-2 text-sm text-gray-400">No visit data available yet</p>
+        <p class="mt-2 text-sm text-gray-400">{{ t('dashboard.noVisitData') }}</p>
       </div>
       <div v-else>
         <!-- Mobile cards -->
@@ -765,8 +767,8 @@ onMounted(() => fetchDashboardData())
                 class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
               >
                 <th class="w-12 px-5 py-3">#</th>
-                <th class="px-5 py-3">Short Link</th>
-                <th class="px-5 py-3">Destination URL</th>
+                <th class="px-5 py-3">{{ t('dashboard.shortLink') }}</th>
+                <th class="px-5 py-3">{{ t('dashboard.destinationUrl') }}</th>
                 <th class="px-5 py-3 text-right">PV</th>
                 <th class="px-5 py-3 text-right">UV</th>
               </tr>

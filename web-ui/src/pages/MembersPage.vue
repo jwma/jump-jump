@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { listMembers, inviteMember, updateMemberRole, removeMember, leaveTenant } from '@/api/member'
 import { useToast } from '@/composables/useToast'
@@ -22,6 +23,7 @@ import {
 defineOptions({ name: 'MembersPage' })
 
 const router = useRouter()
+const { t } = useI18n()
 const auth = useAuthStore()
 const toast = useToast()
 
@@ -103,12 +105,12 @@ async function handleInvite() {
   inviteError.value = ''
   try {
     await inviteMember(auth.currentTenantId, inviteUsername.value.trim())
-    toast.success(`Invitation sent to ${inviteUsername.value.trim()}`)
+    toast.success(t('members.invitationSent', { username: inviteUsername.value.trim() }))
     inviteUsername.value = ''
     showInvite.value = false
     await fetchMembers()
   } catch (e: unknown) {
-    inviteError.value = (e as Error).message || 'Failed to send invitation'
+    inviteError.value = (e as Error).message || t('members.failedToInvite')
   } finally {
     inviteLoading.value = false
   }
@@ -134,7 +136,7 @@ async function executeRoleChange() {
     confirmRoleChange.value = null
     await fetchMembers()
   } catch (e: unknown) {
-    roleError.value = (e as Error).message || 'Failed to update role'
+    roleError.value = (e as Error).message || t('members.failedToUpdateRole')
   } finally {
     roleLoading.value = false
   }
@@ -154,7 +156,7 @@ async function executeRemoveMember() {
     confirmRemove.value = null
     await fetchMembers()
   } catch (e: unknown) {
-    removeError.value = (e as Error).message || 'Failed to remove member'
+    removeError.value = (e as Error).message || t('members.failedToRemoveMember')
   } finally {
     removeLoading.value = false
   }
@@ -175,7 +177,7 @@ async function executeLeaveTenant() {
     await auth.fetchAuthInfo()
     router.push({ name: 'select-tenant' })
   } catch (e: unknown) {
-    leaveError.value = (e as Error).message || 'Failed to leave tenant'
+    leaveError.value = (e as Error).message || t('members.failedToLeave')
   } finally {
     leaveLoading.value = false
   }
@@ -200,7 +202,7 @@ onMounted(fetchMembers)
     <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <Users class="h-5 w-5 text-gray-500" />
-        <h1 class="text-xl font-semibold text-gray-900">Members</h1>
+        <h1 class="text-xl font-semibold text-gray-900">{{ t('members.title') }}</h1>
         <span v-if="!loading" class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
           {{ members.length }}
         </span>
@@ -212,7 +214,7 @@ onMounted(fetchMembers)
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search members..."
+            :placeholder="t('members.searchPlaceholder')"
             class="w-48 rounded-md border border-gray-300 py-2 pl-8 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           />
         </div>
@@ -222,7 +224,7 @@ onMounted(fetchMembers)
           @click="openInviteModal"
         >
           <UserPlus class="h-4 w-4" />
-          Invite Member
+          {{ t('members.inviteMember') }}
         </button>
       </div>
     </div>
@@ -237,10 +239,10 @@ onMounted(fetchMembers)
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-            <th class="px-4 py-3">User</th>
-            <th class="px-4 py-3">Role</th>
-            <th class="hidden px-4 py-3 sm:table-cell">Joined</th>
-            <th v-if="auth.isAdmin" class="px-4 py-3 text-right">Actions</th>
+            <th class="px-4 py-3">{{ t('members.user') }}</th>
+            <th class="px-4 py-3">{{ t('members.role') }}</th>
+            <th class="hidden px-4 py-3 sm:table-cell">{{ t('members.joined') }}</th>
+            <th v-if="auth.isAdmin" class="px-4 py-3 text-right">{{ t('members.actions') }}</th>
           </tr>
         </thead>
         <tbody class="divide-y">
@@ -255,7 +257,7 @@ onMounted(fetchMembers)
                 </div>
                 <div>
                   <span class="font-medium text-gray-900">{{ m.username }}</span>
-                  <span v-if="m.userId === auth.authUser?.id" class="ml-1 text-xs text-gray-400">(you)</span>
+                  <span v-if="m.userId === auth.authUser?.id" class="ml-1 text-xs text-gray-400">{{ t('members.you') }}</span>
                 </div>
               </div>
             </td>
@@ -276,14 +278,14 @@ onMounted(fetchMembers)
               <div v-if="m.userId !== auth.authUser?.id" class="flex items-center justify-end gap-1">
                 <button
                   class="rounded p-1.5 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
-                  title="Change role"
+                  :title="t('members.changeRole')"
                   @click="requestRoleChange(m)"
                 >
                   <ArrowLeftRight class="h-4 w-4" />
                 </button>
                 <button
                   class="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                  title="Remove member"
+                  :title="t('members.removeMember')"
                   @click="requestRemoveMember(m)"
                 >
                   <Trash2 class="h-4 w-4" />
@@ -295,19 +297,19 @@ onMounted(fetchMembers)
       </table>
 
       <div v-if="filteredMembers.length === 0 && members.length > 0" class="py-12 text-center text-sm text-gray-400">
-        No members match "{{ searchQuery }}".
+        {{ t('members.noMatch', { query: searchQuery }) }}
       </div>
       <div v-else-if="members.length === 0" class="py-12 text-center">
         <Users class="mx-auto h-10 w-10 text-gray-300" />
-        <p class="mt-3 text-sm font-medium text-gray-500">No members yet</p>
-        <p class="mt-1 text-sm text-gray-400">Invite a member to start collaborating.</p>
+        <p class="mt-3 text-sm font-medium text-gray-500">{{ t('members.noMembersYet') }}</p>
+        <p class="mt-1 text-sm text-gray-400">{{ t('members.inviteToCollaborate') }}</p>
         <button
           v-if="auth.isAdmin"
           class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
           @click="openInviteModal"
         >
           <UserPlus class="h-4 w-4" />
-          Invite Member
+          {{ t('members.inviteMember') }}
         </button>
       </div>
     </div>
@@ -318,7 +320,7 @@ onMounted(fetchMembers)
         class="text-sm text-gray-400 transition-colors hover:text-gray-600"
         @click="requestLeaveTenant"
       >
-        Leave this tenant
+        {{ t('members.leaveTenant') }}
       </button>
     </div>
 
@@ -331,7 +333,7 @@ onMounted(fetchMembers)
       >
         <div class="mx-4 w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
           <div class="mb-4 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Invite Member</h3>
+            <h3 class="text-lg font-semibold text-gray-900">{{ t('members.inviteMember') }}</h3>
             <button class="rounded p-1 text-gray-400 hover:text-gray-600" @click="showInvite = false">
               <X class="h-4 w-4" />
             </button>
@@ -339,16 +341,16 @@ onMounted(fetchMembers)
 
           <form @submit.prevent="handleInvite">
             <div class="mb-3">
-              <label for="invite-username-input" class="mb-1 block text-sm font-medium text-gray-700">Username</label>
+              <label for="invite-username-input" class="mb-1 block text-sm font-medium text-gray-700">{{ t('members.username') }}</label>
               <input
                 id="invite-username-input"
                 v-model="inviteUsername"
                 type="text"
                 required
-                placeholder="Enter username to invite"
+                :placeholder="t('members.invitePlaceholder')"
                 class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               />
-              <p class="mt-1 text-xs text-gray-400">The user will receive an invitation to join this tenant.</p>
+              <p class="mt-1 text-xs text-gray-400">{{ t('members.inviteHint') }}</p>
             </div>
 
             <p v-if="inviteError" class="mb-3 text-sm text-red-600">{{ inviteError }}</p>
@@ -359,14 +361,14 @@ onMounted(fetchMembers)
                 class="rounded-md border px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
                 @click="showInvite = false"
               >
-                Cancel
+                {{ t('common.cancel') }}
               </button>
               <button
                 type="submit"
                 :disabled="inviteLoading || !inviteUsername.trim()"
                 class="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
               >
-                {{ inviteLoading ? 'Sending...' : 'Send Invite' }}
+                {{ inviteLoading ? t('members.sending') : t('members.sendInvite') }}
               </button>
             </div>
           </form>
@@ -377,30 +379,32 @@ onMounted(fetchMembers)
     <!-- Role Change Confirm -->
     <ConfirmDialog
       :open="!!confirmRoleChange"
-      title="Change Role"
-      :confirm-text="roleLoading ? 'Changing...' : 'Confirm'"
+      :title="t('members.changeRole')"
+      :confirm-text="roleLoading ? t('members.changing') : t('members.confirm')"
       :loading="roleLoading"
       @confirm="executeRoleChange"
       @cancel="confirmRoleChange = null"
     >
       <p class="mt-2 text-sm text-gray-600">
-        Change <span class="font-medium text-gray-900">{{ confirmRoleChange?.username }}</span>'s role from
-        <span class="font-mono font-medium">{{ confirmRoleChange?.currentRole }}</span> to
-        <span class="font-mono font-medium">{{ confirmRoleChange?.newRole }}</span>?
+        {{ t('members.changeRoleQuestion', {
+          username: confirmRoleChange?.username,
+          currentRole: confirmRoleChange?.currentRole,
+          newRole: confirmRoleChange?.newRole
+        }) }}
       </p>
       <div class="mt-3 rounded-lg border bg-gray-50 p-3 text-xs text-gray-600">
         <p class="font-medium text-gray-700">
-          {{ confirmRoleChange?.newRole === UserRole.Admin ? 'Admin' : 'Member' }} permissions:
+          {{ confirmRoleChange?.newRole === UserRole.Admin ? t('members.admin') : t('members.member') }} {{ t('members.permissions') }}:
         </p>
         <ul v-if="confirmRoleChange?.newRole === UserRole.Admin" class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
-          <li>Manage tenant settings and domains</li>
-          <li>Invite and remove members</li>
-          <li>Change member roles</li>
-          <li>Create, edit, and delete short links</li>
+          <li>{{ t('members.adminPermSettings') }}</li>
+          <li>{{ t('members.adminPermMembers') }}</li>
+          <li>{{ t('members.adminPermRoles') }}</li>
+          <li>{{ t('members.adminPermLinks') }}</li>
         </ul>
         <ul v-else class="mt-1 list-inside list-disc space-y-0.5 text-gray-500">
-          <li>Create, edit, and delete short links</li>
-          <li>View member list</li>
+          <li>{{ t('members.memberPermLinks') }}</li>
+          <li>{{ t('members.memberPermView') }}</li>
         </ul>
       </div>
       <p v-if="roleError" class="mt-2 text-sm text-red-600">{{ roleError }}</p>
@@ -409,17 +413,15 @@ onMounted(fetchMembers)
     <!-- Remove Member Confirm -->
     <ConfirmDialog
       :open="!!confirmRemove"
-      title="Remove Member"
+      :title="t('members.removeMember')"
       variant="danger"
-      :confirm-text="removeLoading ? 'Removing...' : 'Remove'"
+      :confirm-text="removeLoading ? t('members.removing') : t('members.remove')"
       :loading="removeLoading"
       @confirm="executeRemoveMember"
       @cancel="confirmRemove = null"
     >
       <p class="mt-2 text-sm text-gray-600">
-        Are you sure you want to remove
-        <span class="font-medium text-gray-900">{{ confirmRemove?.username }}</span> from this tenant?
-        This action cannot be undone.
+        {{ t('members.removeConfirm', { username: confirmRemove?.username }) }}
       </p>
       <p v-if="removeError" class="mt-2 text-sm text-red-600">{{ removeError }}</p>
     </ConfirmDialog>
@@ -427,16 +429,15 @@ onMounted(fetchMembers)
     <!-- Leave Tenant Confirm -->
     <ConfirmDialog
       :open="confirmLeave"
-      title="Leave Tenant"
+      :title="t('members.leaveTenant')"
       variant="danger"
-      :confirm-text="leaveLoading ? 'Leaving...' : 'Leave'"
+      :confirm-text="leaveLoading ? t('members.leaving') : t('members.leave')"
       :loading="leaveLoading"
       @confirm="executeLeaveTenant"
       @cancel="confirmLeave = false"
     >
       <p class="mt-2 text-sm text-gray-600">
-        Are you sure you want to leave <span class="font-medium text-gray-900">{{ auth.currentTenant?.tenantName }}</span>?
-        You will need to be re-invited to join again.
+        {{ t('members.leaveConfirm', { tenantName: auth.currentTenant?.tenantName }) }}
       </p>
       <p v-if="leaveError" class="mt-2 text-sm text-red-600">{{ leaveError }}</p>
     </ConfirmDialog>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { listTenants } from '@/api/tenant'
 import type { Tenant } from '@/types/api'
 import { Plus, Search, Building2, Eye } from 'lucide-vue-next'
@@ -8,6 +9,7 @@ import { Plus, Search, Building2, Eye } from 'lucide-vue-next'
 defineOptions({ name: 'TenantsPage' })
 
 const router = useRouter()
+const { t } = useI18n()
 
 const tenants = ref<Tenant[]>([])
 const loading = ref(false)
@@ -17,10 +19,10 @@ const filteredTenants = computed(() => {
   if (!search.value) return tenants.value
   const q = search.value.toLowerCase()
   return tenants.value.filter(
-    (t) =>
-      t.name.toLowerCase().includes(q) ||
-      t.slug.toLowerCase().includes(q) ||
-      t.id.toLowerCase().includes(q),
+    (tItem) =>
+      tItem.name.toLowerCase().includes(q) ||
+      tItem.slug.toLowerCase().includes(q) ||
+      tItem.id.toLowerCase().includes(q),
   )
 })
 
@@ -53,9 +55,9 @@ onMounted(fetchTenants)
   <div>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">Tenant Management</h1>
+        <h1 class="text-xl font-semibold text-gray-900">{{ t('tenants.title') }}</h1>
         <p class="mt-1 text-sm text-gray-500">
-          {{ tenants.length }} tenant{{ tenants.length !== 1 ? 's' : '' }} total
+          {{ t('tenants.count', { count: tenants.length, suffix: tenants.length !== 1 ? 's' : '' }) }}
         </p>
       </div>
       <router-link
@@ -63,7 +65,7 @@ onMounted(fetchTenants)
         class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
       >
         <Plus class="h-4 w-4" />
-        Create Tenant
+        {{ t('tenants.createTenant') }}
       </router-link>
     </div>
 
@@ -74,7 +76,7 @@ onMounted(fetchTenants)
         <input
           v-model="search"
           type="text"
-          placeholder="Search by name, slug, or ID..."
+          :placeholder="t('tenants.searchPlaceholder')"
           class="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
         />
       </div>
@@ -88,22 +90,22 @@ onMounted(fetchTenants)
             <tr
               class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
             >
-              <th class="px-4 py-3">Name</th>
-              <th class="px-4 py-3">Slug</th>
-              <th class="px-4 py-3">Status</th>
-              <th class="hidden px-4 py-3 lg:table-cell">Created</th>
-              <th class="px-4 py-3 text-right">Actions</th>
+              <th class="px-4 py-3">{{ t('tenants.name') }}</th>
+              <th class="px-4 py-3">{{ t('tenants.slug') }}</th>
+              <th class="px-4 py-3">{{ t('tenants.status') }}</th>
+              <th class="hidden px-4 py-3 lg:table-cell">{{ t('tenants.created') }}</th>
+              <th class="px-4 py-3 text-right">{{ t('tenants.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-if="loading">
-              <td colspan="5" class="px-4 py-8 text-center text-gray-400">Loading...</td>
+              <td colspan="5" class="px-4 py-8 text-center text-gray-400">{{ t('common.loading') }}</td>
             </tr>
             <tr v-else-if="filteredTenants.length === 0">
               <td colspan="5" class="px-4 py-8 text-center text-gray-400">
                 <div class="flex flex-col items-center gap-2">
                   <Building2 class="h-8 w-8 text-gray-300" />
-                  <span>No tenants found.</span>
+                  <span>{{ t('tenants.noTenants') }}</span>
                 </div>
               </td>
             </tr>
@@ -141,7 +143,7 @@ onMounted(fetchTenants)
                     class="h-1.5 w-1.5 rounded-full"
                     :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'"
                   />
-                  {{ tenant.isActive ? 'Active' : 'Inactive' }}
+                  {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
                 </span>
               </td>
               <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 lg:table-cell">
@@ -151,7 +153,7 @@ onMounted(fetchTenants)
                 <div class="flex items-center justify-end gap-1">
                   <button
                     class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                    title="View details"
+                    :title="t('tenants.viewDetails')"
                     @click="router.push({ name: 'tenant-detail', params: { id: tenant.id } })"
                   >
                     <Eye class="h-4 w-4" />

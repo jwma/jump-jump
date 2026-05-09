@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { changePassword } from '@/api/user'
 import { useToast } from '@/composables/useToast'
 import { Eye, EyeOff, CheckCircle2 } from 'lucide-vue-next'
 
 defineOptions({ name: 'ChangePasswordPage' })
+const { t } = useI18n()
 const toast = useToast()
 const currentPassword = ref('')
 const newPassword = ref('')
@@ -33,11 +35,11 @@ const passwordStrength = computed(() => {
   if (/[^a-zA-Z0-9]/.test(pw)) score++
 
   const levels = [
-    { label: 'Very weak', color: 'bg-red-500' },
-    { label: 'Weak', color: 'bg-orange-500' },
-    { label: 'Fair', color: 'bg-yellow-500' },
-    { label: 'Good', color: 'bg-blue-500' },
-    { label: 'Strong', color: 'bg-green-500' },
+    { label: t('changePassword.strengthLevels.veryWeak'), color: 'bg-red-500' },
+    { label: t('changePassword.strengthLevels.weak'), color: 'bg-orange-500' },
+    { label: t('changePassword.strengthLevels.fair'), color: 'bg-yellow-500' },
+    { label: t('changePassword.strengthLevels.good'), color: 'bg-blue-500' },
+    { label: t('changePassword.strengthLevels.strong'), color: 'bg-green-500' },
   ]
 
   const clampedScore = Math.max(1, Math.min(score, levels.length))
@@ -50,19 +52,19 @@ async function handleSubmit() {
   success.value = false
 
   if (newPassword.value !== confirmPassword.value) {
-    error.value = 'New passwords do not match.'
+    error.value = t('changePassword.passwordsDoNotMatch')
     return
   }
 
   if (newPassword.value.length < 6) {
-    error.value = 'New password must be at least 6 characters.'
+    error.value = t('changePassword.passwordTooShort')
     return
   }
 
   loading.value = true
   try {
     await changePassword({ password: currentPassword.value, newPassword: newPassword.value })
-    toast.success('Password changed successfully!')
+    toast.success(t('changePassword.success'))
     success.value = true
     currentPassword.value = ''
     newPassword.value = ''
@@ -72,7 +74,7 @@ async function handleSubmit() {
       successTimer = null
     }, 4000)
   } catch {
-    error.value = 'Failed to change password. Please check your current password.'
+    error.value = t('changePassword.failed')
   } finally {
     loading.value = false
   }
@@ -81,13 +83,13 @@ async function handleSubmit() {
 
 <template>
   <div>
-    <h1 class="text-xl font-semibold text-gray-900">Change Password</h1>
-    <p class="mt-1 text-sm text-gray-500">Update your account password.</p>
+    <h1 class="text-xl font-semibold text-gray-900">{{ t('changePassword.title') }}</h1>
+    <p class="mt-1 text-sm text-gray-500">{{ t('changePassword.description') }}</p>
 
     <form class="mt-6 max-w-md rounded-lg border bg-white p-6" @submit.prevent="handleSubmit">
       <div class="space-y-4">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">Current Password</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700">{{ t('changePassword.currentPassword') }}</label>
           <div class="relative">
             <input
               v-model="currentPassword"
@@ -97,7 +99,7 @@ async function handleSubmit() {
             />
             <button
               type="button"
-              :aria-label="showCurrentPassword ? 'Hide current password' : 'Show current password'"
+              :aria-label="showCurrentPassword ? t('changePassword.hideCurrentPassword') : t('changePassword.showCurrentPassword')"
               :aria-pressed="showCurrentPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
               @click="showCurrentPassword = !showCurrentPassword"
@@ -108,7 +110,7 @@ async function handleSubmit() {
           </div>
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">New Password</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700">{{ t('changePassword.newPassword') }}</label>
           <div class="relative">
             <input
               v-model="newPassword"
@@ -119,7 +121,7 @@ async function handleSubmit() {
             />
             <button
               type="button"
-              :aria-label="showNewPassword ? 'Hide new password' : 'Show new password'"
+              :aria-label="showNewPassword ? t('changePassword.hideNewPassword') : t('changePassword.showNewPassword')"
               :aria-pressed="showNewPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
               @click="showNewPassword = !showNewPassword"
@@ -138,12 +140,12 @@ async function handleSubmit() {
               />
             </div>
             <p class="mt-1 text-xs text-gray-500">
-              Strength: <span class="font-medium">{{ passwordStrength.label }}</span>
+              {{ t('changePassword.strength') }} <span class="font-medium">{{ passwordStrength.label }}</span>
             </p>
           </div>
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700">Confirm New Password</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700">{{ t('changePassword.confirmNewPassword') }}</label>
           <div class="relative">
             <input
               v-model="confirmPassword"
@@ -155,7 +157,7 @@ async function handleSubmit() {
             />
             <button
               type="button"
-              :aria-label="showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'"
+              :aria-label="showConfirmPassword ? t('changePassword.hideConfirmPassword') : t('changePassword.showConfirmPassword')"
               :aria-pressed="showConfirmPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
               @click="showConfirmPassword = !showConfirmPassword"
@@ -168,7 +170,7 @@ async function handleSubmit() {
             v-if="confirmPassword && newPassword !== confirmPassword"
             class="mt-1 text-xs text-red-500"
           >
-            Passwords do not match
+            {{ t('changePassword.passwordsDoNotMatch') }}
           </p>
         </div>
       </div>
@@ -180,7 +182,7 @@ async function handleSubmit() {
         class="mt-4 flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700"
       >
         <CheckCircle2 class="h-4 w-4" />
-        Password changed successfully!
+        {{ t('changePassword.success') }}
       </div>
 
       <button
@@ -188,7 +190,7 @@ async function handleSubmit() {
         :disabled="loading"
         class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
       >
-        {{ loading ? 'Changing...' : 'Change Password' }}
+        {{ loading ? t('changePassword.changing') : t('changePassword.changePassword') }}
       </button>
     </form>
   </div>

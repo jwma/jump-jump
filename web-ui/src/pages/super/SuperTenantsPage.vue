@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listSuperTenants, setSuperTenantStatus } from '@/api/super'
@@ -109,8 +111,8 @@ onMounted(fetchTenants)
 <template>
   <div>
     <div>
-      <h1 class="text-xl font-semibold text-gray-900">Tenant Management</h1>
-      <p class="mt-1 text-sm text-gray-500">{{ total }} tenant{{ total !== 1 ? 's' : '' }} total</p>
+      <h1 class="text-xl font-semibold text-gray-900">{{ $t('super.tenants.title')}}}</h1>
+      <p class="mt-1 text-sm text-gray-500">{{ t('super.tenants.tenantCount', { count: total, suffix: total !== 1 ? 's' : '' }) }}</p>
     </div>
 
     <!-- Table -->
@@ -137,7 +139,7 @@ onMounted(fetchTenants)
                   <component :is="SortIcon({ field: 'slug' })" class="h-3.5 w-3.5" />
                 </button>
               </th>
-              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">{{ $t('common.status')}}}</th>
               <th
                 class="hidden px-4 py-3 lg:table-cell"
                 :aria-sort="sortField === 'createdAt' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
@@ -147,7 +149,7 @@ onMounted(fetchTenants)
                   <component :is="SortIcon({ field: 'createdAt' })" class="h-3.5 w-3.5" />
                 </button>
               </th>
-              <th class="px-4 py-3 text-right">Actions</th>
+              <th class="px-4 py-3 text-right">{{ $t('common.actions')}}}</th>
             </tr>
           </thead>
           <tbody class="divide-y">
@@ -159,7 +161,7 @@ onMounted(fetchTenants)
             <tr v-else-if="tenants.length === 0">
               <td colspan="5" class="px-4 py-12 text-center">
                 <Building2 class="mx-auto h-10 w-10 text-gray-300" />
-                <p class="mt-3 text-sm font-medium text-gray-500">No tenants yet</p>
+                <p class="mt-3 text-sm font-medium text-gray-500">{{ ('super.tenants.noTenants') }}</p>
                 <p class="mt-1 text-sm text-gray-400">Tenants will appear here once created by users.</p>
               </td>
             </tr>
@@ -196,7 +198,7 @@ onMounted(fetchTenants)
                 >
                   <Loader2 v-if="toggleLoading === tenant.id" class="h-3 w-3 animate-spin" />
                   <span v-else class="h-1.5 w-1.5 rounded-full" :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'" />
-                  {{ tenant.isActive ? 'Active' : 'Inactive' }}
+                  {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
                 </button>
               </td>
               <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 lg:table-cell">
@@ -206,7 +208,7 @@ onMounted(fetchTenants)
                 <div class="flex items-center justify-end gap-1">
                   <button
                     class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                    title="View details"
+                    :title="t('common.viewDetails')"
                     @click="router.push({ name: 'super-tenant-detail', params: { id: tenant.id } })"
                   >
                     <Eye class="h-4 w-4" />
@@ -221,7 +223,7 @@ onMounted(fetchTenants)
       <!-- Pagination -->
       <div v-if="total > pageSize" class="flex items-center justify-between border-t px-4 py-3">
         <p class="text-xs text-gray-500">
-          Page {{ page }} of {{ Math.ceil(total / pageSize) }} ({{ total }} total)
+          {{ t('super.tenants.pageOf', { current: page, total: Math.ceil(total / pageSize), count: total }) }}
         </p>
         <div class="flex items-center gap-1">
           <button
