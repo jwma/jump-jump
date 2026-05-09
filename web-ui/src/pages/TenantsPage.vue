@@ -83,12 +83,12 @@ onMounted(fetchTenants)
     </div>
 
     <!-- Table -->
-    <div class="mt-4 overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:bg-gray-900">
+    <div class="mt-4 overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr
-              class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500"
+              class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
             >
               <th class="px-4 py-3">{{ t('tenants.name') }}</th>
               <th class="px-4 py-3">{{ t('tenants.slug') }}</th>
@@ -128,15 +128,15 @@ onMounted(fetchTenants)
                 </div>
               </td>
               <td class="px-4 py-3">
-                <span class="font-mono text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">{{ tenant.slug }}</span>
+                <span class="font-mono text-sm text-gray-600 dark:text-gray-400">{{ tenant.slug }}</span>
               </td>
               <td class="px-4 py-3">
                 <span
                   class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
                   :class="
                     tenant.isActive
-                      ? 'bg-green-50 text-green-700'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500'
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                   "
                 >
                   <span
@@ -146,13 +146,13 @@ onMounted(fetchTenants)
                   {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
                 </span>
               </td>
-              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">
+              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">
                 {{ formatDate(tenant.createdAt) }}
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center justify-end gap-1">
                   <button
-                    class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+                    class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
                     :title="t('tenants.viewDetails')"
                     @click="router.push({ name: 'tenant-detail', params: { id: tenant.id } })"
                   >

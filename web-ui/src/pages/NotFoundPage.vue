@@ -9,7 +9,7 @@ const router = useRouter()
 
 <template>
   <div class="flex min-h-[60vh] flex-col items-center justify-center text-center">
-    <h1 class="text-7xl font-bold text-gray-200 dark:text-gray-700">{{ t('notFound.title') }}</h1>
+    <h1 class="text-7xl font-bold text-gray-200 dark:text-gray-600">{{ t('notFound.title') }}</h1>
     <p class="mt-4 text-lg text-gray-500 dark:text-gray-400">{{ t('notFound.message') }}</p>
     <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
       {{ t('notFound.description') }}

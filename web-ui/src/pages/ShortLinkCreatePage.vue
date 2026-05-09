@@ -145,15 +145,15 @@ function goToLinks() {
     <!-- Success state -->
     <div
       v-if="createdLink"
-      class="mt-6 max-w-lg rounded-lg border border-green-200 bg-green-50 p-6"
+      class="mt-6 max-w-lg rounded-lg border border-green-200 dark:border-green-800/50 bg-green-50 dark:bg-green-900/20 p-6"
     >
-      <h2 class="text-lg font-semibold text-green-800">{{ t('shortLinkCreate.success') }}</h2>
-      <div class="mt-3 flex items-center gap-2 rounded-md bg-white p-3 shadow-sm">
+      <h2 class="text-lg font-semibold text-green-800 dark:text-green-300">{{ t('shortLinkCreate.success') }}</h2>
+      <div class="mt-3 flex items-center gap-2 rounded-md bg-white dark:bg-gray-800 p-3 shadow-sm">
         <span class="font-mono text-sm font-medium text-gray-900 dark:text-white">
           {{ getShortLinkUrl(createdLink.id) }}
         </span>
         <button
-          class="rounded p-1 text-gray-400 dark:text-gray-500 transition-colors hover:text-green-600"
+          class="rounded p-1 text-gray-400 dark:text-gray-500 transition-colors hover:text-green-600 dark:hover:text-green-400"
           title="Copy short link"
           @click="copyCreatedLink"
         >
@@ -164,7 +164,7 @@ function goToLinks() {
           :href="getShortLinkUrl(createdLink.id)"
           target="_blank"
           rel="noopener noreferrer"
-          class="rounded p-1 text-gray-400 dark:text-gray-500 transition-colors hover:text-blue-600"
+          class="rounded p-1 text-gray-400 dark:text-gray-500 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
           title="Open short link"
         >
           <ExternalLink class="h-4 w-4" />

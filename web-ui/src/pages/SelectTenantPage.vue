@@ -123,7 +123,7 @@ async function handleLogout() {
                 <div class="font-medium text-gray-900 dark:text-white">{{ tenant.tenantName }}</div>
                 <span
                   class="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
-                  :class="tenant.role === 'admin' ? 'bg-red-50 text-red-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'"
+                  :class="tenant.role === 'admin' ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'"
                 >
                   {{ tenant.role }}
                 </span>
@@ -135,7 +135,7 @@ async function handleLogout() {
 
         <button
           v-if="auth.isSuper"
-          class="mt-3 flex w-full items-center justify-between rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 p-4 text-left transition hover:border-amber-400"
+          class="mt-3 flex w-full items-center justify-between rounded-lg border-2 border-dashed border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 p-4 text-left transition hover:border-amber-400 dark:hover:border-amber-500"
           @click="enterSuperAdmin"
         >
           <div class="flex items-center gap-3">

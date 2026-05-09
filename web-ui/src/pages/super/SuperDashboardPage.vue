@@ -113,34 +113,34 @@ onMounted(fetchDashboardData)
       <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <tr class="border-b border-gray-100 dark:border-gray-800 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               <th class="px-5 py-3">{{ t('common.name') }}</th>
               <th class="px-5 py-3">{{ t('common.slug') }}</th>
               <th class="px-5 py-3">{{ t('common.status') }}</th>
               <th class="hidden px-5 py-3 md:table-cell">{{ t('common.created') }}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr v-for="tenant in recentTenants" :key="tenant.id" class="transition-colors hover:bg-gray-50">
+          <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+            <tr v-for="tenant in recentTenants" :key="tenant.id" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
               <td class="px-5 py-3">
                 <router-link
                   :to="{ name: 'super-tenant-detail', params: { id: tenant.id } }"
-                  class="font-medium text-blue-600 hover:text-blue-700"
+                  class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                 >
                   {{ tenant.name }}
                 </router-link>
               </td>
-              <td class="px-5 py-3 font-mono text-xs text-gray-600">{{ tenant.slug }}</td>
+              <td class="px-5 py-3 font-mono text-xs text-gray-600 dark:text-gray-400">{{ tenant.slug }}</td>
               <td class="px-5 py-3">
                 <span
                   class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  :class="tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
+                  :class="tenant.isActive ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
                 >
                   <span class="h-1.5 w-1.5 rounded-full" :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'" />
                   {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
                 </span>
               </td>
-              <td class="hidden whitespace-nowrap px-5 py-3 text-gray-500 md:table-cell">
+              <td class="hidden whitespace-nowrap px-5 py-3 text-gray-500 dark:text-gray-400 md:table-cell">
                 {{ formatDate(tenant.createdAt) }}
               </td>
             </tr>
