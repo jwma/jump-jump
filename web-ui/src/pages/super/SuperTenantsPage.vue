@@ -119,24 +119,33 @@ onMounted(fetchTenants)
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-              <th class="cursor-pointer select-none px-4 py-3" @click="toggleSort('name')">
-                <div class="flex items-center gap-1">
+              <th
+                class="px-4 py-3"
+                :aria-sort="sortField === 'name' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+              >
+                <button class="flex items-center gap-1" @click="toggleSort('name')">
                   Name
                   <component :is="SortIcon({ field: 'name' })" class="h-3.5 w-3.5" />
-                </div>
+                </button>
               </th>
-              <th class="cursor-pointer select-none px-4 py-3" @click="toggleSort('slug')">
-                <div class="flex items-center gap-1">
+              <th
+                class="px-4 py-3"
+                :aria-sort="sortField === 'slug' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+              >
+                <button class="flex items-center gap-1" @click="toggleSort('slug')">
                   Slug
                   <component :is="SortIcon({ field: 'slug' })" class="h-3.5 w-3.5" />
-                </div>
+                </button>
               </th>
               <th class="px-4 py-3">Status</th>
-              <th class="hidden cursor-pointer select-none px-4 py-3 lg:table-cell" @click="toggleSort('createdAt')">
-                <div class="flex items-center gap-1">
+              <th
+                class="hidden px-4 py-3 lg:table-cell"
+                :aria-sort="sortField === 'createdAt' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+              >
+                <button class="flex items-center gap-1" @click="toggleSort('createdAt')">
                   Created
                   <component :is="SortIcon({ field: 'createdAt' })" class="h-3.5 w-3.5" />
-                </div>
+                </button>
               </th>
               <th class="px-4 py-3 text-right">Actions</th>
             </tr>
