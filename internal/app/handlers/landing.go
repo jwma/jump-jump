@@ -51,10 +51,14 @@ func Redirect(c *gin.Context) {
 	}
 
 	rhRepo := repository.GetRequestHistoryRepo(db.GetRedisClient(), db.GetPostgresPool())
+	clientIP := c.ClientIP()
+	userAgent := c.Request.UserAgent()
+	referer := c.Request.Referer()
 	go func() {
-		ua := user_agent.New(c.Request.UserAgent())
+		ua := user_agent.New(userAgent)
 		osInfo := ua.OSInfo()
-		rhRepo.Save(models.NewRequestHistory(s, c.ClientIP(), c.Request.UserAgent(), osInfo.Name))
+		browserName, _ := ua.Browser()
+		rhRepo.Save(models.NewRequestHistory(s, clientIP, userAgent, osInfo.Name, browserName, referer))
 	}()
 
 	c.Redirect(http.StatusTemporaryRedirect, s.Url)

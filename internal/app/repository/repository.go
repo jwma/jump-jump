@@ -892,9 +892,9 @@ func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 
 func (r *requestHistoryRepository) saveDirect(rh *models.RequestHistory) {
 	_, err := r.db.Exec(context.Background(),
-		`INSERT INTO request_histories (short_link_id, tenant_id, url, ip, ua, os, created_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		rh.ShortLinkID, rh.TenantID, rh.Url, rh.IP, rh.UA, rh.OS, rh.Time)
+		`INSERT INTO request_histories (short_link_id, tenant_id, url, ip, ua, os, browser, referer, created_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+		rh.ShortLinkID, rh.TenantID, rh.Url, rh.IP, rh.UA, rh.OS, rh.Browser, rh.Referer, rh.Time)
 	if err != nil {
 		log.Printf("request history: direct PG write failed: %v", err)
 	}
@@ -902,7 +902,7 @@ func (r *requestHistoryRepository) saveDirect(rh *models.RequestHistory) {
 
 func (r *requestHistoryRepository) FindByDateRange(linkId string, startTime, endTime time.Time) []*models.RequestHistory {
 	rows, err := r.db.Query(context.Background(),
-		`SELECT id, short_link_id, url, ip, ua, os, created_at
+		`SELECT id, short_link_id, url, ip, ua, os, browser, referer, created_at
 		 FROM request_histories
 		 WHERE short_link_id = $1 AND created_at BETWEEN $2 AND $3
 		 ORDER BY created_at DESC`,
@@ -916,13 +916,22 @@ func (r *requestHistoryRepository) FindByDateRange(linkId string, startTime, end
 	rhs := make([]*models.RequestHistory, 0)
 	for rows.Next() {
 		rh := &models.RequestHistory{}
-		rows.Scan(&rh.Id, &rh.ShortLinkID, &rh.Url, &rh.IP, &rh.UA, &rh.OS, &rh.Time)
+		if err := rows.Scan(&rh.Id, &rh.ShortLinkID, &rh.Url, &rh.IP, &rh.UA, &rh.OS, &rh.Browser, &rh.Referer, &rh.Time); err != nil {
+			log.Printf("request history scan failed: %v", err)
+			continue
+		}
 		rhs = append(rhs, rh)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("request history rows iteration error: %v", err)
 	}
 	return rhs
 }
 
-func (r *requestHistoryRepository) GetAggregatedStats(linkId string, startTime, endTime time.Time) ([]*models.DailyStats, map[string]int) {
+func (r *requestHistoryRepository) GetAggregatedStats(linkId string, startTime, endTime time.Time) ([]*models.DailyStats, map[string]int, map[string]int, map[string]int) {
+	emptyDaily := make([]*models.DailyStats, 0)
+	emptyMap := make(map[string]int)
+
 	// Daily PV/UV
 	rows, err := r.db.Query(context.Background(),
 		`SELECT DATE(created_at) AS day, COUNT(*) AS pv, COUNT(DISTINCT ip) AS uv
@@ -932,7 +941,7 @@ func (r *requestHistoryRepository) GetAggregatedStats(linkId string, startTime, 
 		linkId, startTime, endTime)
 	if err != nil {
 		log.Printf("request history aggregation failed: %v", err)
-		return nil, nil
+		return emptyDaily, emptyMap, emptyMap, emptyMap
 	}
 	defer rows.Close()
 
@@ -945,11 +954,11 @@ func (r *requestHistoryRepository) GetAggregatedStats(linkId string, startTime, 
 
 	// OS distribution
 	osRows, err := r.db.Query(context.Background(),
-		`SELECT os, COUNT(*) FROM request_histories
+		`SELECT os, COUNT(*) AS count FROM request_histories
 		 WHERE short_link_id = $1 AND created_at BETWEEN $2 AND $3 AND os != ''
 		 GROUP BY os ORDER BY count DESC`, linkId, startTime, endTime)
 	if err != nil {
-		return daily, nil
+		return daily, emptyMap, emptyMap, emptyMap
 	}
 	defer osRows.Close()
 
@@ -961,7 +970,43 @@ func (r *requestHistoryRepository) GetAggregatedStats(linkId string, startTime, 
 		osDist[osName] = count
 	}
 
-	return daily, osDist
+	// Browser distribution
+	browserRows, err := r.db.Query(context.Background(),
+		`SELECT browser, COUNT(*) AS count FROM request_histories
+		 WHERE short_link_id = $1 AND created_at BETWEEN $2 AND $3 AND browser != ''
+		 GROUP BY browser ORDER BY count DESC`, linkId, startTime, endTime)
+	if err != nil {
+		return daily, osDist, emptyMap, emptyMap
+	}
+	defer browserRows.Close()
+
+	browserDist := make(map[string]int)
+	for browserRows.Next() {
+		var browserName string
+		var count int
+		browserRows.Scan(&browserName, &count)
+		browserDist[browserName] = count
+	}
+
+	// Referer distribution
+	refererRows, err := r.db.Query(context.Background(),
+		`SELECT referer, COUNT(*) AS count FROM request_histories
+		 WHERE short_link_id = $1 AND created_at BETWEEN $2 AND $3 AND referer != ''
+		 GROUP BY referer ORDER BY count DESC`, linkId, startTime, endTime)
+	if err != nil {
+		return daily, osDist, browserDist, emptyMap
+	}
+	defer refererRows.Close()
+
+	refererDist := make(map[string]int)
+	for refererRows.Next() {
+		var referer string
+		var count int
+		refererRows.Scan(&referer, &count)
+		refererDist[referer] = count
+	}
+
+	return daily, osDist, browserDist, refererDist
 }
 
 // --- User Preference Repository (PG) ---

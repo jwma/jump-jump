@@ -88,9 +88,9 @@ func (w *HistoryFlushWorker) batchInsert(members []redis.Z) error {
 			t = time.Unix(int64(z.Score), 0)
 		}
 		batch.Queue(
-			`INSERT INTO request_histories (short_link_id, tenant_id, url, ip, ua, os, created_at)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-			rh.ShortLinkID, rh.TenantID, rh.Url, rh.IP, rh.UA, rh.OS, t,
+			`INSERT INTO request_histories (short_link_id, tenant_id, url, ip, ua, os, browser, referer, created_at)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+			rh.ShortLinkID, rh.TenantID, rh.Url, rh.IP, rh.UA, rh.OS, rh.Browser, rh.Referer, t,
 		)
 	}
 

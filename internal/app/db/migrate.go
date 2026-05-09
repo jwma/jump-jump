@@ -105,6 +105,10 @@ var migrationStmts = []string{
 	`CREATE INDEX IF NOT EXISTS idx_request_histories_link_time ON request_histories(short_link_id, created_at DESC)`,
 	`CREATE INDEX IF NOT EXISTS idx_request_histories_tenant ON request_histories(tenant_id)`,
 
+	// Add browser and referer columns to request_histories
+	`ALTER TABLE request_histories ADD COLUMN IF NOT EXISTS browser VARCHAR(50) NOT NULL DEFAULT ''`,
+	`ALTER TABLE request_histories ADD COLUMN IF NOT EXISTS referer TEXT NOT NULL DEFAULT ''`,
+
 	`CREATE TABLE IF NOT EXISTS user_preferences (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     key     VARCHAR(100) NOT NULL,

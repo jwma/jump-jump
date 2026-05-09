@@ -136,7 +136,7 @@ func TestRequestHistoryRepository_Save(t *testing.T) {
 		t.Error(err)
 	}
 
-	rh := models.NewRequestHistory(l, "127.0.0.1", "fake user agent", "Linux")
+	rh := models.NewRequestHistory(l, "127.0.0.1", "fake user agent", "Linux", "Chrome", "")
 	rhRepo := GetRequestHistoryRepo(getTestRDB(), getTestPool())
 	rhRepo.Save(rh)
 }

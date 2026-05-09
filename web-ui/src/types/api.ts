@@ -103,6 +103,8 @@ export interface RequestHistory {
   url: string
   ip: string
   ua: string
+  browser?: string
+  referer?: string
   time: string
 }
 
@@ -163,6 +165,10 @@ export interface DailyStats {
 
 export interface ShortLinkDataResponse {
   histories: RequestHistory[]
+  daily?: DailyStats[]
+  osDist?: Record<string, number>
+  browserDist?: Record<string, number>
+  refererDist?: Record<string, number>
 }
 
 export interface Tenant {
