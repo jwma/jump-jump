@@ -322,7 +322,7 @@ onMounted(fetchLinks)
       </div>
       <select
         v-model="filterEnabled"
-        class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+        class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none sm:w-auto"
       >
         <option value="">All Status</option>
         <option value="true">Enabled</option>
@@ -331,7 +331,7 @@ onMounted(fetchLinks)
     </div>
 
     <!-- Batch actions -->
-    <div v-if="selectedIds.size > 0" class="mt-3 flex items-center gap-3">
+    <div v-if="selectedIds.size > 0" class="mt-3 flex flex-wrap items-center gap-2">
       <span class="text-sm text-gray-600">{{ selectedIds.size }} selected</span>
       <button
         :disabled="batchUpdating"
@@ -357,8 +357,139 @@ onMounted(fetchLinks)
       </button>
     </div>
 
-    <!-- Table -->
-    <div class="mt-4 overflow-hidden rounded-lg border bg-white">
+    <!-- Mobile card layout (hidden on md+) -->
+    <div class="mt-4 space-y-3 md:hidden">
+      <!-- Loading skeleton -->
+      <template v-if="loading">
+        <div v-for="i in 5" :key="`skel-${i}`" class="rounded-lg border bg-white p-4">
+          <div class="flex items-center justify-between">
+            <div class="h-4 w-24 animate-pulse rounded bg-gray-200" />
+            <div class="h-5 w-16 animate-pulse rounded-full bg-gray-200" />
+          </div>
+          <div class="mt-2 h-3 w-full animate-pulse rounded bg-gray-100" />
+          <div class="mt-2 flex items-center justify-between">
+            <div class="h-3 w-20 animate-pulse rounded bg-gray-100" />
+            <div class="h-6 w-6 animate-pulse rounded bg-gray-100" />
+          </div>
+        </div>
+      </template>
+      <!-- Empty state -->
+      <div v-else-if="filteredLinks.length === 0 && total === 0" class="rounded-lg border bg-white py-12 text-center">
+        <Link class="mx-auto h-10 w-10 text-gray-300" />
+        <p class="mt-3 text-sm font-medium text-gray-500">No short links yet</p>
+        <router-link
+          :to="{ name: 'short-link-create' }"
+          class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          <Plus class="h-4 w-4" />
+          Create your first link
+        </router-link>
+      </div>
+      <div v-else-if="filteredLinks.length === 0" class="rounded-lg border bg-white py-8 text-center text-sm text-gray-400">
+        No short links match your search.
+      </div>
+      <!-- Link cards -->
+      <div
+        v-for="link in sortedLinks"
+        :key="link.id"
+        class="rounded-lg border bg-white transition-colors"
+        :class="{ 'border-blue-200 bg-blue-50/30': selectedIds.has(link.id) }"
+      >
+        <div class="flex items-center justify-between p-4">
+          <div class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              :checked="selectedIds.has(link.id)"
+              class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              @change="toggleSelect(link.id)"
+            />
+            <span class="font-mono text-sm font-medium text-gray-900">{{ link.id }}</span>
+            <button
+              class="rounded p-0.5 text-gray-400 hover:text-blue-600"
+              @click="copyLink(link.id)"
+            >
+              <Copy v-if="copiedId !== link.id" class="h-3.5 w-3.5" />
+              <Check v-else class="h-3.5 w-3.5 text-green-500" />
+            </button>
+          </div>
+          <button
+            :disabled="togglingId === link.id"
+            class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
+            :class="link.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'"
+            @click="handleToggleEnable(link)"
+          >
+            <Loader2 v-if="togglingId === link.id" class="h-3 w-3 animate-spin" />
+            <span v-else class="h-1.5 w-1.5 rounded-full" :class="link.isEnable ? 'bg-green-500' : 'bg-gray-400'" />
+            {{ link.isEnable ? 'On' : 'Off' }}
+          </button>
+        </div>
+        <div class="border-t px-4 py-3">
+          <a
+            :href="link.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+          >
+            <span class="truncate">{{ link.url }}</span>
+            <ExternalLink class="h-3 w-3 shrink-0" />
+          </a>
+          <p v-if="link.description" class="mt-1 truncate text-xs text-gray-400">{{ link.description }}</p>
+        </div>
+        <div class="flex items-center justify-between border-t px-4 py-2">
+          <span class="text-xs text-gray-400">{{ formatDate(link.createTime) }}</span>
+          <div class="flex items-center gap-1">
+            <button
+              class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              @click="router.push({ name: 'short-link-detail', params: { id: link.id } })"
+            >
+              <Eye class="h-4 w-4" />
+            </button>
+            <button
+              class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              @click="router.push({ name: 'short-link-edit', params: { id: link.id } })"
+            >
+              <Pencil class="h-4 w-4" />
+            </button>
+            <button
+              class="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+              @click="confirmDeleteId = link.id"
+            >
+              <Trash2 class="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile pagination -->
+      <div
+        v-if="totalPages > 1"
+        class="mt-3 flex items-center justify-between"
+      >
+        <span class="text-xs text-gray-400">
+          {{ (page - 1) * pageSize + 1 }}–{{ Math.min(page * pageSize, total) }} of {{ total }}
+        </span>
+        <div class="flex items-center gap-1">
+          <button
+            :disabled="page <= 1"
+            class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 disabled:opacity-30"
+            @click="goPage(page - 1)"
+          >
+            <ChevronLeft class="h-5 w-5" />
+          </button>
+          <span class="min-w-[60px] text-center text-sm font-medium text-gray-700">{{ page }} / {{ totalPages }}</span>
+          <button
+            :disabled="page >= totalPages"
+            class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 disabled:opacity-30"
+            @click="goPage(page + 1)"
+          >
+            <ChevronRight class="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop table (hidden below md) -->
+    <div class="mt-4 hidden overflow-hidden rounded-lg border bg-white md:block">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>

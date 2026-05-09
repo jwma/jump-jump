@@ -150,15 +150,16 @@ async function handleLogout() {
     </div>
 
     <!-- Expand toggle (only when collapsed, desktop) -->
-    <button
-      v-if="layout.sidebarCollapsed"
-      class="absolute -right-3 top-4 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm text-gray-400 hover:text-gray-600 lg:flex"
-      aria-label="Expand sidebar"
-      title="Expand sidebar"
-      @click="layout.toggleSidebar"
-    >
-      <ChevronLeft class="h-3 w-3 rotate-180" />
-    </button>
+    <div v-if="layout.sidebarCollapsed" class="sidebar-tooltip-wrapper">
+      <button
+        class="absolute -right-3 top-4 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm text-gray-400 hover:text-gray-600 lg:flex"
+        aria-label="Expand sidebar"
+        @click="layout.toggleSidebar"
+      >
+        <ChevronLeft class="h-3 w-3 rotate-180" />
+      </button>
+      <span class="sidebar-tooltip" style="left: calc(100% + 16px); top: 16px; transform: none;">Expand sidebar</span>
+    </div>
 
     <!-- Tenant switcher (hidden on super admin routes) -->
     <div v-if="!layout.sidebarCollapsed && showTenantSwitcher" class="border-b px-3 py-2">
@@ -198,7 +199,7 @@ async function handleLogout() {
     </div>
 
     <!-- Super admin toggle -->
-    <div v-if="auth.isSuper" class="border-b px-2 py-2">
+    <div v-if="auth.isSuper" class="sidebar-tooltip-wrapper border-b px-2 py-2">
       <button
         class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors"
         :class="isSuperRoute ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'"
@@ -207,12 +208,13 @@ async function handleLogout() {
         <Shield class="h-4 w-4 shrink-0" />
         <span v-show="!layout.sidebarCollapsed">{{ isSuperRoute ? 'Back to App' : 'Super Admin' }}</span>
       </button>
+      <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{ isSuperRoute ? 'Back to App' : 'Super Admin' }}</span>
     </div>
 
     <!-- Navigation -->
     <nav class="flex-1 overflow-y-auto px-2 py-3">
       <ul class="space-y-1">
-        <li v-for="item in menuItems" :key="item.label">
+        <li v-for="item in menuItems" :key="item.label" class="sidebar-tooltip-wrapper">
           <router-link
             :to="item.to"
             :class="[
@@ -221,39 +223,86 @@ async function handleLogout() {
                 ? 'bg-blue-50 text-blue-700'
                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
             ]"
-            :title="layout.sidebarCollapsed ? item.label : undefined"
             @click="layout.closeMobileMenu"
           >
             <component :is="item.icon" class="h-5 w-5 shrink-0" />
             <span v-show="!layout.sidebarCollapsed">{{ item.label }}</span>
           </router-link>
+          <span
+            v-if="layout.sidebarCollapsed"
+            class="sidebar-tooltip"
+          >{{ item.label }}</span>
         </li>
       </ul>
     </nav>
 
     <!-- Invitation badge + Logout -->
     <div class="border-t px-2 py-3">
-      <router-link
-        v-if="auth.pendingInvitationCount > 0"
-        :to="{ name: 'invitations' }"
-        class="mb-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-amber-600 transition-colors hover:bg-amber-50"
-        @click="layout.closeMobileMenu"
-      >
-        <span class="relative">
-          <Bell class="h-5 w-5 shrink-0" />
-          <span class="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-            {{ auth.pendingInvitationCount > 9 ? '9+' : auth.pendingInvitationCount }}
+      <div v-if="auth.pendingInvitationCount > 0" class="sidebar-tooltip-wrapper">
+        <router-link
+          :to="{ name: 'invitations' }"
+          class="mb-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-amber-600 transition-colors hover:bg-amber-50"
+          @click="layout.closeMobileMenu"
+        >
+          <span class="relative">
+            <Bell class="h-5 w-5 shrink-0" />
+            <span class="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+              {{ auth.pendingInvitationCount > 9 ? '9+' : auth.pendingInvitationCount }}
+            </span>
           </span>
-        </span>
-        <span v-show="!layout.sidebarCollapsed">Invitations</span>
-      </router-link>
-      <button
-        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
-        @click="handleLogout"
-      >
-        <LogOut class="h-5 w-5 shrink-0" />
-        <span v-show="!layout.sidebarCollapsed">Logout</span>
-      </button>
+          <span v-show="!layout.sidebarCollapsed">Invitations</span>
+        </router-link>
+        <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">Invitations</span>
+      </div>
+      <div class="sidebar-tooltip-wrapper">
+        <button
+          class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
+          @click="handleLogout"
+        >
+          <LogOut class="h-5 w-5 shrink-0" />
+          <span v-show="!layout.sidebarCollapsed">Logout</span>
+        </button>
+        <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">Logout</span>
+      </div>
     </div>
   </aside>
 </template>
+
+<style scoped>
+.sidebar-tooltip-wrapper {
+  position: relative;
+}
+
+.sidebar-tooltip {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  border-radius: 6px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 10px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-tooltip::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #1f2937;
+}
+
+.sidebar-tooltip-wrapper:hover .sidebar-tooltip {
+  opacity: 1;
+}
+</style>
