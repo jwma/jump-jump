@@ -572,4 +572,13 @@ export default {
     focusSearch: '聚焦搜索',
     closePanels: '关闭面板 / 取消',
   },
+  qrCode: {
+    title: '二维码',
+    imageAlt: '短链接二维码',
+    downloadPng: '下载 PNG',
+    copyLink: '复制链接',
+    copied: '已复制！',
+    loadError: '加载域名失败。',
+    noDomains: '请先在设置中配置域名。',
+  },
 }

@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { listShortLinks, deleteShortLink, updateShortLink } from '@/api/short-link'
 import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import QrCodeDialog from '@/components/QrCodeDialog.vue'
 import type { ShortLinkData } from '@/types/api'
 import {
   Plus,
@@ -22,6 +23,7 @@ import {
   ArrowDown,
   Link,
   Loader2,
+  QrCode,
 } from 'lucide-vue-next'
 
 defineOptions({ name: 'ShortLinksPage' })
@@ -47,6 +49,7 @@ const togglingId = ref<string | null>(null)
 const copiedId = ref<string | null>(null)
 const confirmDeleteId = ref<string | null>(null)
 const batchUpdating = ref(false)
+const qrDialogId = ref<string | null>(null)
 
 type SortField = 'createTime' | 'updateTime' | 'id'
 type SortDirection = 'asc' | 'desc'
@@ -445,6 +448,14 @@ onMounted(fetchLinks)
           <div class="flex items-center gap-1">
             <button
               class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
+              :title="t('qrCode.title')"
+              :aria-label="t('qrCode.title')"
+              @click="qrDialogId = link.id"
+            >
+              <QrCode class="h-4 w-4" />
+            </button>
+            <button
+              class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
               :title="t('common.viewDetails')"
               aria-label="View details"
               @click="router.push({ name: 'short-link-detail', params: { id: link.id } })"
@@ -671,6 +682,14 @@ onMounted(fetchLinks)
                 <div class="flex items-center justify-end gap-1">
                   <button
                     class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
+                    :title="t('qrCode.title')"
+                    :aria-label="t('qrCode.title')"
+                    @click="qrDialogId = link.id"
+                  >
+                    <QrCode class="h-4 w-4" />
+                  </button>
+                  <button
+                    class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
                     :title="t('common.viewDetails')"
                     @click="router.push({ name: 'short-link-detail', params: { id: link.id } })"
                   >
@@ -778,5 +797,11 @@ onMounted(fetchLinks)
         >? This action cannot be undone.
       </p>
     </ConfirmDialog>
+
+    <QrCodeDialog
+      :short-link-id="qrDialogId ?? ''"
+      :open="!!qrDialogId"
+      @close="qrDialogId = null"
+    />
   </div>
 </template>

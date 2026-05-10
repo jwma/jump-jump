@@ -572,4 +572,13 @@ export default {
     focusSearch: 'Focus search',
     closePanels: 'Close panels / Cancel',
   },
+  qrCode: {
+    title: 'QR Code',
+    imageAlt: 'QR code for short link',
+    downloadPng: 'Download PNG',
+    copyLink: 'Copy Link',
+    copied: 'Copied!',
+    loadError: 'Failed to load domains.',
+    noDomains: 'Please configure a domain in Settings first.',
+  },
 }

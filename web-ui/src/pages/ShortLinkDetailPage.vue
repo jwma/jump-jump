@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-const { t } = useI18n()
-import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getShortLink, getShortLinkData } from '@/api/short-link'
 import { listDomains } from '@/api/tenant'
 import { useAuthStore } from '@/stores/auth'
+import { generateQRCodeDataURL, downloadQRCode } from '@/utils/qrcode'
 import type { ShortLinkData, RequestHistory, TenantDomain } from '@/types/api'
 import {
   ArrowLeft,
@@ -19,7 +19,11 @@ import {
   Loader2,
   LayoutGrid,
   FileText,
+  QrCode,
+  Download,
 } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 const VChart = defineAsyncComponent(async () => {
   const [
@@ -52,6 +56,13 @@ const chartLoading = ref(false)
 const notFound = ref(false)
 const copied = ref(false)
 const activeTab = ref<'trend' | 'records'>('trend')
+
+const qrDomains = ref<TenantDomain[]>([])
+const qrSelectedDomain = ref('')
+const qrDataUrl = ref('')
+const qrLoading = ref(false)
+const qrCopied = ref(false)
+const qrLoadError = ref(false)
 
 const daysAgo = ref(7)
 const startDate = ref('')
@@ -91,11 +102,19 @@ function formatShortDate(d: string) {
 const shortLinkUrl = computed(() => {
   if (!link.value) return ''
   if (landingHost.value) {
-    const protocol = landingHost.value === 'localhost' ? 'http://' : `${window.location.protocol}//`
+    const protocol = landingHost.value.startsWith('localhost') ? 'http://' : `${window.location.protocol}//`
     return `${protocol}${landingHost.value}/${link.value.id}`
   }
   return `${window.location.origin}/${link.value.id}`
 })
+
+const qrUrl = computed(() => {
+  if (!link.value || !qrSelectedDomain.value) return ''
+  const protocol = qrSelectedDomain.value.startsWith('localhost') ? 'http://' : `${window.location.protocol}//`
+  return `${protocol}${qrSelectedDomain.value}/${link.value.id}`
+})
+
+const qrHasMultipleDomains = computed(() => qrDomains.value.length > 1)
 
 const dailyVisits = computed(() => {
   const map = new Map<string, number>()
@@ -321,15 +340,51 @@ async function fetchLandingHost() {
   if (!auth.currentTenantId) return
   try {
     const domains = await listDomains(auth.currentTenantId)
+    qrDomains.value = domains
+    qrLoadError.value = false
     const defaultDomain = (domains as TenantDomain[]).find((d) => d.isDefault)
     if (defaultDomain) {
       landingHost.value = defaultDomain.domain
+      qrSelectedDomain.value = defaultDomain.domain
     } else if (domains.length > 0) {
       landingHost.value = (domains as TenantDomain[])[0].domain
+      qrSelectedDomain.value = (domains as TenantDomain[])[0].domain
     }
   } catch {
-    // ignore
+    qrLoadError.value = true
   }
+}
+
+async function generateQR() {
+  if (!qrUrl.value) {
+    qrDataUrl.value = ''
+    return
+  }
+  qrLoading.value = true
+  try {
+    qrDataUrl.value = await generateQRCodeDataURL(qrUrl.value)
+  } catch {
+    qrDataUrl.value = ''
+  } finally {
+    qrLoading.value = false
+  }
+}
+
+function handleDownloadQR() {
+  if (!qrDataUrl.value || !link.value) return
+  downloadQRCode(qrDataUrl.value, `qrcode-${link.value.id}.png`)
+}
+
+function copyQRLink() {
+  navigator.clipboard.writeText(qrUrl.value).then(
+    () => {
+      qrCopied.value = true
+      setTimeout(() => {
+        qrCopied.value = false
+      }, 2000)
+    },
+    () => {},
+  )
 }
 
 async function fetchHistory() {
@@ -349,6 +404,10 @@ onMounted(() => {
   setDateRange(7)
   fetchData()
   fetchLandingHost()
+})
+
+watch([() => link.value, qrSelectedDomain], () => {
+  generateQR()
 })
 </script>
 
@@ -451,6 +510,86 @@ onMounted(() => {
             <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(link.createTime) }}</p>
           </div>
         </div>
+      </div>
+
+      <!-- QR Code card -->
+      <div class="mt-4 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
+        <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <QrCode class="h-4 w-4" />
+          {{ t('qrCode.title') }}
+        </h3>
+        <template v-if="qrLoadError">
+          <div class="py-6 text-center">
+            <p class="text-sm text-red-500">{{ t('qrCode.loadError') }}</p>
+            <button
+              class="mt-2 text-sm text-blue-600 hover:underline"
+              @click="fetchLandingHost()"
+            >
+              {{ t('common.refresh') }}
+            </button>
+          </div>
+        </template>
+        <template v-else-if="qrDomains.length === 0">
+          <div class="py-6 text-center">
+            <QrCode class="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600" />
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ t('qrCode.noDomains') }}</p>
+          </div>
+        </template>
+        <template v-else>
+          <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+            <div class="flex shrink-0 items-center justify-center">
+              <div
+                v-if="qrLoading"
+                class="flex h-[192px] w-[192px] items-center justify-center"
+              >
+                <Loader2 class="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+              <img
+                v-else-if="qrDataUrl"
+                :src="qrDataUrl"
+                :alt="t('qrCode.imageAlt')"
+                class="h-[192px] w-[192px] rounded"
+              />
+            </div>
+            <div class="flex w-full flex-col gap-3">
+              <div v-if="qrHasMultipleDomains">
+                <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">
+                  {{ t('common.domain') }}
+                </label>
+                <select
+                  v-model="qrSelectedDomain"
+                  class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                >
+                  <option
+                    v-for="d in qrDomains"
+                    :key="d.id"
+                    :value="d.domain"
+                  >
+                    {{ d.domain }}{{ d.isDefault ? ` (${t('common.default')})` : '' }}
+                  </option>
+                </select>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  :disabled="!qrDataUrl"
+                  class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                  @click="handleDownloadQR"
+                >
+                  <Download class="h-3.5 w-3.5" />
+                  {{ t('qrCode.downloadPng') }}
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                  @click="copyQRLink"
+                >
+                  <Copy v-if="!qrCopied" class="h-3.5 w-3.5" />
+                  <Check v-else class="h-3.5 w-3.5 text-green-500" />
+                  {{ qrCopied ? t('qrCode.copied') : t('qrCode.copyLink') }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Analytics section -->
