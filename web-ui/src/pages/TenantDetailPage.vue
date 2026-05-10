@@ -172,7 +172,7 @@ onMounted(() => {
       <div class="mt-4 rounded-lg border bg-white dark:bg-gray-900 p-5">
         <div class="flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 pb-4">
           <div
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 text-sm font-bold text-blue-600 dark:text-blue-400"
           >
             {{ tenant.name.charAt(0).toUpperCase() }}
           </div>

@@ -277,7 +277,7 @@ onMounted(fetchMembers)
             <td v-if="auth.isAdmin" class="px-4 py-3">
               <div v-if="m.userId !== auth.authUser?.id" class="flex items-center justify-end gap-1">
                 <button
-                  class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                  class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                   :title="t('members.changeRole')"
                   @click="requestRoleChange(m)"
                 >

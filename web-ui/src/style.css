@@ -28,3 +28,9 @@ button:disabled,
 select:disabled {
   cursor: not-allowed;
 }
+
+.dark input,
+.dark textarea,
+.dark select {
+  color: white;
+}
