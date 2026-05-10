@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import { useTheme } from '@/composables/useTheme'
 import { listShortLinks, getShortLinkData } from '@/api/short-link'
 import type { ShortLinkData, DailyStats, RequestHistory } from '@/types/api'
 import {
@@ -44,6 +45,7 @@ defineOptions({ name: 'DashboardPage' })
 const router = useRouter()
 const auth = useAuthStore()
 const { t } = useI18n()
+const { darkMode } = useTheme()
 
 const loading = ref(true)
 const refreshing = ref(false)
@@ -224,20 +226,21 @@ const chartOption = computed(() => {
   const dates = trendData.value.map((d) => formatShortDate(d.date))
   const pvData = trendData.value.map((d) => d.pv)
   const uvData = trendData.value.map((d) => d.uv)
+  const dark = darkMode.value
 
   return {
     tooltip: {
       trigger: 'axis' as const,
-      backgroundColor: '#fff',
-      borderColor: '#e5e7eb',
+      backgroundColor: dark ? '#1f2937' : '#fff',
+      borderColor: dark ? '#374151' : '#e5e7eb',
       borderWidth: 1,
-      textStyle: { color: '#374151', fontSize: 13 },
+      textStyle: { color: dark ? '#d1d5db' : '#374151', fontSize: 13 },
       axisPointer: { type: 'shadow' as const },
     },
     legend: {
       data: ['PV', 'UV'],
       bottom: 0,
-      textStyle: { color: '#6b7280', fontSize: 12 },
+      textStyle: { color: dark ? '#9ca3af' : '#6b7280', fontSize: 12 },
       itemWidth: 16,
       itemHeight: 2,
       itemGap: 24,
@@ -252,13 +255,13 @@ const chartOption = computed(() => {
       type: 'category' as const,
       data: dates,
       boundaryGap: false,
-      axisLine: { lineStyle: { color: '#e5e7eb' } },
+      axisLine: { lineStyle: { color: dark ? '#374151' : '#e5e7eb' } },
       axisTick: { show: false },
       axisLabel: { color: '#9ca3af', fontSize: 11 },
     },
     yAxis: {
       type: 'value' as const,
-      splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' as const } },
+      splitLine: { lineStyle: { color: dark ? '#1f2937' : '#f3f4f6', type: 'dashed' as const } },
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: { color: '#9ca3af', fontSize: 11 },
@@ -271,7 +274,7 @@ const chartOption = computed(() => {
         symbol: 'circle',
         symbolSize: 6,
         lineStyle: { width: 2.5, color: '#2563eb' },
-        itemStyle: { color: '#2563eb', borderWidth: 2, borderColor: '#fff' },
+        itemStyle: { color: '#2563eb', borderWidth: 2, borderColor: dark ? '#111827' : '#fff' },
         areaStyle: {
           color: {
             type: 'linear' as const,
@@ -294,7 +297,7 @@ const chartOption = computed(() => {
         symbol: 'circle',
         symbolSize: 6,
         lineStyle: { width: 2.5, color: '#8b5cf6' },
-        itemStyle: { color: '#8b5cf6', borderWidth: 2, borderColor: '#fff' },
+        itemStyle: { color: '#8b5cf6', borderWidth: 2, borderColor: dark ? '#111827' : '#fff' },
         areaStyle: {
           color: {
             type: 'linear' as const,
@@ -660,7 +663,7 @@ onMounted(() => fetchDashboardData())
           <p class="mt-2 text-sm text-gray-400">{{ t('dashboard.noShortLinks') }}</p>
           <router-link
             :to="{ name: 'short-link-create' }"
-            class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+            class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
           >
             <Plus class="h-3.5 w-3.5" />
             {{ t('dashboard.createFirstLink') }}
@@ -714,7 +717,7 @@ onMounted(() => fetchDashboardData())
     <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
       <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-5 py-4">
         <div class="flex items-center gap-2">
-          <BarChart3 class="h-4 w-4 text-gray-500" />
+          <BarChart3 class="h-4 w-4 text-gray-500 dark:text-gray-400" />
           <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('dashboard.topLinks') }}</h2>
         </div>
         <span class="text-xs text-gray-400">{{ t('dashboard.basedOnDays', { days: trendDays }) }}</span>
