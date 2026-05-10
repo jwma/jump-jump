@@ -64,12 +64,10 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
       <slot name="breadcrumb" />
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
       <!-- Global Search -->
       <GlobalSearch />
-    </div>
 
-    <div class="flex items-center gap-2">
       <!-- Theme toggle -->
       <div class="topbar-dropdown relative">
         <button

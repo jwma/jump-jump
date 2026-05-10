@@ -8,6 +8,7 @@ const { query, results, loading, open, hasResults, openSearch, closeSearch, sele
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const activeIndex = ref(-1)
+const shortcutLabel = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent) ? '⌘K' : 'Ctrl+K'
 
 watch(open, async (isOpen) => {
   if (isOpen) {
@@ -55,12 +56,11 @@ onBeforeUnmount(() => {
 <template>
   <!-- Search trigger button -->
   <button
-    class="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-1.5 text-sm text-gray-400 dark:text-gray-500 transition-colors hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-500"
+    class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+    aria-label="Search"
     @click="openSearch"
   >
-    <Search class="h-4 w-4" />
-    <span class="hidden sm:inline">Search...</span>
-    <kbd class="hidden rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500 sm:inline">Ctrl+K</kbd>
+    <Search class="h-5 w-5" />
   </button>
 
   <!-- Search modal -->
@@ -123,7 +123,11 @@ onBeforeUnmount(() => {
 
         <!-- Empty state -->
         <div v-else class="px-4 py-6 text-center">
-          <p class="text-sm text-gray-400 dark:text-gray-500">Start typing to search...</p>
+          <p class="text-sm text-gray-400 dark:text-gray-500">Start typing to search…</p>
+          <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+            <kbd class="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500">{{ shortcutLabel }}</kbd>
+            to quickly search anytime
+          </p>
         </div>
       </div>
     </div>
