@@ -8,6 +8,7 @@ const { query, results, loading, open, hasResults, openSearch, closeSearch, sele
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const activeIndex = ref(-1)
+const shortcutLabel = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent) ? '⌘K' : 'Ctrl+K'
 
 watch(open, async (isOpen) => {
   if (isOpen) {
@@ -123,9 +124,9 @@ onBeforeUnmount(() => {
         <!-- Empty state -->
         <div v-else class="px-4 py-6 text-center">
           <p class="text-sm text-gray-400 dark:text-gray-500">Start typing to search…</p>
-          <p class="mt-1 text-xs text-gray-300 dark:text-gray-600">
-            <kbd class="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500">Ctrl+K</kbd>
-            to quick search anytime
+          <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+            <kbd class="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500">{{ shortcutLabel }}</kbd>
+            to quickly search anytime
           </p>
         </div>
       </div>
