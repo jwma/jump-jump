@@ -29,7 +29,7 @@ select:disabled {
   cursor: not-allowed;
 }
 
-.dark input,
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="image"]):not([type="submit"]):not([type="reset"]):not([type="button"]),
 .dark textarea,
 .dark select {
   color: white;
