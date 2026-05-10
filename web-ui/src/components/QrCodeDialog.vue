@@ -31,7 +31,7 @@ let previousFocusEl: HTMLElement | null = null
 
 const qrUrl = computed(() => {
   if (!selectedDomain.value) return ''
-  const protocol = selectedDomain.value === 'localhost' ? 'http://' : 'https://'
+  const protocol = selectedDomain.value.startsWith('localhost') ? 'http://' : `${window.location.protocol}//`
   return `${protocol}${selectedDomain.value}/${props.shortLinkId}`
 })
 
@@ -114,6 +114,10 @@ watch(
 )
 
 watch(selectedDomain, () => {
+  generateQR()
+})
+
+watch(() => props.shortLinkId, () => {
   generateQR()
 })
 

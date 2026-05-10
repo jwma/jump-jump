@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-const { t } = useI18n()
 import { ref, computed, onMounted, defineAsyncComponent, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getShortLink, getShortLinkData } from '@/api/short-link'
 import { listDomains } from '@/api/tenant'
 import { useAuthStore } from '@/stores/auth'
@@ -23,6 +22,8 @@ import {
   QrCode,
   Download,
 } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 const VChart = defineAsyncComponent(async () => {
   const [
@@ -60,6 +61,8 @@ const qrDomains = ref<TenantDomain[]>([])
 const qrSelectedDomain = ref('')
 const qrDataUrl = ref('')
 const qrLoading = ref(false)
+const qrCopied = ref(false)
+const qrLoadError = ref(false)
 
 const daysAgo = ref(7)
 const startDate = ref('')
@@ -99,7 +102,7 @@ function formatShortDate(d: string) {
 const shortLinkUrl = computed(() => {
   if (!link.value) return ''
   if (landingHost.value) {
-    const protocol = landingHost.value === 'localhost' ? 'http://' : `${window.location.protocol}//`
+    const protocol = landingHost.value.startsWith('localhost') ? 'http://' : `${window.location.protocol}//`
     return `${protocol}${landingHost.value}/${link.value.id}`
   }
   return `${window.location.origin}/${link.value.id}`
@@ -107,7 +110,7 @@ const shortLinkUrl = computed(() => {
 
 const qrUrl = computed(() => {
   if (!link.value || !qrSelectedDomain.value) return ''
-  const protocol = qrSelectedDomain.value === 'localhost' ? 'http://' : 'https://'
+  const protocol = qrSelectedDomain.value.startsWith('localhost') ? 'http://' : `${window.location.protocol}//`
   return `${protocol}${qrSelectedDomain.value}/${link.value.id}`
 })
 
@@ -338,6 +341,7 @@ async function fetchLandingHost() {
   try {
     const domains = await listDomains(auth.currentTenantId)
     qrDomains.value = domains
+    qrLoadError.value = false
     const defaultDomain = (domains as TenantDomain[]).find((d) => d.isDefault)
     if (defaultDomain) {
       landingHost.value = defaultDomain.domain
@@ -347,7 +351,7 @@ async function fetchLandingHost() {
       qrSelectedDomain.value = (domains as TenantDomain[])[0].domain
     }
   } catch {
-    // ignore
+    qrLoadError.value = true
   }
 }
 
@@ -371,6 +375,18 @@ function handleDownloadQR() {
   downloadQRCode(qrDataUrl.value, `qrcode-${link.value.id}.png`)
 }
 
+function copyQRLink() {
+  navigator.clipboard.writeText(qrUrl.value).then(
+    () => {
+      qrCopied.value = true
+      setTimeout(() => {
+        qrCopied.value = false
+      }, 2000)
+    },
+    () => {},
+  )
+}
+
 async function fetchHistory() {
   if (!startDate.value || !endDate.value) return
   chartLoading.value = true
@@ -387,10 +403,10 @@ async function fetchHistory() {
 onMounted(() => {
   setDateRange(7)
   fetchData()
-  fetchLandingHost().then(() => generateQR())
+  fetchLandingHost()
 })
 
-watch(qrSelectedDomain, () => {
+watch([() => link.value, qrSelectedDomain], () => {
   generateQR()
 })
 </script>
@@ -502,7 +518,18 @@ watch(qrSelectedDomain, () => {
           <QrCode class="h-4 w-4" />
           {{ t('qrCode.title') }}
         </h3>
-        <template v-if="qrDomains.length === 0">
+        <template v-if="qrLoadError">
+          <div class="py-6 text-center">
+            <p class="text-sm text-red-500">{{ t('qrCode.loadError') }}</p>
+            <button
+              class="mt-2 text-sm text-blue-600 hover:underline"
+              @click="fetchLandingHost()"
+            >
+              {{ t('common.refresh') }}
+            </button>
+          </div>
+        </template>
+        <template v-else-if="qrDomains.length === 0">
           <div class="py-6 text-center">
             <QrCode class="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600" />
             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ t('qrCode.noDomains') }}</p>
@@ -553,11 +580,11 @@ watch(qrSelectedDomain, () => {
                 </button>
                 <button
                   class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-                  @click="copyLink"
+                  @click="copyQRLink"
                 >
-                  <Copy v-if="!copied" class="h-3.5 w-3.5" />
+                  <Copy v-if="!qrCopied" class="h-3.5 w-3.5" />
                   <Check v-else class="h-3.5 w-3.5 text-green-500" />
-                  {{ copied ? t('qrCode.copied') : t('qrCode.copyLink') }}
+                  {{ qrCopied ? t('qrCode.copied') : t('qrCode.copyLink') }}
                 </button>
               </div>
             </div>

@@ -449,7 +449,7 @@ onMounted(fetchLinks)
             <button
               class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
               :title="t('qrCode.title')"
-              aria-label="QR Code"
+              :aria-label="t('qrCode.title')"
               @click="qrDialogId = link.id"
             >
               <QrCode class="h-4 w-4" />
@@ -683,6 +683,7 @@ onMounted(fetchLinks)
                   <button
                     class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
                     :title="t('qrCode.title')"
+                    :aria-label="t('qrCode.title')"
                     @click="qrDialogId = link.id"
                   >
                     <QrCode class="h-4 w-4" />
