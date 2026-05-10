@@ -173,7 +173,7 @@ onMounted(fetchTenants)
               <td class="px-4 py-3">
                 <div class="flex items-center gap-2">
                   <div
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-xs font-bold text-blue-600"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 text-xs font-bold text-blue-600 dark:text-blue-400"
                   >
                     {{ tenant.name.charAt(0).toUpperCase() }}
                   </div>

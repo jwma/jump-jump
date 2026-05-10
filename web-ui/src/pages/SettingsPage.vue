@@ -445,7 +445,7 @@ onMounted(fetchAll)
                   </div>
                   <div class="mt-1 flex items-center gap-2 pl-6">
                     <span v-if="d.isDefault" class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
-                      <Star class="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                      <Star class="h-3 w-3 fill-yellow-500 text-yellow-500 dark:fill-yellow-400 dark:text-yellow-400" />
                       {{ t('settings.default') }}
                     </span>
                     <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatDate(d.createdAt) }}</span>
@@ -493,7 +493,7 @@ onMounted(fetchAll)
                   </td>
                   <td class="px-4 py-3">
                     <span v-if="d.isDefault" class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
-                      <Star class="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
+                      <Star class="h-3.5 w-3.5 fill-yellow-500 text-yellow-500 dark:fill-yellow-400 dark:text-yellow-400" />
                       {{ t('settings.default') }}
                     </span>
                     <span v-else class="text-xs text-gray-400 dark:text-gray-500">&mdash;</span>
@@ -530,7 +530,7 @@ onMounted(fetchAll)
       <!-- ID Length Config (admin only) -->
       <div v-if="isAdmin" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
         <div class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4">
-          <Hash class="h-4 w-4 text-blue-600" />
+          <Hash class="h-4 w-4 text-blue-600 dark:text-blue-400" />
           <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.idLengthConfig') }}</h2>
         </div>
         <div class="p-4 sm:p-5">
@@ -590,7 +590,7 @@ onMounted(fetchAll)
       <!-- 404 Config (admin only) -->
       <div v-if="isAdmin" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
         <div class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4">
-          <AlertTriangle class="h-4 w-4 text-orange-500" />
+          <AlertTriangle class="h-4 w-4 text-orange-500 dark:text-orange-400" />
           <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.notFoundConfig') }}</h2>
         </div>
         <div class="p-4 sm:p-5">
@@ -688,7 +688,7 @@ onMounted(fetchAll)
               <p class="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('settings.notFoundHandling') }}</p>
               <span
                 class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="notFoundMode === 'content' ? 'bg-blue-50 text-blue-700' : 'bg-orange-50 text-orange-700'"
+                :class="notFoundMode === 'content' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400'"
               >
                 {{ notFoundMode === 'content' ? t('settings.displayContent') : t('settings.redirect') }}
               </span>

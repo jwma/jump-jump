@@ -94,7 +94,7 @@ async function handleLogout() {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-800/50">
+  <div class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
     <div class="w-full max-w-md">
       <template v-if="loading">
         <div class="flex flex-col items-center gap-3">
@@ -116,8 +116,8 @@ async function handleLogout() {
             @click="selectTenant(tenant.tenantId)"
           >
             <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                <Building2 class="h-5 w-5 text-blue-600" />
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                <Building2 class="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <div class="font-medium text-gray-900 dark:text-white">{{ tenant.tenantName }}</div>
@@ -139,10 +139,10 @@ async function handleLogout() {
           @click="enterSuperAdmin"
         >
           <div class="flex items-center gap-3">
-            <Shield class="h-5 w-5 text-amber-600" />
-            <span class="font-medium text-amber-700">{{ t('selectTenant.superAdminPanel') }}</span>
+            <Shield class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <span class="font-medium text-amber-700 dark:text-amber-300">{{ t('selectTenant.superAdminPanel') }}</span>
           </div>
-          <ArrowRight class="h-4 w-4 text-amber-400" />
+          <ArrowRight class="h-4 w-4 text-amber-400 dark:text-amber-300" />
         </button>
 
         <button

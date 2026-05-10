@@ -491,8 +491,8 @@ onMounted(() => fetchDashboardData())
               <template v-else>{{ totalLinks.toLocaleString() }}</template>
             </p>
           </div>
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 sm:h-10 sm:w-10">
-            <Link class="h-4 w-4 text-blue-600 sm:h-5 sm:w-5" />
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 sm:h-10 sm:w-10">
+            <Link class="h-4 w-4 text-blue-600 dark:text-blue-400 sm:h-5 sm:w-5" />
           </div>
         </div>
       </div>
@@ -510,8 +510,8 @@ onMounted(() => fetchDashboardData())
               <template v-else>{{ activeLinks.toLocaleString() }}</template>
             </p>
           </div>
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 sm:h-10 sm:w-10">
-            <LinkIcon class="h-4 w-4 text-green-600 sm:h-5 sm:w-5" />
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20 sm:h-10 sm:w-10">
+            <LinkIcon class="h-4 w-4 text-green-600 dark:text-green-400 sm:h-5 sm:w-5" />
           </div>
         </div>
       </div>
@@ -542,7 +542,7 @@ onMounted(() => fetchDashboardData())
             </div>
           </div>
           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/20 sm:h-10 sm:w-10">
-            <MousePointerClick class="h-4 w-4 text-purple-600 sm:h-5 sm:w-5" />
+            <MousePointerClick class="h-4 w-4 text-purple-600 dark:text-purple-400 sm:h-5 sm:w-5" />
           </div>
         </div>
         <p v-if="!loading && todayTrend" class="mt-1 text-xs text-gray-400">{{ t('dashboard.vsYesterday') }}</p>
@@ -574,7 +574,7 @@ onMounted(() => fetchDashboardData())
             </div>
           </div>
           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/20 sm:h-10 sm:w-10">
-            <BarChart3 class="h-4 w-4 text-orange-600 sm:h-5 sm:w-5" />
+            <BarChart3 class="h-4 w-4 text-orange-600 dark:text-orange-400 sm:h-5 sm:w-5" />
           </div>
         </div>
         <p v-if="!loading && periodTrend" class="mt-1 text-xs text-gray-400">{{ t('dashboard.vsPrevious', { days: trendDays }) }}</p>

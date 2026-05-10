@@ -414,7 +414,7 @@ onMounted(fetchLinks)
               @click="copyLink(link.id)"
             >
               <Copy v-if="copiedId !== link.id" class="h-3.5 w-3.5" />
-              <Check v-else class="h-3.5 w-3.5 text-green-500" />
+              <Check v-else class="h-3.5 w-3.5 text-green-500 dark:text-green-400" />
             </button>
           </div>
           <button
@@ -623,7 +623,7 @@ onMounted(fetchLinks)
                     @click="copyLink(link.id)"
                   >
                     <Copy v-if="copiedId !== link.id" class="h-3.5 w-3.5" />
-                    <Check v-else class="h-3.5 w-3.5 text-green-500" />
+                    <Check v-else class="h-3.5 w-3.5 text-green-500 dark:text-green-400" />
                   </button>
                 </div>
               </td>
