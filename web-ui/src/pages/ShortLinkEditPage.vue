@@ -115,21 +115,21 @@ onMounted(fetchData)
   <div>
     <div class="flex items-center gap-3">
       <button
-        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
         @click="router.push({ name: 'short-links' })"
       >
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
         <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('shortLinkEdit.title') }}</h1>
-        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
-          Editing <span class="font-mono font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ id }}</span>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+          Editing <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{ id }}</span>
         </p>
       </div>
     </div>
 
     <!-- Skeleton loading -->
-    <div v-if="loading" class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6">
+    <div v-if="loading" class="mt-6 max-w-lg rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
       <div class="mb-5 rounded-md bg-gray-50 dark:bg-gray-800/50 p-3">
         <div class="grid grid-cols-2 gap-2">
           <div class="h-4 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
@@ -172,23 +172,23 @@ onMounted(fetchData)
       <div class="mb-5 rounded-md bg-gray-50 dark:bg-gray-800/50 p-3">
         <div class="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinkEdit.infoId') }}</span>
+            <span class="text-gray-500 dark:text-gray-400">{{ t('shortLinkEdit.infoId') }}</span>
             <span class="ml-1 font-mono font-medium text-gray-900 dark:text-white">{{ id }}</span>
           </div>
           <div>
-            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinkEdit.infoCreatedBy') }}</span>
-            <span class="ml-1 text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ createdBy }}</span>
+            <span class="text-gray-500 dark:text-gray-400">{{ t('shortLinkEdit.infoCreatedBy') }}</span>
+            <span class="ml-1 text-gray-700 dark:text-gray-300">{{ createdBy }}</span>
           </div>
           <div class="col-span-2">
-            <span class="text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('shortLinkEdit.infoCreated') }}</span>
-            <span class="ml-1 text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ formatDate(createTime) }}</span>
+            <span class="text-gray-500 dark:text-gray-400">{{ t('shortLinkEdit.infoCreated') }}</span>
+            <span class="ml-1 text-gray-700 dark:text-gray-300">{{ formatDate(createTime) }}</span>
           </div>
         </div>
       </div>
 
       <div class="space-y-5">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Target URL <span class="text-red-500">*</span>
           </label>
           <input
@@ -206,7 +206,7 @@ onMounted(fetchData)
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkEdit.description') }}</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('shortLinkEdit.description') }}</label>
           <textarea
             v-model="description"
             rows="3"
@@ -215,7 +215,7 @@ onMounted(fetchData)
         </div>
 
         <div class="flex items-center gap-3">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('shortLinkEdit.enabled') }}</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('shortLinkEdit.enabled') }}</label>
           <button
             type="button"
             role="switch"
@@ -244,7 +244,7 @@ onMounted(fetchData)
         </button>
         <button
           type="button"
-          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
+          class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
           @click="router.push({ name: 'short-links' })"
         >
           Cancel

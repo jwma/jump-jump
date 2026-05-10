@@ -169,15 +169,15 @@ onMounted(fetchTenant)
   <div>
     <div class="flex items-center gap-3">
       <button
-        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
         @click="router.push({ name: 'super-tenants' })"
       >
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div class="flex-1">
         <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('super.tenantDetail.title') }}</h1>
-        <p v-if="tenant" class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
-          <span class="font-mono font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ tenant.id }}</span>
+        <p v-if="tenant" class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+          <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{ tenant.id }}</span>
         </p>
       </div>
     </div>
@@ -206,7 +206,7 @@ onMounted(fetchTenant)
       </button>
     </div>
 
-    <div v-else-if="pageError" class="mt-6 rounded-lg border border-red-200 bg-red-50 p-4">
+    <div v-else-if="pageError" class="mt-6 rounded-lg border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 p-4">
       <p class="text-sm text-red-600">{{ pageError }}</p>
     </div>
 
@@ -221,11 +221,11 @@ onMounted(fetchTenant)
           </div>
           <div>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ tenant.name }}</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ tenant.slug }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ tenant.slug }}</p>
           </div>
           <span
             class="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-            :class="tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500'"
+            :class="tenant.isActive ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
           >
             <span class="h-1.5 w-1.5 rounded-full" :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'" />
             {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
@@ -234,8 +234,8 @@ onMounted(fetchTenant)
             :disabled="toggleLoading"
             class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
             :class="tenant.isActive
-              ? 'bg-red-50 text-red-600 hover:bg-red-100'
-              : 'bg-green-50 text-green-600 hover:bg-green-100'"
+              ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30'
+              : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'"
             @click="handleToggleStatus"
           >
             <Loader2 v-if="toggleLoading" class="mr-1 inline h-3 w-3 animate-spin" />
@@ -249,11 +249,11 @@ onMounted(fetchTenant)
           </div>
           <div>
             <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('common.created') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ formatDate(tenant.createdAt) }}</p>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(tenant.createdAt) }}</p>
           </div>
           <div>
             <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('common.updated') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ formatDate(tenant.updatedAt) }}</p>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(tenant.updatedAt) }}</p>
           </div>
         </div>
       </div>
@@ -267,7 +267,7 @@ onMounted(fetchTenant)
             class="whitespace-nowrap border-b-2 pb-3 pt-2 text-sm font-medium transition-colors"
             :class="activeTab === tab
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 dark:text-gray-300 dark:text-gray-600'"
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
             @click="onTabChange(tab)"
           >
             {{ tab === 'short-links' ? 'Short Links' : tab.charAt(0).toUpperCase() + tab.slice(1) }}
@@ -296,10 +296,10 @@ onMounted(fetchTenant)
           <div v-if="membersLoading" class="flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8">
             <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
           </div>
-          <div v-else class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:bg-gray-900">
+          <div v-else class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
             <table class="w-full text-sm">
               <thead>
-                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500">
+                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   <th class="px-4 py-3">{{ t('super.users.username') }}</th>
                   <th class="px-4 py-3">{{ t('members.role') }}</th>
                   <th class="hidden px-4 py-3 lg:table-cell">{{ t('members.joined') }}</th>
@@ -312,7 +312,7 @@ onMounted(fetchTenant)
                 <tr v-for="m in members" :key="m.userId" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50">
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
-                      <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-600 dark:text-gray-400 dark:text-gray-500">
+                      <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-600 dark:text-gray-400">
                         {{ m.username.charAt(0).toUpperCase() }}
                       </div>
                       <span class="font-medium text-gray-900 dark:text-white">{{ m.username }}</span>
@@ -321,12 +321,12 @@ onMounted(fetchTenant)
                   <td class="px-4 py-3">
                     <span
                       class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="m.role === 'admin' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-500'"
+                      :class="m.role === 'admin' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
                     >
                       {{ m.role }}
                     </span>
                   </td>
-                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">
+                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">
                     {{ formatDate(m.joinedAt) }}
                   </td>
                 </tr>
@@ -340,10 +340,10 @@ onMounted(fetchTenant)
           <div v-if="shortLinksLoading" class="flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8">
             <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
           </div>
-          <div v-else class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:bg-gray-900">
+          <div v-else class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
             <table class="w-full text-sm">
               <thead>
-                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500">
+                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   <th class="px-4 py-3">{{ t('common.name') }}</th>
                   <th class="hidden px-4 py-3 md:table-cell">{{ t('shortLinkDetail.targetUrl') }}</th>
                   <th class="px-4 py-3">{{ t('common.status') }}</th>
@@ -357,18 +357,18 @@ onMounted(fetchTenant)
                 </tr>
                 <tr v-for="sl in shortLinks" :key="sl.id" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50">
                   <td class="px-4 py-3 font-mono text-sm font-medium text-gray-900 dark:text-white">{{ sl.id }}</td>
-                  <td class="hidden max-w-[240px] truncate px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 md:table-cell">{{ sl.url }}</td>
+                  <td class="hidden max-w-[240px] truncate px-4 py-3 text-gray-500 dark:text-gray-400 md:table-cell">{{ sl.url }}</td>
                   <td class="px-4 py-3">
                     <span
                       class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="sl.isEnable ? 'bg-green-50 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500'"
+                      :class="sl.isEnable ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
                     >
                       <span class="h-1.5 w-1.5 rounded-full" :class="sl.isEnable ? 'bg-green-500' : 'bg-gray-400'" />
                       {{ sl.isEnable ? t('common.active') : t('common.inactive') }}
                     </span>
                   </td>
-                  <td class="hidden px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">{{ sl.createdBy }}</td>
-                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">{{ formatDate(sl.createTime) }}</td>
+                  <td class="hidden px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">{{ sl.createdBy }}</td>
+                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">{{ formatDate(sl.createTime) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -384,7 +384,7 @@ onMounted(fetchTenant)
           <div class="mb-4 rounded-lg border bg-white dark:bg-gray-900 p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
               <div class="flex-1">
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('common.domain') }}</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('common.domain') }}</label>
                 <input
                   v-model="newDomain"
                   type="text"
@@ -408,10 +408,10 @@ onMounted(fetchTenant)
           <div v-if="domainsLoading" class="flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8">
             <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
           </div>
-          <div v-else-if="domains.length > 0" class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:bg-gray-900">
+          <div v-else-if="domains.length > 0" class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
             <table class="w-full text-sm">
               <thead>
-                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500">
+                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   <th class="px-4 py-3">{{ t('common.domain') }}</th>
                   <th class="px-4 py-3">{{ t('common.default') }}</th>
                   <th class="hidden px-4 py-3 lg:table-cell">{{ t('common.created') }}</th>
@@ -433,19 +433,19 @@ onMounted(fetchTenant)
                     </span>
                     <span v-else class="text-xs text-gray-400 dark:text-gray-500">-</span>
                   </td>
-                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">{{ formatDate(d.createdAt) }}</td>
+                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">{{ formatDate(d.createdAt) }}</td>
                   <td class="px-4 py-3">
                     <div class="flex items-center justify-end gap-1">
                       <a
                         :href="'https://' + d.domain"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+                        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
                       >
                         <ExternalLink class="h-4 w-4" />
                       </a>
                       <button
-                        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
                         @click="confirmDeleteDomain = d.domain"
                       >
                         <Trash2 class="h-4 w-4" />
@@ -472,13 +472,13 @@ onMounted(fetchTenant)
       >
         <div class="mx-4 w-full max-w-sm rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.removeDomain') }}</h3>
-          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Are you sure you want to remove
-            <span class="font-mono font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ confirmDeleteDomain }}</span>?
+            <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{ confirmDeleteDomain }}</span>?
           </p>
           <div class="mt-4 flex justify-end gap-2">
             <button
-              class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
+              class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
               @click="confirmDeleteDomain = null"
             >
               Cancel

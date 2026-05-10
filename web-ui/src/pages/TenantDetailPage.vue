@@ -136,15 +136,15 @@ onMounted(() => {
   <div>
     <div class="flex items-center gap-3">
       <button
-        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+        class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
         @click="router.push({ name: 'tenants' })"
       >
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div class="flex-1">
         <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('tenantDetail.title') }}</h1>
-        <p v-if="tenant" class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
-          <span class="font-mono font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ tenant.id }}</span>
+        <p v-if="tenant" class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+          <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{ tenant.id }}</span>
         </p>
       </div>
     </div>
@@ -178,11 +178,11 @@ onMounted(() => {
           </div>
           <div>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ tenant.name }}</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ tenant.slug }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ tenant.slug }}</p>
           </div>
           <span
             class="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-            :class="tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 dark:text-gray-500'"
+            :class="tenant.isActive ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
           >
             <span
               class="h-1.5 w-1.5 rounded-full"
@@ -202,11 +202,11 @@ onMounted(() => {
           </div>
           <div>
             <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('tenantDetail.created') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ formatDate(tenant.createdAt) }}</p>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(tenant.createdAt) }}</p>
           </div>
           <div>
             <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('tenantDetail.updated') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ formatDate(tenant.updatedAt) }}</p>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(tenant.updatedAt) }}</p>
           </div>
         </div>
       </div>
@@ -215,9 +215,9 @@ onMounted(() => {
       <div class="mt-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <Globe class="h-5 w-5 text-gray-500 dark:text-gray-400 dark:text-gray-500" />
+            <Globe class="h-5 w-5 text-gray-500 dark:text-gray-400" />
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('tenantDetail.domains') }}</h2>
-            <span class="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400 dark:text-gray-500">
+            <span class="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
               {{ domains.length }}
             </span>
           </div>
@@ -227,7 +227,7 @@ onMounted(() => {
         <div class="mt-4 rounded-lg border bg-white dark:bg-gray-900 p-4">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div class="flex-1">
-              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">{{ t('tenantDetail.domain') }}</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('tenantDetail.domain') }}</label>
               <input
                 v-model="newDomain"
                 type="text"
@@ -237,7 +237,7 @@ onMounted(() => {
               />
             </div>
             <div class="flex items-center gap-3">
-              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">
+              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <input
                   v-model="newDomainIsDefault"
                   type="checkbox"
@@ -262,11 +262,11 @@ onMounted(() => {
         <div v-if="domainsLoading" class="mt-4 flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8">
           <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
         </div>
-        <div v-else-if="domains.length > 0" class="mt-4 overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:bg-gray-900">
+        <div v-else-if="domains.length > 0" class="mt-4 overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
           <table class="w-full text-sm">
             <thead>
               <tr
-                class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:text-gray-500"
+                class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
               >
                 <th class="px-4 py-3">{{ t('tenantDetail.domain') }}</th>
                 <th class="px-4 py-3">{{ t('tenantDetail.default') }}</th>
@@ -293,7 +293,7 @@ onMounted(() => {
                   </span>
                   <span v-else class="text-xs text-gray-400 dark:text-gray-500">—</span>
                 </td>
-                <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 dark:text-gray-500 lg:table-cell">
+                <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">
                   {{ formatDate(d.createdAt) }}
                 </td>
                 <td class="px-4 py-3">
@@ -302,7 +302,7 @@ onMounted(() => {
                       :href="'https://' + d.domain"
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300 dark:text-gray-600"
+                      class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
                       :title="t('tenantDetail.openDomain')"
                     >
                       <ExternalLink class="h-4 w-4" />
@@ -342,12 +342,12 @@ onMounted(() => {
           class="mx-4 w-full max-w-sm rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl"
         >
           <h3 id="remove-domain-title" class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('tenantDetail.removeDomain') }}</h3>
-          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {{ t('tenantDetail.removeDomainConfirm', { domain: confirmDeleteDomain }) }}
           </p>
           <div class="mt-4 flex justify-end gap-2">
             <button
-              class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800"
+              class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
               @click="confirmDeleteDomain = null"
             >
               {{ t('common.cancel') }}

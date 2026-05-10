@@ -251,7 +251,7 @@ onMounted(fetchMembers)
               <div class="flex items-center gap-3">
                 <div
                   class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                  :class="m.role === UserRole.Admin ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                  :class="m.role === UserRole.Admin ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
                 >
                   {{ m.username.charAt(0).toUpperCase() }}
                 </div>
@@ -264,7 +264,7 @@ onMounted(fetchMembers)
             <td class="px-4 py-3">
               <span
                 class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="m.role === UserRole.Admin ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                :class="m.role === UserRole.Admin ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
               >
                 <Shield v-if="m.role === UserRole.Admin" class="h-3 w-3" />
                 <User v-else class="h-3 w-3" />
@@ -358,7 +358,7 @@ onMounted(fetchMembers)
             <div class="flex justify-end gap-2">
               <button
                 type="button"
-                class="rounded-md border px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
+                class="rounded-md border px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                 @click="showInvite = false"
               >
                 {{ t('common.cancel') }}
