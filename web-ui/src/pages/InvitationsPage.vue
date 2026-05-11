@@ -60,15 +60,25 @@ async function handleReject(id: string) {
 <template>
   <div>
     <div class="mb-6 flex items-center gap-3">
-      <button class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" @click="router.push({ name: 'dashboard' })">
+      <button
+        class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+        @click="router.push({ name: 'dashboard' })"
+      >
         <ArrowLeft class="h-5 w-5" />
       </button>
-      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('invitations.title') }}</h1>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        {{ t('invitations.title') }}
+      </h1>
     </div>
 
-    <div v-if="loading" class="py-12 text-center text-gray-400 dark:text-gray-500">{{ t('common.loading') }}</div>
+    <div v-if="loading" class="py-12 text-center text-gray-400 dark:text-gray-500">
+      {{ t('common.loading') }}
+    </div>
 
-    <div v-else-if="invitations.length === 0" class="py-12 text-center text-gray-400 dark:text-gray-500">
+    <div
+      v-else-if="invitations.length === 0"
+      class="py-12 text-center text-gray-400 dark:text-gray-500"
+    >
       {{ t('invitations.empty') }}
     </div>
 
@@ -81,7 +91,8 @@ async function handleReject(id: string) {
         <div>
           <div class="font-medium text-gray-900 dark:text-white">{{ inv.tenantName }}</div>
           <div class="text-sm text-gray-500 dark:text-gray-400">
-            {{ t('invitations.invitedBy', { username: inv.inviterUsername }) }} &middot; {{ formatTime(inv.createdAt) }}
+            {{ t('invitations.invitedBy', { username: inv.inviterUsername }) }} &middot;
+            {{ formatTime(inv.createdAt) }}
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -106,7 +117,11 @@ async function handleReject(id: string) {
           <span
             v-else
             class="rounded-full px-2.5 py-0.5 text-xs font-medium"
-            :class="inv.status === 'accepted' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
+            :class="
+              inv.status === 'accepted'
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+            "
           >
             {{ inv.status === 'accepted' ? t('invitations.accepted') : t('invitations.rejected') }}
           </span>

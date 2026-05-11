@@ -1,5 +1,11 @@
 import { request } from './http'
-import type { LoginRequest, LoginResponseData, UserInfo, AuthInfo, ChangePasswordRequest } from '@/types/api'
+import type {
+  LoginRequest,
+  LoginResponseData,
+  UserInfo,
+  AuthInfo,
+  ChangePasswordRequest,
+} from '@/types/api'
 
 export function login(data: LoginRequest) {
   return request<LoginResponseData>('POST', '/auth/login', data)

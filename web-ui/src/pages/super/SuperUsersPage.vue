@@ -82,7 +82,10 @@ async function handleCreate() {
   createLoading.value = true
   createError.value = ''
   try {
-    await createSuperUser({ username: newUsername.value.trim(), password: newPassword.value.trim() })
+    await createSuperUser({
+      username: newUsername.value.trim(),
+      password: newPassword.value.trim(),
+    })
     showCreateModal.value = false
     newUsername.value = ''
     newPassword.value = ''
@@ -157,8 +160,12 @@ onMounted(fetchUsers)
   <div>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('super.users.title') }}</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('super.users.userCount', { count: total, suffix: total !== 1 ? 's' : '' }) }}</p>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {{ t('super.users.title') }}
+        </h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {{ t('super.users.userCount', { count: total, suffix: total !== 1 ? 's' : '' }) }}
+        </p>
       </div>
       <button
         class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
@@ -170,9 +177,13 @@ onMounted(fetchUsers)
     </div>
 
     <!-- Search -->
-    <div class="mt-4 flex flex-col gap-3 rounded-lg border bg-white dark:bg-gray-900 p-4 sm:flex-row sm:items-center">
+    <div
+      class="mt-4 flex flex-col gap-3 rounded-lg border bg-white dark:bg-gray-900 p-4 sm:flex-row sm:items-center"
+    >
       <div class="relative flex-1">
-        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+        <Search
+          class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+        />
         <input
           v-model="search"
           type="text"
@@ -194,7 +205,9 @@ onMounted(fetchUsers)
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <tr
+              class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+            >
               <th class="px-4 py-3">{{ t('super.users.username') }}</th>
               <th class="px-4 py-3">{{ t('common.status') }}</th>
               <th class="hidden px-4 py-3 md:table-cell">{{ t('super.users.superAdmin') }}</th>
@@ -211,8 +224,12 @@ onMounted(fetchUsers)
             <tr v-else-if="users.length === 0">
               <td colspan="5" class="px-4 py-12 text-center">
                 <Users class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
-                <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('super.users.noUsers') }}</p>
-                <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">{{ t('super.users.createToStart') }}</p>
+                <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {{ t('super.users.noUsers') }}
+                </p>
+                <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
+                  {{ t('super.users.createToStart') }}
+                </p>
                 <button
                   class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                   @click="showCreateModal = true"
@@ -229,7 +246,9 @@ onMounted(fetchUsers)
             >
               <td class="px-4 py-3">
                 <div class="flex items-center gap-2">
-                  <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-600 dark:text-gray-400">
+                  <div
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-600 dark:text-gray-400"
+                  >
                     {{ user.username.charAt(0).toUpperCase() }}
                   </div>
                   <div>
@@ -243,24 +262,37 @@ onMounted(fetchUsers)
                   :disabled="toggleLoading === user.id || user.isSuper"
                   class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors"
                   :class="[
-                    user.isActive ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 dark:hover:bg-green-800/30 hover:bg-green-100' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:bg-gray-700',
-                    (user.isSuper || toggleLoading === user.id) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
+                    user.isActive
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 dark:hover:bg-green-800/30 hover:bg-green-100'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:bg-gray-700',
+                    user.isSuper || toggleLoading === user.id
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer',
                   ]"
                   @click="handleToggleStatus(user)"
                 >
                   <Loader2 v-if="toggleLoading === user.id" class="h-3 w-3 animate-spin" />
-                  <span v-else class="h-1.5 w-1.5 rounded-full" :class="user.isActive ? 'bg-green-500' : 'bg-gray-400'" />
+                  <span
+                    v-else
+                    class="h-1.5 w-1.5 rounded-full"
+                    :class="user.isActive ? 'bg-green-500' : 'bg-gray-400'"
+                  />
                   {{ user.isActive ? t('common.active') : t('common.disabled') }}
                 </button>
               </td>
               <td class="hidden px-4 py-3 md:table-cell">
-                <span v-if="user.isSuper" class="inline-flex items-center gap-1 text-xs font-medium text-indigo-600">
+                <span
+                  v-if="user.isSuper"
+                  class="inline-flex items-center gap-1 text-xs font-medium text-indigo-600"
+                >
                   <Shield class="h-3.5 w-3.5" />
                   Super
                 </span>
                 <span v-else class="text-xs text-gray-400 dark:text-gray-500">-</span>
               </td>
-              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">
+              <td
+                class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell"
+              >
                 {{ formatDate(user.createdAt) }}
               </td>
               <td class="px-4 py-3">
@@ -289,7 +321,13 @@ onMounted(fetchUsers)
       <!-- Pagination -->
       <div v-if="total > pageSize" class="flex items-center justify-between border-t px-4 py-3">
         <p class="text-xs text-gray-500 dark:text-gray-400">
-          {{ t('super.users.pageOf', { current: page, total: Math.ceil(total / pageSize), count: total }) }}
+          {{
+            t('super.users.pageOf', {
+              current: page,
+              total: Math.ceil(total / pageSize),
+              count: total,
+            })
+          }}
         </p>
         <div class="flex items-center gap-1">
           <button
@@ -319,14 +357,21 @@ onMounted(fetchUsers)
       >
         <div class="mx-4 w-full max-w-md rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('super.users.createUser') }}</h3>
-            <button class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" @click="showCreateModal = false">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ t('super.users.createUser') }}
+            </h3>
+            <button
+              class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              @click="showCreateModal = false"
+            >
               <X class="h-5 w-5" />
             </button>
           </div>
           <div class="mt-4 space-y-4">
             <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('super.users.username') }}</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                t('super.users.username')
+              }}</label>
               <input
                 v-model="newUsername"
                 type="text"
@@ -335,7 +380,9 @@ onMounted(fetchUsers)
               />
             </div>
             <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('auth.password') }}</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                t('auth.password')
+              }}</label>
               <input
                 v-model="newPassword"
                 type="password"
@@ -374,8 +421,13 @@ onMounted(fetchUsers)
       >
         <div class="mx-4 w-full max-w-md rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('super.users.resetPassword') }}</h3>
-            <button class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" @click="showResetModal = false">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ t('super.users.resetPassword') }}
+            </h3>
+            <button
+              class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              @click="showResetModal = false"
+            >
               <X class="h-5 w-5" />
             </button>
           </div>
@@ -383,7 +435,9 @@ onMounted(fetchUsers)
             {{ t('super.users.resetFor', { username: resetUsername }) }}
           </p>
           <div class="mt-4">
-            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('super.users.newPassword') }}</label>
+            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+              t('super.users.newPassword')
+            }}</label>
             <input
               v-model="resetNewPassword"
               type="password"
@@ -421,8 +475,13 @@ onMounted(fetchUsers)
       >
         <div class="mx-4 w-full max-w-lg rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('super.users.userDetail') }}</h3>
-            <button class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" @click="showDetailModal = false">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ t('super.users.userDetail') }}
+            </h3>
+            <button
+              class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              @click="showDetailModal = false"
+            >
               <X class="h-5 w-5" />
             </button>
           </div>
@@ -434,18 +493,29 @@ onMounted(fetchUsers)
           <template v-else-if="userDetail">
             <div class="mt-4 space-y-3">
               <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-bold text-gray-600 dark:text-gray-400">
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-bold text-gray-600 dark:text-gray-400"
+                >
                   {{ userDetail.username.charAt(0).toUpperCase() }}
                 </div>
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">{{ userDetail.username }}</p>
-                  <p class="text-xs text-gray-400 dark:text-gray-500 font-mono">{{ userDetail.id }}</p>
+                  <p class="text-xs text-gray-400 dark:text-gray-500 font-mono">
+                    {{ userDetail.id }}
+                  </p>
                 </div>
                 <span
                   class="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  :class="userDetail.isActive ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
+                  :class="
+                    userDetail.isActive
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                  "
                 >
-                  <span class="h-1.5 w-1.5 rounded-full" :class="userDetail.isActive ? 'bg-green-500' : 'bg-gray-400'" />
+                  <span
+                    class="h-1.5 w-1.5 rounded-full"
+                    :class="userDetail.isActive ? 'bg-green-500' : 'bg-gray-400'"
+                  />
                   {{ userDetail.isActive ? t('common.active') : t('common.disabled') }}
                 </span>
               </div>
@@ -454,20 +524,32 @@ onMounted(fetchUsers)
                 <div class="grid gap-2 sm:grid-cols-2">
                   <div>
                     <span class="text-xs text-gray-400 dark:text-gray-500">Super Admin</span>
-                    <p class="font-medium" :class="userDetail.isSuper ? 'text-indigo-600' : 'text-gray-600 dark:text-gray-400'">
+                    <p
+                      class="font-medium"
+                      :class="
+                        userDetail.isSuper ? 'text-indigo-600' : 'text-gray-600 dark:text-gray-400'
+                      "
+                    >
                       {{ userDetail.isSuper ? 'Yes' : 'No' }}
                     </p>
                   </div>
                   <div>
                     <span class="text-xs text-gray-400 dark:text-gray-500">Created</span>
-                    <p class="font-medium text-gray-600 dark:text-gray-400">{{ formatDate(userDetail.createdAt) }}</p>
+                    <p class="font-medium text-gray-600 dark:text-gray-400">
+                      {{ formatDate(userDetail.createdAt) }}
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('super.users.tenantMemberships') }}</h4>
-                <div v-if="userDetail.tenants.length === 0" class="text-sm text-gray-400 dark:text-gray-500">
+                <h4 class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ t('super.users.tenantMemberships') }}
+                </h4>
+                <div
+                  v-if="userDetail.tenants.length === 0"
+                  class="text-sm text-gray-400 dark:text-gray-500"
+                >
                   {{ t('super.users.noMemberships') }}
                 </div>
                 <div v-else class="space-y-1.5">
@@ -476,10 +558,16 @@ onMounted(fetchUsers)
                     :key="t.tenantId"
                     class="flex items-center justify-between rounded-md border dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2"
                   >
-                    <span class="font-mono text-sm text-gray-700 dark:text-gray-300">{{ t.tenantId }}</span>
+                    <span class="font-mono text-sm text-gray-700 dark:text-gray-300">{{
+                      t.tenantId
+                    }}</span>
                     <span
                       class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="t.role === 'admin' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                      :class="
+                        t.role === 'admin'
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                      "
                     >
                       {{ t.role }}
                     </span>

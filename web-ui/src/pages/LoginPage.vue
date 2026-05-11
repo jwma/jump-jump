@@ -47,9 +47,14 @@ async function handleLogin() {
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('auth.appName') }}</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('auth.appTagline') }}</p>
       </div>
-      <form class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm" @submit.prevent="handleLogin">
+      <form
+        class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm"
+        @submit.prevent="handleLogin"
+      >
         <div class="mb-4">
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('auth.username') }}</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+            t('auth.username')
+          }}</label>
           <input
             v-model="username"
             type="text"
@@ -59,7 +64,9 @@ async function handleLogin() {
           />
         </div>
         <div class="mb-4">
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('auth.password') }}</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+            t('auth.password')
+          }}</label>
           <div class="relative">
             <input
               v-model="password"
@@ -86,7 +93,9 @@ async function handleLogin() {
             type="checkbox"
             class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label for="remember-me" class="ml-2 text-sm text-gray-600 dark:text-gray-300">{{ t('auth.rememberMe') }}</label>
+          <label for="remember-me" class="ml-2 text-sm text-gray-600 dark:text-gray-300">{{
+            t('auth.rememberMe')
+          }}</label>
         </div>
         <p v-if="error" class="mb-4 text-sm text-red-600">{{ error }}</p>
         <button

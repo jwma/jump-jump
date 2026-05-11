@@ -99,7 +99,7 @@ const router = createRouter({
           component: () => import('@/pages/SettingsPage.vue'),
           meta: { title: 'Settings', requiredRole: UserRole.Admin, requiresTenant: true },
         },
-{
+        {
           path: 'tenants',
           name: 'tenants',
           component: () => import('@/pages/TenantsPage.vue'),

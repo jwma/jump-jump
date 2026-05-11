@@ -27,14 +27,22 @@ const userDropdownOpen = ref(false)
 const notifDropdownOpen = ref(false)
 const themeDropdownOpen = ref(false)
 
-const pendingInvitations = computed(() =>
-  auth.invitations.filter((i) => i.status === 'pending'),
-)
+const pendingInvitations = computed(() => auth.invitations.filter((i) => i.status === 'pending'))
 
 async function handleLogout() {
   userDropdownOpen.value = false
   await auth.logout()
   router.push({ name: 'login' })
+}
+
+function setTheme(value: 'light' | 'dark' | 'system') {
+  theme.value = value
+  themeDropdownOpen.value = false
+}
+
+function navigateToChangePassword() {
+  userDropdownOpen.value = false
+  router.push({ name: 'change-password' })
 }
 
 function closeDropdowns(e: MouseEvent) {
@@ -51,7 +59,9 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
 </script>
 
 <template>
-  <header class="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 dark:border-gray-700 dark:bg-gray-900">
+  <header
+    class="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 dark:border-gray-700 dark:bg-gray-900"
+  >
     <div class="flex items-center gap-3">
       <!-- Mobile menu toggle -->
       <button
@@ -87,21 +97,21 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
           <button
             class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
             :class="{ 'bg-gray-50 dark:bg-gray-800': theme === 'light' }"
-            @click="theme = 'light'; themeDropdownOpen = false"
+            @click="setTheme('light')"
           >
             <Sun class="h-4 w-4" /> Light
           </button>
           <button
             class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
             :class="{ 'bg-gray-50 dark:bg-gray-800': theme === 'dark' }"
-            @click="theme = 'dark'; themeDropdownOpen = false"
+            @click="setTheme('dark')"
           >
             <Moon class="h-4 w-4" /> Dark
           </button>
           <button
             class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
             :class="{ 'bg-gray-50 dark:bg-gray-800': theme === 'system' }"
-            @click="theme = 'system'; themeDropdownOpen = false"
+            @click="setTheme('system')"
           >
             <Monitor class="h-4 w-4" /> System
           </button>
@@ -131,7 +141,9 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
           class="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900"
           @click.stop
         >
-          <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+          <div
+            class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3"
+          >
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
             <button
               class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
@@ -149,7 +161,9 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
                 :key="inv.id"
                 class="flex items-start gap-3 border-b border-gray-50 dark:border-gray-800 px-4 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
               >
-                <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                <div
+                  class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100"
+                >
                   <Bell class="h-4 w-4 text-amber-600" />
                 </div>
                 <div class="min-w-0 flex-1">
@@ -194,8 +208,13 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
           >
             {{ auth.username.charAt(0).toUpperCase() }}
           </div>
-          <span class="hidden text-sm font-medium text-gray-700 dark:text-gray-300 sm:inline">{{ auth.username }}</span>
-          <ChevronDown class="hidden h-3.5 w-3.5 text-gray-400 sm:block" :class="{ 'rotate-180': userDropdownOpen }" />
+          <span class="hidden text-sm font-medium text-gray-700 dark:text-gray-300 sm:inline">{{
+            auth.username
+          }}</span>
+          <ChevronDown
+            class="hidden h-3.5 w-3.5 text-gray-400 sm:block"
+            :class="{ 'rotate-180': userDropdownOpen }"
+          />
         </button>
 
         <div
@@ -205,12 +224,14 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
         >
           <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3">
             <p class="text-sm font-medium text-gray-900 dark:text-white">{{ auth.username }}</p>
-            <p v-if="auth.currentTenant" class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{{ auth.currentTenant.tenantName }}</p>
+            <p v-if="auth.currentTenant" class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+              {{ auth.currentTenant.tenantName }}
+            </p>
           </div>
           <div class="py-1">
             <button
               class="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-              @click="userDropdownOpen = false; router.push({ name: 'change-password' })"
+              @click="navigateToChangePassword"
             >
               <KeyRound class="h-4 w-4 text-gray-400" />
               Change Password

@@ -62,12 +62,20 @@ const notFoundError = ref('')
 
 // Unsaved changes tracking
 const originalTenant = ref({ name: '', slug: '' })
-const originalConfig = ref({ idLength: 6, idMinimumLength: 2, idMaximumLength: 10, notFoundMode: 'content' as string, notFoundValue: '' })
+const originalConfig = ref({
+  idLength: 6,
+  idMinimumLength: 2,
+  idMaximumLength: 10,
+  notFoundMode: 'content' as string,
+  notFoundValue: '',
+})
 
 const isDirty = computed(() => {
   if (!isAdmin.value || loading.value) return false
   return (
-    (!!tenant.value && (editName.value !== originalTenant.value.name || editSlug.value !== originalTenant.value.slug)) ||
+    (!!tenant.value &&
+      (editName.value !== originalTenant.value.name ||
+        editSlug.value !== originalTenant.value.slug)) ||
     idLength.value !== originalConfig.value.idLength ||
     idMinimumLength.value !== originalConfig.value.idMinimumLength ||
     idMaximumLength.value !== originalConfig.value.idMaximumLength ||
@@ -88,7 +96,12 @@ const confirmSaving = ref(false)
 const isAdmin = computed(() => auth.isAdmin)
 
 const idValidationError = computed(() => {
-  if (!Number.isInteger(idMinimumLength.value) || !Number.isInteger(idLength.value) || !Number.isInteger(idMaximumLength.value)) return t('settings.idValidation.allIntegers')
+  if (
+    !Number.isInteger(idMinimumLength.value) ||
+    !Number.isInteger(idLength.value) ||
+    !Number.isInteger(idMaximumLength.value)
+  )
+    return t('settings.idValidation.allIntegers')
   if (idMinimumLength.value < 2) return t('settings.idValidation.minAtLeast2')
   if (idMaximumLength.value > 10) return t('settings.idValidation.maxAtMost10')
   if (idMinimumLength.value >= idLength.value) return t('settings.idValidation.minLessThanDefault')
@@ -97,15 +110,25 @@ const idValidationError = computed(() => {
 })
 
 const notFoundValidationError = computed(() => {
-  if (!notFoundValue.value.trim()) return notFoundMode.value === 'content' ? t('settings.idValidation.contentRequired') : t('settings.idValidation.redirectUrlRequired')
+  if (!notFoundValue.value.trim())
+    return notFoundMode.value === 'content'
+      ? t('settings.idValidation.contentRequired')
+      : t('settings.idValidation.redirectUrlRequired')
   if (notFoundMode.value === 'redirect') {
-    try { new URL(notFoundValue.value); return '' } catch { return t('settings.idValidation.validUrl') }
+    try {
+      new URL(notFoundValue.value)
+      return ''
+    } catch {
+      return t('settings.idValidation.validUrl')
+    }
   }
   return ''
 })
 
 const idCanSave = computed(() => !idValidationError.value && !idSaving.value && !loading.value)
-const notFoundCanSave = computed(() => !notFoundValidationError.value && !notFoundSaving.value && !loading.value)
+const notFoundCanSave = computed(
+  () => !notFoundValidationError.value && !notFoundSaving.value && !loading.value,
+)
 
 const sampleIdSeed = ref(0)
 
@@ -135,7 +158,8 @@ const sampleIds = computed(() => {
 })
 
 const previewText = computed(() => {
-  if (notFoundMode.value === 'content') return notFoundValue.value || t('settings.noContentConfigured')
+  if (notFoundMode.value === 'content')
+    return notFoundValue.value || t('settings.noContentConfigured')
   return t('settings.redirectTo', { url: notFoundValue.value || t('settings.noUrlConfigured') })
 })
 
@@ -214,7 +238,10 @@ async function handleAddDomain() {
   if (!auth.currentTenantId || !newDomain.value.trim()) return
   addingDomain.value = true
   try {
-    const data = await addDomain(auth.currentTenantId, { domain: newDomain.value.trim(), isDefault: newDomainIsDefault.value })
+    const data = await addDomain(auth.currentTenantId, {
+      domain: newDomain.value.trim(),
+      isDefault: newDomainIsDefault.value,
+    })
     domains.value = data || []
     newDomain.value = ''
     newDomainIsDefault.value = false
@@ -267,7 +294,11 @@ async function executeConfirm() {
 function handleSaveIdConfig() {
   openConfirm(
     t('settings.saveIdConfigTitle'),
-    t('settings.saveIdConfigMessage', { default: idLength.value, min: idMinimumLength.value, max: idMaximumLength.value }),
+    t('settings.saveIdConfigMessage', {
+      default: idLength.value,
+      min: idMinimumLength.value,
+      max: idMaximumLength.value,
+    }),
     doSaveIdConfig,
   )
 }
@@ -277,8 +308,17 @@ async function doSaveIdConfig() {
   idSaving.value = true
   idError.value = ''
   try {
-    await updateTenantConfig(auth.currentTenantId!, { idLength: idLength.value, idMinimumLength: idMinimumLength.value, idMaximumLength: idMaximumLength.value })
-    originalConfig.value = { ...originalConfig.value, idLength: idLength.value, idMinimumLength: idMinimumLength.value, idMaximumLength: idMaximumLength.value }
+    await updateTenantConfig(auth.currentTenantId!, {
+      idLength: idLength.value,
+      idMinimumLength: idMinimumLength.value,
+      idMaximumLength: idMaximumLength.value,
+    })
+    originalConfig.value = {
+      ...originalConfig.value,
+      idLength: idLength.value,
+      idMinimumLength: idMinimumLength.value,
+      idMaximumLength: idMaximumLength.value,
+    }
     toast.success(t('settings.savedIdConfig'))
   } catch {
     idError.value = t('settings.failedToSaveIdConfig')
@@ -288,7 +328,8 @@ async function doSaveIdConfig() {
 }
 
 function handleSaveNotFoundConfig() {
-  const modeLabel = notFoundMode.value === 'content' ? t('settings.displayContent') : t('settings.redirect')
+  const modeLabel =
+    notFoundMode.value === 'content' ? t('settings.displayContent') : t('settings.redirect')
   openConfirm(
     t('settings.save404ConfigTitle'),
     t('settings.save404ConfigMessage', { mode: modeLabel }),
@@ -301,8 +342,15 @@ async function doSaveNotFoundConfig() {
   notFoundSaving.value = true
   notFoundError.value = ''
   try {
-    await updateTenantConfig(auth.currentTenantId!, { notFoundMode: notFoundMode.value, notFoundValue: notFoundValue.value })
-    originalConfig.value = { ...originalConfig.value, notFoundMode: notFoundMode.value, notFoundValue: notFoundValue.value }
+    await updateTenantConfig(auth.currentTenantId!, {
+      notFoundMode: notFoundMode.value,
+      notFoundValue: notFoundValue.value,
+    })
+    originalConfig.value = {
+      ...originalConfig.value,
+      notFoundMode: notFoundMode.value,
+      notFoundValue: notFoundValue.value,
+    }
     toast.success(t('settings.saved404Config'))
   } catch {
     notFoundError.value = t('settings.failedToSave404Config')
@@ -312,7 +360,13 @@ async function doSaveNotFoundConfig() {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(d).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function refreshSampleIds() {
@@ -344,15 +398,24 @@ onMounted(fetchAll)
 
     <template v-else>
       <!-- Tenant Basic Info (admin only) -->
-      <div v-if="isAdmin && tenant" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4">
+      <div
+        v-if="isAdmin && tenant"
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm"
+      >
+        <div
+          class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4"
+        >
           <Building2 class="h-4 w-4 text-blue-600" />
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.tenantInfo') }}</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t('settings.tenantInfo') }}
+          </h2>
         </div>
         <div class="p-4 sm:p-5">
           <div class="space-y-4">
             <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.name') }}</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                t('settings.name')
+              }}</label>
               <input
                 v-model="editName"
                 type="text"
@@ -360,14 +423,18 @@ onMounted(fetchAll)
               />
             </div>
             <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.slug') }}</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                t('settings.slug')
+              }}</label>
               <input
                 v-model="editSlug"
                 type="text"
                 pattern="[a-z0-9-]+"
                 class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               />
-              <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ t('settings.slugHint') }}</p>
+              <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                {{ t('settings.slugHint') }}
+              </p>
             </div>
             <p v-if="tenantError" class="text-xs text-red-600">{{ tenantError }}</p>
           </div>
@@ -386,11 +453,20 @@ onMounted(fetchAll)
       </div>
 
       <!-- Domain Management (admin only) -->
-      <div v-if="isAdmin" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4">
+      <div
+        v-if="isAdmin"
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm"
+      >
+        <div
+          class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4"
+        >
           <Globe class="h-4 w-4 text-green-600" />
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.domains') }}</h2>
-          <span class="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t('settings.domains') }}
+          </h2>
+          <span
+            class="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400"
+          >
             {{ domains.length }}
           </span>
         </div>
@@ -399,7 +475,9 @@ onMounted(fetchAll)
           <div class="rounded-lg border bg-gray-50 dark:bg-gray-800/50 p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
               <div class="flex-1">
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.domain') }}</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  t('settings.domain')
+                }}</label>
                 <input
                   v-model="newDomain"
                   type="text"
@@ -410,7 +488,11 @@ onMounted(fetchAll)
               </div>
               <div class="flex items-center gap-3">
                 <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <input v-model="newDomainIsDefault" type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500" />
+                  <input
+                    v-model="newDomainIsDefault"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                  />
                   {{ t('settings.default') }}
                 </label>
                 <button
@@ -441,14 +523,23 @@ onMounted(fetchAll)
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2">
                     <Globe class="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                    <span class="font-mono text-sm text-gray-900 dark:text-white">{{ d.domain }}</span>
+                    <span class="font-mono text-sm text-gray-900 dark:text-white">{{
+                      d.domain
+                    }}</span>
                   </div>
                   <div class="mt-1 flex items-center gap-2 pl-6">
-                    <span v-if="d.isDefault" class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
-                      <Star class="h-3 w-3 fill-yellow-500 text-yellow-500 dark:fill-yellow-400 dark:text-yellow-400" />
+                    <span
+                      v-if="d.isDefault"
+                      class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600"
+                    >
+                      <Star
+                        class="h-3 w-3 fill-yellow-500 text-yellow-500 dark:fill-yellow-400 dark:text-yellow-400"
+                      />
                       {{ t('settings.default') }}
                     </span>
-                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatDate(d.createdAt) }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">{{
+                      formatDate(d.createdAt)
+                    }}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-1">
@@ -476,7 +567,9 @@ onMounted(fetchAll)
             <!-- Desktop table -->
             <table class="hidden w-full text-sm lg:table">
               <thead>
-                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                <tr
+                  class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                >
                   <th class="px-4 py-3">{{ t('settings.domain') }}</th>
                   <th class="px-4 py-3">{{ t('settings.default') }}</th>
                   <th class="hidden px-4 py-3 lg:table-cell">{{ t('settings.created') }}</th>
@@ -484,21 +577,36 @@ onMounted(fetchAll)
                 </tr>
               </thead>
               <tbody class="divide-y">
-                <tr v-for="d in domains" :key="d.id" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50">
+                <tr
+                  v-for="d in domains"
+                  :key="d.id"
+                  class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
+                >
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
                       <Globe class="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                      <span class="font-mono text-sm text-gray-900 dark:text-white">{{ d.domain }}</span>
+                      <span class="font-mono text-sm text-gray-900 dark:text-white">{{
+                        d.domain
+                      }}</span>
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <span v-if="d.isDefault" class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
-                      <Star class="h-3.5 w-3.5 fill-yellow-500 text-yellow-500 dark:fill-yellow-400 dark:text-yellow-400" />
+                    <span
+                      v-if="d.isDefault"
+                      class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600"
+                    >
+                      <Star
+                        class="h-3.5 w-3.5 fill-yellow-500 text-yellow-500 dark:fill-yellow-400 dark:text-yellow-400"
+                      />
                       {{ t('settings.default') }}
                     </span>
                     <span v-else class="text-xs text-gray-400 dark:text-gray-500">&mdash;</span>
                   </td>
-                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">{{ formatDate(d.createdAt) }}</td>
+                  <td
+                    class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell"
+                  >
+                    {{ formatDate(d.createdAt) }}
+                  </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center justify-end gap-1">
                       <a
@@ -528,15 +636,24 @@ onMounted(fetchAll)
       </div>
 
       <!-- ID Length Config (admin only) -->
-      <div v-if="isAdmin" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4">
+      <div
+        v-if="isAdmin"
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm"
+      >
+        <div
+          class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4"
+        >
           <Hash class="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.idLengthConfig') }}</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t('settings.idLengthConfig') }}
+          </h2>
         </div>
         <div class="p-4 sm:p-5">
           <div class="max-w-md space-y-4">
             <div>
-              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.defaultIdLength') }}</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                t('settings.defaultIdLength')
+              }}</label>
               <input
                 v-model.number="idLength"
                 type="number"
@@ -548,7 +665,9 @@ onMounted(fetchAll)
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.minimumLength') }}</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  t('settings.minimumLength')
+                }}</label>
                 <input
                   v-model.number="idMinimumLength"
                   type="number"
@@ -559,7 +678,9 @@ onMounted(fetchAll)
                 />
               </div>
               <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.maximumLength') }}</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  t('settings.maximumLength')
+                }}</label>
                 <input
                   v-model.number="idMaximumLength"
                   type="number"
@@ -588,20 +709,40 @@ onMounted(fetchAll)
       </div>
 
       <!-- 404 Config (admin only) -->
-      <div v-if="isAdmin" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4">
+      <div
+        v-if="isAdmin"
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm"
+      >
+        <div
+          class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4"
+        >
           <AlertTriangle class="h-4 w-4 text-orange-500 dark:text-orange-400" />
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.notFoundConfig') }}</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t('settings.notFoundConfig') }}
+          </h2>
         </div>
         <div class="p-4 sm:p-5">
           <div class="max-w-md space-y-4">
             <div>
-              <label id="mode-label" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.handlingMode') }}</label>
-              <div role="radiogroup" aria-labelledby="mode-label" class="flex rounded-lg border border-gray-200 dark:border-gray-700 p-0.5">
+              <label
+                id="mode-label"
+                class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >{{ t('settings.handlingMode') }}</label
+              >
+              <div
+                role="radiogroup"
+                aria-labelledby="mode-label"
+                class="flex rounded-lg border border-gray-200 dark:border-gray-700 p-0.5"
+              >
                 <button
                   role="radio"
                   :aria-checked="notFoundMode === 'content'"
-                  :class="['flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors', notFoundMode === 'content' ? 'bg-blue-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200']"
+                  :class="[
+                    'flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors',
+                    notFoundMode === 'content'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
+                  ]"
                   @click="notFoundMode = 'content'"
                 >
                   {{ t('settings.displayContent') }}
@@ -609,7 +750,12 @@ onMounted(fetchAll)
                 <button
                   role="radio"
                   :aria-checked="notFoundMode === 'redirect'"
-                  :class="['flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors', notFoundMode === 'redirect' ? 'bg-blue-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200']"
+                  :class="[
+                    'flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors',
+                    notFoundMode === 'redirect'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
+                  ]"
                   @click="notFoundMode = 'redirect'"
                 >
                   {{ t('settings.redirect') }}
@@ -617,7 +763,9 @@ onMounted(fetchAll)
               </div>
             </div>
             <div v-if="notFoundMode === 'content'">
-              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.contentText') }}</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                t('settings.contentText')
+              }}</label>
               <textarea
                 v-model="notFoundValue"
                 rows="4"
@@ -626,7 +774,9 @@ onMounted(fetchAll)
               />
             </div>
             <div v-else>
-              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.redirectUrl') }}</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                t('settings.redirectUrl')
+              }}</label>
               <input
                 v-model="notFoundValue"
                 type="url"
@@ -634,7 +784,9 @@ onMounted(fetchAll)
                 class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               />
             </div>
-            <p v-if="notFoundValidationError" class="text-xs text-red-600">{{ notFoundValidationError }}</p>
+            <p v-if="notFoundValidationError" class="text-xs text-red-600">
+              {{ notFoundValidationError }}
+            </p>
             <p v-if="notFoundError" class="text-xs text-red-600">{{ notFoundError }}</p>
           </div>
           <div class="mt-5">
@@ -652,54 +804,104 @@ onMounted(fetchAll)
       </div>
 
       <!-- Config Preview (admin only) -->
-      <div v-if="isAdmin" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-        <div class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4">
+      <div
+        v-if="isAdmin"
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm"
+      >
+        <div
+          class="flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-5 sm:py-4"
+        >
           <Eye class="h-4 w-4 text-purple-600" />
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.configPreview') }}</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t('settings.configPreview') }}
+          </h2>
         </div>
         <div class="p-4 sm:p-5">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div class="rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-4">
+            <div
+              class="rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-4"
+            >
               <div class="mb-3 flex items-center justify-between">
-                <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('settings.idLengthExamples') }}</p>
-                <button v-if="sampleIds" class="rounded p-1 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-200 dark:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300" @click="refreshSampleIds">
+                <p
+                  class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                >
+                  {{ t('settings.idLengthExamples') }}
+                </p>
+                <button
+                  v-if="sampleIds"
+                  class="rounded p-1 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-200 dark:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
+                  @click="refreshSampleIds"
+                >
                   <Loader2 class="h-3.5 w-3.5" />
                 </button>
               </div>
               <template v-if="sampleIds">
                 <div class="space-y-2">
                   <div class="flex items-center gap-3">
-                    <span class="w-16 text-xs text-gray-400 dark:text-gray-500">{{ t('settings.minLabel', { count: normalizedIdLengths.min }) }}</span>
-                    <span class="font-mono text-sm font-semibold text-gray-600 dark:text-gray-400">{{ sampleIds.min }}</span>
+                    <span class="w-16 text-xs text-gray-400 dark:text-gray-500">{{
+                      t('settings.minLabel', { count: normalizedIdLengths.min })
+                    }}</span>
+                    <span
+                      class="font-mono text-sm font-semibold text-gray-600 dark:text-gray-400"
+                      >{{ sampleIds.min }}</span
+                    >
                   </div>
                   <div class="flex items-center gap-3">
-                    <span class="w-16 text-xs font-medium text-blue-600">{{ t('settings.defaultLabel', { count: normalizedIdLengths.default }) }}</span>
-                    <span class="font-mono text-sm font-bold text-blue-600">{{ sampleIds.default }}</span>
+                    <span class="w-16 text-xs font-medium text-blue-600">{{
+                      t('settings.defaultLabel', { count: normalizedIdLengths.default })
+                    }}</span>
+                    <span class="font-mono text-sm font-bold text-blue-600">{{
+                      sampleIds.default
+                    }}</span>
                   </div>
                   <div class="flex items-center gap-3">
-                    <span class="w-16 text-xs text-gray-400 dark:text-gray-500">{{ t('settings.maxLabel', { count: normalizedIdLengths.max }) }}</span>
-                    <span class="font-mono text-sm font-semibold text-gray-600 dark:text-gray-400">{{ sampleIds.max }}</span>
+                    <span class="w-16 text-xs text-gray-400 dark:text-gray-500">{{
+                      t('settings.maxLabel', { count: normalizedIdLengths.max })
+                    }}</span>
+                    <span
+                      class="font-mono text-sm font-semibold text-gray-600 dark:text-gray-400"
+                      >{{ sampleIds.max }}</span
+                    >
                   </div>
                 </div>
               </template>
-              <p v-else class="text-xs text-gray-400 dark:text-gray-500">{{ t('settings.fixValidation') }}</p>
+              <p v-else class="text-xs text-gray-400 dark:text-gray-500">
+                {{ t('settings.fixValidation') }}
+              </p>
             </div>
-            <div class="rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-4">
-              <p class="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('settings.notFoundHandling') }}</p>
+            <div
+              class="rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-4"
+            >
+              <p
+                class="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+              >
+                {{ t('settings.notFoundHandling') }}
+              </p>
               <span
                 class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="notFoundMode === 'content' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400'"
+                :class="
+                  notFoundMode === 'content'
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                    : 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400'
+                "
               >
-                {{ notFoundMode === 'content' ? t('settings.displayContent') : t('settings.redirect') }}
+                {{
+                  notFoundMode === 'content' ? t('settings.displayContent') : t('settings.redirect')
+                }}
               </span>
-              <p class="mt-2 line-clamp-3 text-xs text-gray-600 dark:text-gray-400">{{ previewText }}</p>
+              <p class="mt-2 line-clamp-3 text-xs text-gray-600 dark:text-gray-400">
+                {{ previewText }}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Non-admin message -->
-      <div v-if="!isAdmin" class="rounded-lg border bg-white dark:bg-gray-900 p-8 text-center text-sm text-gray-400 dark:text-gray-500">
+      <div
+        v-if="!isAdmin"
+        class="rounded-lg border bg-white dark:bg-gray-900 p-8 text-center text-sm text-gray-400 dark:text-gray-500"
+      >
         {{ t('settings.adminOnly') }}
       </div>
     </template>

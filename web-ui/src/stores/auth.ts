@@ -20,11 +20,11 @@ export const useAuthStore = defineStore('auth', () => {
   const isSuper = computed(() => authUser.value?.isSuper ?? false)
   const isAdmin = computed(() => user.value?.role === UserRole.Admin)
   const username = computed(() => authUser.value?.username || user.value?.username || '')
-  const currentTenant = computed(() =>
-    tenants.value.find((t) => t.tenantId === currentTenantId.value) ?? null,
+  const currentTenant = computed(
+    () => tenants.value.find((t) => t.tenantId === currentTenantId.value) ?? null,
   )
-  const pendingInvitationCount = computed(() =>
-    invitations.value.filter((i) => i.status === 'pending').length,
+  const pendingInvitationCount = computed(
+    () => invitations.value.filter((i) => i.status === 'pending').length,
   )
 
   async function login(username: string, password: string, rememberMe = true) {

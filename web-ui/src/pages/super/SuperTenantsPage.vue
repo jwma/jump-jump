@@ -111,8 +111,12 @@ onMounted(fetchTenants)
 <template>
   <div>
     <div>
-      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('super.tenants.title') }}</h1>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('super.tenants.tenantCount', { count: total, suffix: total !== 1 ? 's' : '' }) }}</p>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        {{ t('super.tenants.title') }}
+      </h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {{ t('super.tenants.tenantCount', { count: total, suffix: total !== 1 ? 's' : '' }) }}
+      </p>
     </div>
 
     <!-- Table -->
@@ -120,10 +124,18 @@ onMounted(fetchTenants)
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <tr
+              class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+            >
               <th
                 class="px-4 py-3"
-                :aria-sort="sortField === 'name' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+                :aria-sort="
+                  sortField === 'name'
+                    ? sortDirection === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                "
               >
                 <button class="flex items-center gap-1" @click="toggleSort('name')">
                   Name
@@ -132,7 +144,13 @@ onMounted(fetchTenants)
               </th>
               <th
                 class="px-4 py-3"
-                :aria-sort="sortField === 'slug' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+                :aria-sort="
+                  sortField === 'slug'
+                    ? sortDirection === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                "
               >
                 <button class="flex items-center gap-1" @click="toggleSort('slug')">
                   Slug
@@ -142,7 +160,13 @@ onMounted(fetchTenants)
               <th class="px-4 py-3">{{ t('common.status') }}</th>
               <th
                 class="hidden px-4 py-3 lg:table-cell"
-                :aria-sort="sortField === 'createdAt' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+                :aria-sort="
+                  sortField === 'createdAt'
+                    ? sortDirection === 'asc'
+                      ? 'ascending'
+                      : 'descending'
+                    : 'none'
+                "
               >
                 <button class="flex items-center gap-1" @click="toggleSort('createdAt')">
                   Created
@@ -161,8 +185,12 @@ onMounted(fetchTenants)
             <tr v-else-if="tenants.length === 0">
               <td colspan="5" class="px-4 py-12 text-center">
                 <Building2 class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
-                <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('super.tenants.noTenants') }}</p>
-                <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">Tenants will appear here once created by users.</p>
+                <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {{ t('super.tenants.noTenants') }}
+                </p>
+                <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
+                  Tenants will appear here once created by users.
+                </p>
               </td>
             </tr>
             <tr
@@ -184,24 +212,34 @@ onMounted(fetchTenants)
                 </div>
               </td>
               <td class="px-4 py-3">
-                <span class="font-mono text-sm text-gray-600 dark:text-gray-400">{{ tenant.slug }}</span>
+                <span class="font-mono text-sm text-gray-600 dark:text-gray-400">{{
+                  tenant.slug
+                }}</span>
               </td>
               <td class="px-4 py-3">
                 <button
                   :disabled="toggleLoading === tenant.id"
                   class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors"
                   :class="[
-                    tenant.isActive ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 dark:hover:bg-green-800/30 hover:bg-green-100' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:bg-gray-700',
+                    tenant.isActive
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 dark:hover:bg-green-800/30 hover:bg-green-100'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:bg-gray-700',
                     toggleLoading === tenant.id ? 'opacity-50' : 'cursor-pointer',
                   ]"
                   @click="handleToggleStatus(tenant)"
                 >
                   <Loader2 v-if="toggleLoading === tenant.id" class="h-3 w-3 animate-spin" />
-                  <span v-else class="h-1.5 w-1.5 rounded-full" :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'" />
+                  <span
+                    v-else
+                    class="h-1.5 w-1.5 rounded-full"
+                    :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'"
+                  />
                   {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
                 </button>
               </td>
-              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">
+              <td
+                class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell"
+              >
                 {{ formatDate(tenant.createdAt) }}
               </td>
               <td class="px-4 py-3">
@@ -223,7 +261,13 @@ onMounted(fetchTenants)
       <!-- Pagination -->
       <div v-if="total > pageSize" class="flex items-center justify-between border-t px-4 py-3">
         <p class="text-xs text-gray-500 dark:text-gray-400">
-          {{ t('super.tenants.pageOf', { current: page, total: Math.ceil(total / pageSize), count: total }) }}
+          {{
+            t('super.tenants.pageOf', {
+              current: page,
+              total: Math.ceil(total / pageSize),
+              count: total,
+            })
+          }}
         </p>
         <div class="flex items-center gap-1">
           <button

@@ -1,5 +1,11 @@
 import { request } from './http'
-import type { Tenant, TenantDomain, CreateTenantRequest, AddDomainRequest, UpdateTenantRequest } from '@/types/api'
+import type {
+  Tenant,
+  TenantDomain,
+  CreateTenantRequest,
+  AddDomainRequest,
+  UpdateTenantRequest,
+} from '@/types/api'
 
 export function listTenants() {
   return request<Tenant[]>('GET', '/tenant/')
@@ -26,5 +32,8 @@ export function addDomain(tenantId: string, data: AddDomainRequest) {
 }
 
 export function removeDomain(tenantId: string, domain: string) {
-  return request<TenantDomain[]>('DELETE', `/tenant/${tenantId}/domains/${encodeURIComponent(domain)}`)
+  return request<TenantDomain[]>(
+    'DELETE',
+    `/tenant/${tenantId}/domains/${encodeURIComponent(domain)}`,
+  )
 }

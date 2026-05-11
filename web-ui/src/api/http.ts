@@ -39,11 +39,13 @@ http.interceptors.response.use(
       auth.clearAuth()
       router.push({ name: 'login' })
     }
-    return Promise.reject(new ApiError(
-      error.response?.data?.msg || error.message || 'Request failed',
-      error.response?.status || 0,
-      error.response?.data?.code || 0,
-    ))
+    return Promise.reject(
+      new ApiError(
+        error.response?.data?.msg || error.message || 'Request failed',
+        error.response?.status || 0,
+        error.response?.data?.code || 0,
+      ),
+    )
   },
 )
 
