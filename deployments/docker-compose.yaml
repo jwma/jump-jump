@@ -26,7 +26,9 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
 
   apiserver:
-    image: studiomj/jump-jump
+    build:
+      context: ..
+      dockerfile: build/package/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,7 +47,9 @@ services:
       - ALLOWED_HOSTS=localhost,127.0.0.1
 
   landingserver:
-    image: studiomj/jump-jump
+    build:
+      context: ..
+      dockerfile: build/package/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy

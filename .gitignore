@@ -8,3 +8,19 @@ node_modules/
 
 # HTTP Client 私有环境变量
 http-client.private.env.json
+
+# Dependencies
+node_modules/
+web-ui/node_modules/
+
+# Build output
+web-ui/dist/
+
+# Environment files
+.env.local
+.env.*.local
+
+# Editor directories
+.vscode/
+*.swp
+*.swo

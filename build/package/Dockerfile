@@ -21,6 +21,6 @@ ENV CGO_ENABLED=0
 
 WORKDIR /app
 COPY --from=builder /app_src/apiserver /app_src/landingserver /app_src/createsuperuser ./
-COPY --from=builder /app_src/web ./web
+COPY --from=builder /app_src/docs ./docs
 EXPOSE 8080
 ENTRYPOINT ["./apiserver"]
