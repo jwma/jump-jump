@@ -79,7 +79,8 @@ docker compose -f docker-compose.dev.yaml exec apiserver ./createsuperuser \
 ### 后端开发
 
 ```bash
-# 设置环境变量（根据实际情况修改）
+# 设置环境变量（以下示例假设 PostgreSQL 和 Redis 已在本地运行）
+# 如果使用 docker-compose.dev.yaml 提供数据库服务，端口请改为 51735（PG）和 63795（Redis）
 export DATABASE_URL="postgres://jumpjump:jumpjump@localhost:5432/jumpjump?sslmode=disable"
 export REDIS_HOST="localhost:6379"
 export REDIS_DB="0"
@@ -100,7 +101,7 @@ go run ./cmd/landingserver
 go run ./cmd/createsuperuser -username=admin -password=yourpassword
 ```
 
-> 开发环境可以使用 `docker compose -f docker-compose.dev.yaml up postgres redis -d` 单独启动 PostgreSQL 和 Redis，再用上述命令本地运行后端服务。
+> 开发环境可以使用 `docker compose -f docker-compose.dev.yaml up postgres redis -d` 单独启动 PostgreSQL 和 Redis。注意 compose 对宿主机暴露的端口为 `51735`（PostgreSQL）和 `63795`（Redis），此时 `DATABASE_URL` 应改为 `localhost:51735`，`REDIS_HOST` 应改为 `localhost:63795`。
 
 ### 前端开发
 
@@ -189,7 +190,7 @@ export PG_PASSWORD="your-secure-password"
 docker compose up -d
 ```
 
-> 生产环境必须设置 `SECRET_KEY` 和 `ALLOWED_HOSTS`，否则 API Server 将拒绝启动。
+> 生产环境（`GIN_MODE=release`）必须设置 `ALLOWED_HOSTS`，否则 API Server 将拒绝启动。强烈建议同时设置 `SECRET_KEY` 以确保 JWT 签名安全。
 
 ### 创建超级管理员
 
