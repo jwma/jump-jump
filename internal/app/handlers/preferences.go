@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 )
@@ -52,7 +53,7 @@ func UpdateUserPreferencesAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		req := &updatePreferencesRequest{}
 		if err := c.ShouldBindJSON(req); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.invalidParameters")))
 			return
 		}
 

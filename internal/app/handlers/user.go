@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/jwma/jump-jump/internal/app/utils"
@@ -23,25 +24,25 @@ import (
 func LoginAPI(c *gin.Context) {
 	f := &models.LoginAPIRequest{}
 	if err := c.BindJSON(f); err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
+		c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "auth.invalidCredentials")))
 		return
 	}
 
 	userRepo := repository.GetUserRepo(db.GetPostgresPool())
 	u, err := userRepo.FindByUsername(strings.TrimSpace(f.Username))
 	if err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
+		c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "auth.invalidCredentials")))
 		return
 	}
 
 	dk, _ := utils.EncodePassword([]byte(f.Password), u.Salt)
 	if string(u.Password) != string(dk) {
-		c.JSON(http.StatusOK, models.NewErrorResponse("用户名或密码错误"))
+		c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "auth.invalidCredentials")))
 		return
 	}
 
 	if !u.IsActive {
-		c.JSON(http.StatusOK, models.NewErrorResponse("账号已被禁用"))
+		c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "auth.accountDisabled")))
 		return
 	}
 
@@ -138,13 +139,13 @@ func ChangePasswordAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		p := &models.ChangePasswordAPIRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("请填写原密码和新密码"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "auth.passwordRequired")))
 			return
 		}
 
 		dk, _ := utils.EncodePassword([]byte(p.Password), ctx.User.Salt)
 		if string(ctx.User.Password) != string(dk) {
-			c.JSON(http.StatusOK, models.NewErrorResponse("原密码错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "auth.wrongPassword")))
 			return
 		}
 

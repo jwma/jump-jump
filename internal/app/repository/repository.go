@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"github.com/redis/go-redis/v9"
@@ -49,7 +50,7 @@ func (r *TenantRepository) GetByID(id string) (*models.Tenant, error) {
 		Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, &models.NotFoundError{Msg: "租户不存在"}
+			return nil, &models.NotFoundError{Msg: "tenant.notFound"}
 		}
 		return nil, err
 	}
@@ -272,7 +273,7 @@ func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 		username).Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, &models.NotFoundError{Msg: "用户不存在"}
+			return nil, &models.NotFoundError{Msg: "user.notFound"}
 		}
 		return nil, err
 	}
@@ -291,7 +292,7 @@ func (r *userRepository) FindByID(userID string) (*models.User, error) {
 		userID).Scan(&u.ID, &u.Username, &u.Password, &u.Salt, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, &models.NotFoundError{Msg: "用户不存在"}
+			return nil, &models.NotFoundError{Msg: "user.notFound"}
 		}
 		return nil, err
 	}
@@ -505,7 +506,7 @@ func (r *TenantMemberRepository) Get(tenantID, userID string) (*models.TenantMem
 		tenantID, userID).Scan(&m.TenantID, &m.UserID, &m.Role, &m.JoinedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, &models.NotFoundError{Msg: "成员关系不存在"}
+			return nil, &models.NotFoundError{Msg: "member.relationNotFound"}
 		}
 		return nil, err
 	}
@@ -546,7 +547,7 @@ func (r *TenantMemberRepository) UpdateRole(tenantID, userID, role string) error
 		return err
 	}
 	if ct.RowsAffected() == 0 {
-		return &models.NotFoundError{Msg: "成员不存在"}
+		return &models.NotFoundError{Msg: "member.notFound"}
 	}
 	return nil
 }
@@ -615,7 +616,7 @@ func (r *TenantInvitationRepository) Get(id string) (*models.TenantInvitation, e
 		Scan(&inv.ID, &inv.TenantID, &inv.InviterID, &inv.InviteeID, &inv.Status, &inv.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, &models.NotFoundError{Msg: "邀请不存在"}
+			return nil, &models.NotFoundError{Msg: "invitation.notFound"}
 		}
 		return nil, err
 	}
@@ -748,7 +749,7 @@ func (r *shortLinkRepository) Save(s *models.ShortLink) error {
 		s.Id, s.TenantID, s.Url, s.Description, s.IsEnable, s.CreatedBy, s.CreateTime)
 	if err != nil {
 		log.Printf("fail to save short link: %v", err)
-		return errors.New("服务器繁忙，请稍后再试")
+		return i18n.NewError("common.serverBusy")
 	}
 	return nil
 }
@@ -763,7 +764,7 @@ func (r *shortLinkRepository) Update(s *models.ShortLink, params *models.UpdateS
 		`UPDATE short_links SET url = $1, description = $2, is_enabled = $3, updated_at = $4 WHERE id = $5`,
 		s.Url, s.Description, s.IsEnable, s.UpdateTime, s.Id)
 	if err != nil {
-		return errors.New("服务器繁忙，请稍后再试")
+		return i18n.NewError("common.serverBusy")
 	}
 
 	r.rdb.Del(context.Background(), utils.GetShortLinkCacheKey(s.Id))
@@ -777,7 +778,7 @@ func (r *shortLinkRepository) Delete(s *models.ShortLink) {
 
 func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
 	if id == "" {
-		return nil, &models.NotFoundError{Msg: "短链接不存在"}
+		return nil, &models.NotFoundError{Msg: "shortLink.notFound"}
 	}
 
 	// Try cache
@@ -798,7 +799,7 @@ func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
 		&s.Id, &s.TenantID, &s.Url, &s.Description, &s.IsEnable, &s.CreatedBy, &s.CreateTime, &s.UpdateTime)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, &models.NotFoundError{Msg: "短链接不存在"}
+			return nil, &models.NotFoundError{Msg: "shortLink.notFound"}
 		}
 		return nil, err
 	}
@@ -838,7 +839,7 @@ func (r *shortLinkRepository) ListByTenantID(tenantID string, start, pageSize in
 		 FROM short_links WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
 		tenantID, pageSize, start)
 	if err != nil {
-		return nil, errors.New("系统繁忙请稍后再试")
+		return nil, i18n.NewError("common.serverBusy")
 	}
 	defer rows.Close()
 

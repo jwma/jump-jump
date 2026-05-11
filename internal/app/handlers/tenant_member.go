@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 )
@@ -47,14 +48,14 @@ func ListTenantMembersAPI() gin.HandlerFunc {
 		tenantID := c.Param("id")
 		member := getMemberOrNil(ctx.User, tenantID)
 		if member == nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你不是该租户的成员"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.notMember")))
 			return
 		}
 
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
 		members, err := memberRepo.ListByTenant(tenantID)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("查询成员列表失败"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.memberListFailed")))
 			return
 		}
 
@@ -94,13 +95,13 @@ func InviteUserAPI() gin.HandlerFunc {
 		tenantID := c.Param("id")
 		member, err := isTenantAdmin(ctx.User, tenantID)
 		if err != nil || !member.IsAdmin() {
-			c.JSON(http.StatusOK, models.NewErrorResponse("仅租户管理员可邀请用户"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.adminOnlyInvite")))
 			return
 		}
 
 		req := &models.InviteUserRequest{}
 		if err := c.ShouldBindJSON(req); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.invalidParameters")))
 			return
 		}
 
@@ -114,19 +115,19 @@ func InviteUserAPI() gin.HandlerFunc {
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
 		isMember, _ := memberRepo.IsMember(tenantID, invitee.ID)
 		if isMember {
-			c.JSON(http.StatusOK, models.NewErrorResponse("该用户已是租户成员"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.alreadyMember")))
 			return
 		}
 
 		if invitee.ID == ctx.User.ID {
-			c.JSON(http.StatusOK, models.NewErrorResponse("不能邀请自己"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.cannotInviteSelf")))
 			return
 		}
 
 		invRepo := repository.GetTenantInvitationRepo(db.GetPostgresPool())
 		hasPending, _ := invRepo.HasPendingInvitation(tenantID, invitee.ID)
 		if hasPending {
-			c.JSON(http.StatusOK, models.NewErrorResponse("该用户已有待处理的邀请"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.pendingInvitationExists")))
 			return
 		}
 
@@ -136,7 +137,7 @@ func InviteUserAPI() gin.HandlerFunc {
 			InviteeID: invitee.ID,
 		}
 		if err := invRepo.Create(inv); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("创建邀请失败: "+err.Error()))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.invitationCreationFailed")))
 			return
 		}
 
@@ -159,7 +160,7 @@ func ListMyInvitationsAPI() gin.HandlerFunc {
 		invRepo := repository.GetTenantInvitationRepo(db.GetPostgresPool())
 		invs, err := invRepo.FindPendingByInvitee(ctx.User.ID)
 		if err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("查询邀请列表失败"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.invitationListFailed")))
 			return
 		}
 
@@ -212,12 +213,12 @@ func AcceptInvitationAPI() gin.HandlerFunc {
 		}
 
 		if inv.InviteeID != ctx.User.ID {
-			c.JSON(http.StatusOK, models.NewErrorResponse("无权操作此邀请"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "invitation.noPermission")))
 			return
 		}
 
 		if inv.Status != models.InvitationStatusPending {
-			c.JSON(http.StatusOK, models.NewErrorResponse("邀请已处理"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "invitation.alreadyProcessed")))
 			return
 		}
 
@@ -227,12 +228,12 @@ func AcceptInvitationAPI() gin.HandlerFunc {
 			UserID:   ctx.User.ID,
 			Role:     models.RoleMember,
 		}); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("加入租户失败"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "invitation.joinFailed")))
 			return
 		}
 
 		if err := invRepo.UpdateStatus(inv.ID, models.InvitationStatusAccepted); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("操作失败"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.operationFailed")))
 			return
 		}
 
@@ -263,17 +264,17 @@ func RejectInvitationAPI() gin.HandlerFunc {
 		}
 
 		if inv.InviteeID != ctx.User.ID {
-			c.JSON(http.StatusOK, models.NewErrorResponse("无权操作此邀请"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "invitation.noPermission")))
 			return
 		}
 
 		if inv.Status != models.InvitationStatusPending {
-			c.JSON(http.StatusOK, models.NewErrorResponse("邀请已处理"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "invitation.alreadyProcessed")))
 			return
 		}
 
 		if err := invRepo.UpdateStatus(inv.ID, models.InvitationStatusRejected); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("操作失败"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.operationFailed")))
 			return
 		}
 
@@ -301,35 +302,35 @@ func UpdateMemberRoleAPI() gin.HandlerFunc {
 
 		member, err := isTenantAdmin(ctx.User, tenantID)
 		if err != nil || !member.IsAdmin() {
-			c.JSON(http.StatusOK, models.NewErrorResponse("仅租户管理员可修改角色"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.adminOnlyChangeRole")))
 			return
 		}
 
 		if targetUserID == ctx.User.ID {
-			c.JSON(http.StatusOK, models.NewErrorResponse("不能修改自己的角色"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.cannotChangeOwnRole")))
 			return
 		}
 
 		req := &models.UpdateRoleRequest{}
 		if err := c.ShouldBindJSON(req); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.invalidParameters")))
 			return
 		}
 
 		if req.Role != models.RoleAdmin && req.Role != models.RoleMember {
-			c.JSON(http.StatusOK, models.NewErrorResponse("角色必须为 admin 或 member"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.invalidRole")))
 			return
 		}
 
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
 		isMember, _ := memberRepo.IsMember(tenantID, targetUserID)
 		if !isMember {
-			c.JSON(http.StatusOK, models.NewErrorResponse("该用户不是租户成员"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.userNotMember")))
 			return
 		}
 
 		if err := memberRepo.UpdateRole(tenantID, targetUserID, req.Role); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("修改角色失败"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.roleChangeFailed")))
 			return
 		}
 
@@ -356,24 +357,24 @@ func RemoveMemberAPI() gin.HandlerFunc {
 
 		member, err := isTenantAdmin(ctx.User, tenantID)
 		if err != nil || !member.IsAdmin() {
-			c.JSON(http.StatusOK, models.NewErrorResponse("仅租户管理员可移除成员"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.adminOnlyRemove")))
 			return
 		}
 
 		if targetUserID == ctx.User.ID {
-			c.JSON(http.StatusOK, models.NewErrorResponse("不能移除自己，如需离开请使用退出租户功能"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.cannotRemoveSelf")))
 			return
 		}
 
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
 		isMember, _ := memberRepo.IsMember(tenantID, targetUserID)
 		if !isMember {
-			c.JSON(http.StatusOK, models.NewErrorResponse("该用户不是租户成员"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.userNotMember")))
 			return
 		}
 
 		if err := memberRepo.Delete(tenantID, targetUserID); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("移除成员失败"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.removeFailed")))
 			return
 		}
 
@@ -397,13 +398,13 @@ func LeaveTenantAPI() gin.HandlerFunc {
 		tenantID := c.Param("id")
 		member := getMemberOrNil(ctx.User, tenantID)
 		if member == nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你不是该租户的成员"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.notMember")))
 			return
 		}
 
 		memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
 		if err := memberRepo.Delete(tenantID, ctx.User.ID); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("退出租户失败"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "member.leaveFailed")))
 			return
 		}
 

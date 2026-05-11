@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -9,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/jwma/jump-jump/internal/app/utils"
@@ -64,7 +64,7 @@ func toShortLinkDataWithUsername(s *models.ShortLink) *models.ShortLinkData {
 // checkTenantOwnership verifies that a short link belongs to the current tenant.
 func checkTenantOwnership(c *gin.Context, s *models.ShortLink) bool {
 	if s.TenantID != getTenantID(c) {
-		c.JSON(http.StatusNotFound, models.NewErrorResponse("短链接不存在"))
+		c.JSON(http.StatusNotFound, models.NewErrorResponse(i18n.T(c, "shortLink.notFound")))
 		return false
 	}
 	return true
@@ -115,7 +115,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		params := &models.CreateShortLinkAPIRequest{}
 		if err := c.ShouldBindJSON(&params); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.invalidParameters")))
 			return
 		}
 
@@ -128,7 +128,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 		if s.Id != "" {
 			checkShortLink, _ := repo.Get(s.Id)
 			if checkShortLink != nil && checkShortLink.Id != "" {
-				c.JSON(http.StatusOK, models.NewErrorResponse(fmt.Sprintf("%s 已被占用", s.Id)))
+				c.JSON(http.StatusOK, models.NewErrorResponse(i18n.TWithData(c, "shortLink.idOccupied", map[string]interface{}{"id": s.Id})))
 				return
 			}
 		} else {
@@ -138,14 +138,14 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 			id, err := repo.GenerateId(idLen)
 			if err != nil {
 				log.Printf("generate id failed: %v", err)
-				c.JSON(http.StatusOK, models.NewErrorResponse("服务器繁忙，请稍后再试"))
+				c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.serverBusy")))
 				return
 			}
 			s.Id = utils.TrimShortLinkId(id)
 		}
 
 		if s.Id == "" {
-			c.JSON(http.StatusOK, models.NewErrorResponse("ID 错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "shortLink.invalidId")))
 			return
 		}
 
@@ -293,14 +293,14 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			startDate := c.Query("startDate")
 			endDate := c.Query("endDate")
 			if startDate == "" || endDate == "" {
-				c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
+				c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.invalidParameters")))
 				return
 			}
 
 			startTime, _ := time.ParseInLocation("2006-01-02", startDate, time.Local)
 			endTime, err := time.ParseInLocation("2006-01-02", endDate, time.Local)
 			if err != nil {
-				c.JSON(http.StatusOK, models.NewErrorResponse("日期参数错误"))
+				c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "shortLink.invalidDateParams")))
 				return
 			}
 
@@ -322,6 +322,6 @@ func ShortLinkActionAPI() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusNotFound, models.NewErrorResponse("请求资源不存在"))
+		c.JSON(http.StatusNotFound, models.NewErrorResponse(i18n.T(c, "common.resourceNotFound")))
 	})
 }

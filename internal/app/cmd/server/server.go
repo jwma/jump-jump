@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/routers"
 	"github.com/jwma/jump-jump/internal/app/workers"
 )
@@ -51,6 +52,10 @@ func Run(addr ...string) error {
 		return err
 	}
 
+	if err := i18n.Init(); err != nil {
+		return fmt.Errorf("i18n init failed: %w", err)
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go workers.NewHistoryFlushWorker(db.GetRedisClient(), db.GetPostgresPool()).Run(ctx)
@@ -68,6 +73,10 @@ func RunLanding(addr ...string) error {
 
 	if err := config.SetupConfig(db.GetPostgresPool(), db.GetRedisClient()); err != nil {
 		return err
+	}
+
+	if err := i18n.Init(); err != nil {
+		return fmt.Errorf("i18n init failed: %w", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

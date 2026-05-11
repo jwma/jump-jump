@@ -1,0 +1,174 @@
+# Common
+[common.invalidParameters]
+one = "参数错误"
+
+[common.operationFailed]
+one = "操作失败"
+
+[common.serverBusy]
+one = "服务器繁忙，请稍后再试"
+
+[common.notFound]
+one = "未找到"
+
+[common.resourceNotFound]
+one = "请求资源不存在"
+
+# Auth
+[auth.invalidCredentials]
+one = "用户名或密码错误"
+
+[auth.accountDisabled]
+one = "账号已被禁用"
+
+[auth.passwordRequired]
+one = "请填写原密码和新密码"
+
+[auth.wrongPassword]
+one = "原密码错误"
+
+# User
+[user.notFound]
+one = "用户不存在"
+
+# Tenant
+[tenant.notFound]
+one = "租户不存在"
+
+[tenant.memberCreationFailed]
+one = "创建租户成员关系失败"
+
+[tenant.noViewPermission]
+one = "你无权查看此租户"
+
+[tenant.adminOnly]
+one = "仅管理员可修改租户信息"
+
+[tenant.noDomainPermission]
+one = "你无权管理域名"
+
+[tenant.domainParamRequired]
+one = "domain 参数不能为空"
+
+[tenant.noDomainViewPermission]
+one = "你无权查看此租户域名"
+
+[tenant.noConfigViewPermission]
+one = "你无权查看此租户配置"
+
+[tenant.noConfigUpdatePermission]
+one = "你无权修改此租户配置"
+
+[tenant.invalidIdLengthConfig]
+one = "最小长度 <= 默认长度 <= 最大长度，三个值均大于 0"
+
+[tenant.invalidNotFoundMode]
+one = "处理模式参数不正确"
+
+[tenant.notMember]
+one = "你不是该租户的成员"
+
+[tenant.memberListFailed]
+one = "查询成员列表失败"
+
+# Member
+[member.relationNotFound]
+one = "成员关系不存在"
+
+[member.notFound]
+one = "成员不存在"
+
+[member.adminOnlyInvite]
+one = "仅租户管理员可邀请用户"
+
+[member.alreadyMember]
+one = "该用户已是租户成员"
+
+[member.cannotInviteSelf]
+one = "不能邀请自己"
+
+[member.pendingInvitationExists]
+one = "该用户已有待处理的邀请"
+
+[member.invitationCreationFailed]
+one = "创建邀请失败"
+
+[member.invitationListFailed]
+one = "查询邀请列表失败"
+
+[member.adminOnlyChangeRole]
+one = "仅租户管理员可修改角色"
+
+[member.cannotChangeOwnRole]
+one = "不能修改自己的角色"
+
+[member.invalidRole]
+one = "角色必须为 admin 或 member"
+
+[member.userNotMember]
+one = "该用户不是租户成员"
+
+[member.roleChangeFailed]
+one = "修改角色失败"
+
+[member.adminOnlyRemove]
+one = "仅租户管理员可移除成员"
+
+[member.cannotRemoveSelf]
+one = "不能移除自己，如需离开请使用退出租户功能"
+
+[member.removeFailed]
+one = "移除成员失败"
+
+[member.leaveFailed]
+one = "退出租户失败"
+
+# Invitation
+[invitation.notFound]
+one = "邀请不存在"
+
+[invitation.noPermission]
+one = "无权操作此邀请"
+
+[invitation.alreadyProcessed]
+one = "邀请已处理"
+
+[invitation.joinFailed]
+one = "加入租户失败"
+
+# Short Link
+[shortLink.notFound]
+one = "短链接不存在"
+
+[shortLink.idOccupied]
+one = "{{.id}} 已被占用"
+
+[shortLink.invalidId]
+one = "ID 错误"
+
+[shortLink.invalidDateParams]
+one = "日期参数错误"
+
+# Super Admin
+[superAdmin.usernamePasswordRequired]
+one = "请填写用户名和密码"
+
+[superAdmin.newPasswordRequired]
+one = "请填写新密码"
+
+[superAdmin.userStatusRequired]
+one = "请指定用户状态"
+
+[superAdmin.tenantStatusRequired]
+one = "请指定租户状态"
+
+# Middleware
+[middleware.tenantIdRequired]
+one = "X-Tenant-ID header is required"
+
+[middleware.superAdminOnly]
+one = "仅超级管理员可执行此操作"
+
+# Landing
+[landing.pageNotFound]
+one = "你访问的页面不存在哦"
