@@ -88,6 +88,11 @@ export default {
     invitedBy: 'Invited by {inviter}',
     viewAllInvitations: 'View all invitations',
     changePassword: 'Change Password',
+    light: 'Light',
+    dark: 'Dark',
+    system: 'System',
+    switchLanguage: 'Switch language',
+    logout: 'Logout',
   },
   dashboard: {
     greeting: {
@@ -243,6 +248,8 @@ export default {
     referer: 'Referer',
     userAgent: 'User Agent',
     direct: 'Direct',
+    visitsWithCount: '{count} visits',
+    visitsWithPercent: '{count} visits ({percent}%)',
   },
   settings: {
     title: 'Settings',

@@ -88,6 +88,11 @@ export default {
     invitedBy: '由 {inviter} 邀请',
     viewAllInvitations: '查看所有邀请',
     changePassword: '修改密码',
+    light: '浅色',
+    dark: '深色',
+    system: '跟随系统',
+    switchLanguage: '切换语言',
+    logout: '退出',
   },
   dashboard: {
     greeting: {
@@ -242,6 +247,8 @@ export default {
     referer: '来源',
     userAgent: '用户代理',
     direct: '直接访问',
+    visitsWithCount: '{count} 次访问',
+    visitsWithPercent: '{count} 次访问（{percent}%）',
   },
   settings: {
     title: '设置',

@@ -234,7 +234,7 @@ const visitChartOption = computed(() => ({
     trigger: 'axis' as const,
     formatter: (params: { name: string; value: number }[]) => {
       const p = params[0]
-      return `${p.name}<br/><b>${p.value}</b> 次访问`
+      return `${p.name}<br/><b>${p.value}</b> ${t('shortLinkDetail.visitsWithCount', { count: p.value })}`
     },
   },
   grid: { top: 16, right: 16, bottom: 32, left: 48 },
@@ -313,7 +313,7 @@ const osChartOption = computed(() =>
   makePieOption(
     osDistribution.value,
     (name, value, total) =>
-      `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`,
+      `${name}<br/><b>${value}</b> ${t('shortLinkDetail.visitsWithPercent', { count: value, percent: ((value / total) * 100).toFixed(1) })}`,
   ),
 )
 
@@ -321,7 +321,7 @@ const browserChartOption = computed(() =>
   makePieOption(
     browserDistribution.value,
     (name, value, total) =>
-      `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`,
+      `${name}<br/><b>${value}</b> ${t('shortLinkDetail.visitsWithPercent', { count: value, percent: ((value / total) * 100).toFixed(1) })}`,
   ),
 )
 
@@ -329,7 +329,7 @@ const refererChartOption = computed(() =>
   makePieOption(
     refererDistribution.value,
     (name, value, total) =>
-      `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`,
+      `${name}<br/><b>${value}</b> ${t('shortLinkDetail.visitsWithPercent', { count: value, percent: ((value / total) * 100).toFixed(1) })}`,
   ),
 )
 
@@ -456,19 +456,19 @@ watch([() => link.value, qrSelectedDomain], () => {
         @click="router.push({ name: 'short-link-edit', params: { id: link.id } })"
       >
         <Pencil class="h-3.5 w-3.5" />
-        Edit
+        {{ t('shortLinkDetail.edit') }}
       </button>
     </div>
 
-    <div v-if="loading" class="mt-6 text-center text-gray-400 dark:text-gray-500">Loading...</div>
+    <div v-if="loading" class="mt-6 text-center text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.loading') }}</div>
 
     <div v-else-if="notFound" class="mt-6 text-center text-gray-400 dark:text-gray-500">
-      Short link not found.
+      {{ t('shortLinkDetail.notFound') }}
       <button
         class="ml-2 text-blue-600 hover:underline"
         @click="router.push({ name: 'short-links' })"
       >
-        Back to list
+        {{ t('common.backToList') }}
       </button>
     </div>
 
@@ -711,7 +711,7 @@ watch([() => link.value, qrSelectedDomain], () => {
             @click="activeTab = 'trend'"
           >
             <LayoutGrid class="h-3.5 w-3.5" />
-            Charts
+            {{ t('shortLinkDetail.charts') }}
           </button>
           <button
             class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
@@ -723,7 +723,7 @@ watch([() => link.value, qrSelectedDomain], () => {
             @click="activeTab = 'records'"
           >
             <FileText class="h-3.5 w-3.5" />
-            Access Records
+            {{ t('shortLinkDetail.accessRecords') }}
           </button>
         </div>
 
@@ -741,7 +741,7 @@ watch([() => link.value, qrSelectedDomain], () => {
               v-else-if="totalVisits === 0"
               class="flex h-56 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
             >
-              No data for this period.
+              {{ t('shortLinkDetail.noData') }}
             </div>
             <div v-else class="h-56">
               <VChart
@@ -767,7 +767,7 @@ watch([() => link.value, qrSelectedDomain], () => {
                 v-else-if="osDistribution.length === 0"
                 class="flex h-56 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
               >
-                No data for this period.
+                {{ t('shortLinkDetail.noData') }}
               </div>
               <div v-else class="h-56">
                 <VChart
@@ -791,7 +791,7 @@ watch([() => link.value, qrSelectedDomain], () => {
                 v-else-if="browserDistribution.length === 0"
                 class="flex h-56 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
               >
-                No data for this period.
+                {{ t('shortLinkDetail.noData') }}
               </div>
               <div v-else class="h-56">
                 <VChart
@@ -817,7 +817,7 @@ watch([() => link.value, qrSelectedDomain], () => {
               v-else-if="refererDistribution.length === 0"
               class="flex h-56 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
             >
-              No data for this period.
+              {{ t('shortLinkDetail.noData') }}
             </div>
             <div v-else class="h-64">
               <VChart
@@ -839,7 +839,7 @@ watch([() => link.value, qrSelectedDomain], () => {
               v-if="ipDistribution.length === 0"
               class="py-8 text-center text-sm text-gray-400 dark:text-gray-500"
             >
-              No data for this period.
+              {{ t('shortLinkDetail.noData') }}
             </div>
             <table v-else class="w-full text-left text-sm">
               <thead>
@@ -890,7 +890,7 @@ watch([() => link.value, qrSelectedDomain], () => {
               v-else-if="histories.length === 0"
               class="flex h-40 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
             >
-              No access records for this period.
+              {{ t('shortLinkDetail.noRecords') }}
             </div>
             <template v-else>
               <div class="overflow-x-auto">
@@ -930,7 +930,7 @@ watch([() => link.value, qrSelectedDomain], () => {
                       <td
                         class="max-w-[200px] truncate px-4 py-2.5 text-gray-600 dark:text-gray-400"
                       >
-                        {{ h.referer ? extractRefererSource(h.referer) : 'Direct' }}
+                        {{ h.referer ? extractRefererSource(h.referer) : t('shortLinkDetail.direct') }}
                       </td>
                       <td
                         class="max-w-[300px] truncate px-4 py-2.5 text-xs text-gray-400 dark:text-gray-500"
@@ -943,7 +943,7 @@ watch([() => link.value, qrSelectedDomain], () => {
                 </table>
               </div>
               <div class="border-t px-4 py-3 text-xs text-gray-400 dark:text-gray-500">
-                {{ histories.length }} record{{ histories.length !== 1 ? 's' : '' }}
+                {{ t('shortLinkDetail.recordCount', { count: histories.length, suffix: histories.length !== 1 ? 's' : '' }) }}
               </div>
             </template>
           </div>

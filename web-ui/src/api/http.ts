@@ -2,6 +2,7 @@ import axios from 'axios'
 import type { ApiResponse } from '@/types/api'
 import { useAuthStore } from '@/stores/auth'
 import router from '@/router'
+import i18n from '@/i18n'
 
 export class ApiError extends Error {
   status: number
@@ -28,6 +29,7 @@ http.interceptors.request.use((config) => {
   if (auth.currentTenantId && !config.url?.startsWith('/super/')) {
     config.headers['X-Tenant-ID'] = auth.currentTenantId
   }
+  config.headers['Accept-Language'] = i18n.global.locale.value
   return config
 })
 
