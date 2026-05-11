@@ -41,126 +41,6 @@ func init() {
 	db.ClosePostgres()
 }
 
-func TestShortLinkRepository_Save(t *testing.T) {
-	userRepo := GetUserRepo(getTestPool())
-	u, err := userRepo.FindByUsername("mj")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	l := &models.ShortLink{
-		Id:          "mj",
-		TenantID:    "00000000-0000-0000-0000-000000000001",
-		Url:         "http://anmuji.com",
-		Description: "安木鸡",
-		IsEnable:    true,
-		CreatedBy:   u.ID,
-	}
-
-	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	err = repo.Save(l)
-
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestShortLinkRepository_Get(t *testing.T) {
-	id := "mj"
-	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	_, err := repo.Get(id)
-
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestShortLinkRepository_Update(t *testing.T) {
-	id := "mj"
-	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	l, err := repo.Get(id)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	params := &models.UpdateShortLinkAPIRequest{
-		Url:         "http://github.com/jwma",
-		Description: "安木鸡的 Github",
-		IsEnable:    true,
-	}
-
-	err = repo.Update(l, params)
-
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestShortLinkRepository_List(t *testing.T) {
-	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	rs, err := repo.List("00000000-0000-0000-0000-000000000001", 0, 10)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	expected := 1
-
-	if rs.Total != int64(expected) {
-		t.Errorf("expected %d but got %d\n", expected, rs.Total)
-	}
-}
-
-func TestShortLinkRepository_Delete(t *testing.T) {
-	id := "mj"
-	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	l, err := repo.Get(id)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	repo.Delete(l)
-}
-
-func TestRequestHistoryRepository_Save(t *testing.T) {
-	userRepo := GetUserRepo(getTestPool())
-	u, err := userRepo.FindByUsername("mj")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	l := &models.ShortLink{
-		Id:          "testrh",
-		TenantID:    "00000000-0000-0000-0000-000000000001",
-		Url:         "http://anmuji.com",
-		Description: "",
-		IsEnable:    true,
-		CreatedBy:   u.ID,
-	}
-	slRepo := GetShortLinkRepo(getTestPool(), getTestRDB())
-	err = slRepo.Save(l)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	rh := models.NewRequestHistory(l, "127.0.0.1", "fake user agent", "Linux", "Chrome", "")
-	rhRepo := GetRequestHistoryRepo(getTestRDB(), getTestPool())
-	rhRepo.Save(rh)
-}
-
-func TestRequestHistoryRepository_FindByDateRange(t *testing.T) {
-	id := "testrh"
-	rhRepo := GetRequestHistoryRepo(getTestRDB(), getTestPool())
-	rs := rhRepo.FindByDateRange(id, time.Now().Add(-time.Hour*24), time.Now())
-
-	if rs == nil {
-		t.Error("expected non-nil result")
-	}
-}
-
 func TestUserRepository_Save(t *testing.T) {
 	repo := GetUserRepo(getTestPool())
 
@@ -243,6 +123,126 @@ func TestUserRepository_UpdatePassword(t *testing.T) {
 
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestShortLinkRepository_Save(t *testing.T) {
+	userRepo := GetUserRepo(getTestPool())
+	u, err := userRepo.FindByUsername("mj")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	l := &models.ShortLink{
+		Id:          "mj",
+		TenantID:    "00000000-0000-0000-0000-000000000001",
+		Url:         "http://anmuji.com",
+		Description: "安木鸡",
+		IsEnable:    true,
+		CreatedBy:   u.ID,
+	}
+
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
+	err = repo.Save(l)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestShortLinkRepository_Get(t *testing.T) {
+	id := "mj"
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
+	_, err := repo.Get(id)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestShortLinkRepository_Update(t *testing.T) {
+	id := "mj"
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
+	l, err := repo.Get(id)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	params := &models.UpdateShortLinkAPIRequest{
+		Url:         "http://github.com/jwma",
+		Description: "安木鸡的 Github",
+		IsEnable:    true,
+	}
+
+	err = repo.Update(l, params)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestShortLinkRepository_List(t *testing.T) {
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
+	rs, err := repo.List("00000000-0000-0000-0000-000000000001", 0, 10)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	expected := 1
+
+	if rs.Total != int64(expected) {
+		t.Errorf("expected %d but got %d\n", expected, rs.Total)
+	}
+}
+
+func TestShortLinkRepository_Delete(t *testing.T) {
+	id := "mj"
+	repo := GetShortLinkRepo(getTestPool(), getTestRDB())
+	l, err := repo.Get(id)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repo.Delete(l)
+}
+
+func TestRequestHistoryRepository_Save(t *testing.T) {
+	userRepo := GetUserRepo(getTestPool())
+	u, err := userRepo.FindByUsername("mj")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	l := &models.ShortLink{
+		Id:          "testrh",
+		TenantID:    "00000000-0000-0000-0000-000000000001",
+		Url:         "http://anmuji.com",
+		Description: "",
+		IsEnable:    true,
+		CreatedBy:   u.ID,
+	}
+	slRepo := GetShortLinkRepo(getTestPool(), getTestRDB())
+	err = slRepo.Save(l)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	rh := models.NewRequestHistory(l, "127.0.0.1", "fake user agent", "Linux", "Chrome", "")
+	rhRepo := GetRequestHistoryRepo(getTestRDB(), getTestPool())
+	rhRepo.Save(rh)
+}
+
+func TestRequestHistoryRepository_FindByDateRange(t *testing.T) {
+	id := "testrh"
+	rhRepo := GetRequestHistoryRepo(getTestRDB(), getTestPool())
+	rs := rhRepo.FindByDateRange(id, time.Now().Add(-time.Hour*24), time.Now())
+
+	if rs == nil {
+		t.Error("expected non-nil result")
 	}
 }
 
