@@ -27,7 +27,7 @@ services:
 
   apiserver:
     build:
-      context: .
+      context: ..
       dockerfile: build/package/Dockerfile
     depends_on:
       postgres:
@@ -48,7 +48,7 @@ services:
 
   landingserver:
     build:
-      context: .
+      context: ..
       dockerfile: build/package/Dockerfile
     depends_on:
       postgres:

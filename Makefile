@@ -13,7 +13,7 @@ dev-ui:
 
 .PHONY: build-ui
 build-ui:
-	cd web-ui && npm install && npm run build
+	cd web-ui && npm ci && npm run build
 
 .PHONY: build
 build:
