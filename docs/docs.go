@@ -23,14 +23,56 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/config": {
+        "/auth/change-password": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "修改账号密码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账号"
+                ],
+                "summary": "修改账号密码",
+                "parameters": [
+                    {
+                        "description": "修改密码请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ChangePasswordAPIRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/auth/info": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取系统配置信息",
+                "description": "获取当前用户信息及租户列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -38,9 +80,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统配置"
+                    "账号"
                 ],
-                "summary": "获取系统配置信息",
+                "summary": "获取当前用户信息及租户列表",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -53,7 +95,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.GetConfigAPIResponseData"
+                                            "$ref": "#/definitions/models.AuthInfoResponseData"
                                         }
                                     }
                                 }
@@ -66,14 +108,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/config/id-length": {
-            "patch": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "更新短链接 ID 设置",
+        "/auth/login": {
+            "post": {
+                "description": "账号密码登入",
                 "consumes": [
                     "application/json"
                 ],
@@ -81,17 +118,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统配置"
+                    "账号"
                 ],
-                "summary": "更新短链接 ID 设置",
+                "summary": "账号登入",
                 "parameters": [
                     {
-                        "description": "更新短链接 ID 设置请求",
+                        "description": "登入请求",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateIdLengthRequest"
+                            "$ref": "#/definitions/models.LoginAPIRequest"
                         }
                     }
                 ],
@@ -107,7 +144,50 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.GetConfigAPIResponseData"
+                                            "$ref": "#/definitions/models.LoginAPIResponseData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/invitations": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "查看当前用户收到的所有待处理邀请",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "邀请"
+                ],
+                "summary": "查看我的邀请",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.InvitationData"
+                                            }
                                         }
                                     }
                                 }
@@ -120,14 +200,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/config/short-link-404-handling": {
-            "patch": {
+        "/invitations/{id}/accept": {
+            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新短链接 404 设置",
+                "description": "接受租户邀请",
                 "consumes": [
                     "application/json"
                 ],
@@ -135,37 +215,63 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统配置"
+                    "邀请"
                 ],
-                "summary": "更新短链接 404 设置",
+                "summary": "接受邀请",
                 "parameters": [
                     {
-                        "description": "更新短链接 404 设置请求",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UpdateNotFoundConfigRequest"
-                        }
+                        "type": "string",
+                        "description": "邀请 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.GetConfigAPIResponseData"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/invitations/{id}/reject": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "拒绝租户邀请",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "邀请"
+                ],
+                "summary": "拒绝邀请",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "邀请 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
                         }
                     },
                     "401": {
@@ -498,6 +604,545 @@ const docTemplate = `{
                 }
             }
         },
+        "/super/tenants": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员查看所有租户，支持分页",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "租户列表（超管）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/super/tenants/{id}/domains": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员查看指定租户的域名列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "查看租户域名（超管）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.TenantDomain"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/super/tenants/{id}/members": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员查看指定租户的成员列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "查看租户成员（超管）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.TenantMemberData"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/super/tenants/{id}/short-links": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员查看指定租户的短链接列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "查看租户短链接（超管）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.ListShortLinksAPIResponseData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/super/tenants/{id}/status": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员启用或禁用租户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "启用/禁用租户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新租户状态请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateTenantStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/super/users": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员查看所有用户，支持分页和搜索",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "用户列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "搜索用户名",
+                        "name": "query",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.ListUsersResponseData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员创建普通用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "创建用户",
+                "parameters": [
+                    {
+                        "description": "创建用户请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/super/users/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员查看用户详情，包括其所属的所有租户和角色",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "获取用户详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserDetailData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/super/users/{id}/reset-password": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员重置指定用户的密码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "重置用户密码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "重置密码请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ResetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/super/users/{id}/status": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "超级管理员启用或禁用指定用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "超级管理员"
+                ],
+                "summary": "禁用/启用用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新用户状态请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateUserStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/tenant/": {
             "get": {
                 "security": [
@@ -505,7 +1150,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取租户列表（仅管理员）",
+                "description": "列出当前用户所属的租户",
                 "consumes": [
                     "application/json"
                 ],
@@ -515,7 +1160,7 @@ const docTemplate = `{
                 "tags": [
                     "租户"
                 ],
-                "summary": "租户列表",
+                "summary": "我的租户列表",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -549,7 +1194,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "创建租户（仅管理员）",
+                "description": "创建租户（已登录用户均可创建，创建者自动成为管理员）",
                 "consumes": [
                     "application/json"
                 ],
@@ -603,7 +1248,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取租户详情（仅管理员）",
+                "description": "获取租户详情（租户成员或超管可查看）",
                 "consumes": [
                     "application/json"
                 ],
@@ -646,6 +1291,176 @@ const docTemplate = `{
                         "description": "Unauthorized"
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新租户名称或 Slug（仅 admin 或超管）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "租户"
+                ],
+                "summary": "更新租户信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新租户请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateTenantRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Tenant"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/tenant/{id}/config": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取租户配置（租户成员或超管可查看）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "租户配置"
+                ],
+                "summary": "获取租户配置",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.GetConfigAPIResponseData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新租户配置（租户 admin 或超管）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "租户配置"
+                ],
+                "summary": "更新租户配置",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新配置请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateTenantConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.GetConfigAPIResponseData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
             }
         },
         "/tenant/{id}/domains": {
@@ -655,7 +1470,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取租户域名列表（仅管理员）",
+                "description": "获取租户域名列表（租户成员或超管可查看）",
                 "consumes": [
                     "application/json"
                 ],
@@ -708,7 +1523,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "为租户添加域名（仅管理员）",
+                "description": "为租户添加域名（租户 admin 或超管）",
                 "consumes": [
                     "application/json"
                 ],
@@ -763,14 +1578,16 @@ const docTemplate = `{
                         "description": "Unauthorized"
                     }
                 }
-            },
+            }
+        },
+        "/tenant/{id}/domains/{domain}": {
             "delete": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除租户域名（仅管理员）",
+                "description": "删除租户域名（租户 admin 或超管）",
                 "consumes": [
                     "application/json"
                 ],
@@ -793,7 +1610,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "域名",
                         "name": "domain",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -825,14 +1642,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/change-password": {
+        "/tenant/{id}/invitations": {
             "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "修改账号密码",
+                "description": "邀请用户加入租户（仅 admin）",
                 "consumes": [
                     "application/json"
                 ],
@@ -840,17 +1657,234 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "账号"
+                    "租户成员"
                 ],
-                "summary": "修改账号密码",
+                "summary": "邀请用户加入租户",
                 "parameters": [
                     {
-                        "description": "修改密码请求",
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "邀请请求",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ChangePasswordAPIRequest"
+                            "$ref": "#/definitions/models.InviteUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.TenantInvitation"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/tenant/{id}/leave": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "退出租户（任何成员均可操作）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "租户成员"
+                ],
+                "summary": "退出租户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/tenant/{id}/members": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "查看租户成员列表（租户内所有成员均可查看）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "租户成员"
+                ],
+                "summary": "租户成员列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.TenantMemberData"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/tenant/{id}/members/{userId}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "移除租户成员（仅 admin，不能移除自己）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "租户成员"
+                ],
+                "summary": "移除成员",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户 ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/tenant/{id}/members/{userId}/role": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "修改租户成员角色（仅 admin，不能修改自己的角色）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "租户成员"
+                ],
+                "summary": "修改成员角色",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户 ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "角色修改请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateRoleRequest"
                         }
                     }
                 ],
@@ -906,52 +1940,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized"
-                    }
-                }
-            }
-        },
-        "/user/login": {
-            "post": {
-                "description": "账号密码登入",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "账号"
-                ],
-                "summary": "账号登入",
-                "parameters": [
-                    {
-                        "description": "登入请求",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.LoginAPIRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.LoginAPIResponseData"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 }
             }
@@ -1030,7 +2018,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -1100,6 +2088,34 @@ const docTemplate = `{
                 }
             }
         },
+        "models.AuthInfoResponseData": {
+            "type": "object",
+            "properties": {
+                "tenants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.UserTenantEntry"
+                    }
+                },
+                "user": {
+                    "$ref": "#/definitions/models.AuthInfoUser"
+                }
+            }
+        },
+        "models.AuthInfoUser": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "isSuper": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ChangePasswordAPIRequest": {
             "type": "object",
             "properties": {
@@ -1154,6 +2170,21 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "models.DailyStats": {
             "type": "object",
             "properties": {
@@ -1185,9 +2216,46 @@ const docTemplate = `{
         "models.GetUserInfoAPIResponseData": {
             "type": "object",
             "properties": {
-                "role": {
-                    "type": "integer"
+                "isSuper": {
+                    "type": "boolean"
                 },
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.InvitationData": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inviterUsername": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tenantId": {
+                    "type": "string"
+                },
+                "tenantName": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.InviteUserRequest": {
+            "type": "object",
+            "required": [
+                "username"
+            ],
+            "properties": {
                 "username": {
                     "type": "string"
                 }
@@ -1204,6 +2272,20 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.ListUsersResponseData": {
+            "type": "object",
+            "properties": {
+                "total": {
+                    "type": "integer"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.UserData"
+                    }
                 }
             }
         },
@@ -1255,6 +2337,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ResetPasswordRequest": {
+            "type": "object",
+            "required": [
+                "newPassword"
+            ],
+            "properties": {
+                "newPassword": {
                     "type": "string"
                 }
             }
@@ -1368,36 +2461,53 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdateIdLengthRequest": {
+        "models.TenantInvitation": {
             "type": "object",
-            "required": [
-                "idLength",
-                "idMaximumLength",
-                "idMinimumLength"
-            ],
             "properties": {
-                "idLength": {
-                    "type": "integer"
+                "createdAt": {
+                    "type": "string"
                 },
-                "idMaximumLength": {
-                    "type": "integer"
+                "id": {
+                    "type": "string"
                 },
-                "idMinimumLength": {
-                    "type": "integer"
+                "inviteeId": {
+                    "type": "string"
+                },
+                "inviterId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tenantId": {
+                    "type": "string"
                 }
             }
         },
-        "models.UpdateNotFoundConfigRequest": {
+        "models.TenantMemberData": {
             "type": "object",
-            "required": [
-                "mode",
-                "value"
-            ],
             "properties": {
-                "mode": {
+                "joinedAt": {
                     "type": "string"
                 },
-                "value": {
+                "role": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateRoleRequest": {
+            "type": "object",
+            "required": [
+                "role"
+            ],
+            "properties": {
+                "role": {
                     "type": "string"
                 }
             }
@@ -1424,6 +2534,125 @@ const docTemplate = `{
             "properties": {
                 "shortLink": {
                     "$ref": "#/definitions/models.ShortLinkData"
+                }
+            }
+        },
+        "models.UpdateTenantConfigRequest": {
+            "type": "object",
+            "properties": {
+                "idLength": {
+                    "type": "integer"
+                },
+                "idMaximumLength": {
+                    "type": "integer"
+                },
+                "idMinimumLength": {
+                    "type": "integer"
+                },
+                "notFoundMode": {
+                    "type": "string"
+                },
+                "notFoundValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateTenantRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateTenantStatusRequest": {
+            "type": "object",
+            "required": [
+                "isActive"
+            ],
+            "properties": {
+                "isActive": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.UpdateUserStatusRequest": {
+            "type": "object",
+            "required": [
+                "isActive"
+            ],
+            "properties": {
+                "isActive": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.UserData": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "isSuper": {
+                    "type": "boolean"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserDetailData": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "isSuper": {
+                    "type": "boolean"
+                },
+                "tenants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.UserTenantEntry"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserTenantEntry": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "type": "string"
+                },
+                "tenantId": {
+                    "type": "string"
+                },
+                "tenantName": {
+                    "type": "string"
                 }
             }
         }

@@ -8,6 +8,24 @@ definitions:
     required:
     - domain
     type: object
+  models.AuthInfoResponseData:
+    properties:
+      tenants:
+        items:
+          $ref: '#/definitions/models.UserTenantEntry'
+        type: array
+      user:
+        $ref: '#/definitions/models.AuthInfoUser'
+    type: object
+  models.AuthInfoUser:
+    properties:
+      id:
+        type: string
+      isSuper:
+        type: boolean
+      username:
+        type: string
+    type: object
   models.ChangePasswordAPIRequest:
     properties:
       newPassword:
@@ -43,6 +61,16 @@ definitions:
     - name
     - slug
     type: object
+  models.CreateUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
   models.DailyStats:
     properties:
       date:
@@ -63,10 +91,34 @@ definitions:
     type: object
   models.GetUserInfoAPIResponseData:
     properties:
+      isSuper:
+        type: boolean
       role:
-        type: integer
+        type: string
       username:
         type: string
+    type: object
+  models.InvitationData:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      inviterUsername:
+        type: string
+      status:
+        type: string
+      tenantId:
+        type: string
+      tenantName:
+        type: string
+    type: object
+  models.InviteUserRequest:
+    properties:
+      username:
+        type: string
+    required:
+    - username
     type: object
   models.ListShortLinksAPIResponseData:
     properties:
@@ -76,6 +128,15 @@ definitions:
         type: array
       total:
         type: integer
+    type: object
+  models.ListUsersResponseData:
+    properties:
+      total:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/models.UserData'
+        type: array
     type: object
   models.LoginAPIRequest:
     properties:
@@ -110,6 +171,13 @@ definitions:
         type: string
       url:
         type: string
+    type: object
+  models.ResetPasswordRequest:
+    properties:
+      newPassword:
+        type: string
+    required:
+    - newPassword
     type: object
   models.Response:
     properties:
@@ -184,28 +252,38 @@ definitions:
       tenantId:
         type: string
     type: object
-  models.UpdateIdLengthRequest:
+  models.TenantInvitation:
     properties:
-      idLength:
-        type: integer
-      idMaximumLength:
-        type: integer
-      idMinimumLength:
-        type: integer
-    required:
-    - idLength
-    - idMaximumLength
-    - idMinimumLength
+      createdAt:
+        type: string
+      id:
+        type: string
+      inviteeId:
+        type: string
+      inviterId:
+        type: string
+      status:
+        type: string
+      tenantId:
+        type: string
     type: object
-  models.UpdateNotFoundConfigRequest:
+  models.TenantMemberData:
     properties:
-      mode:
+      joinedAt:
         type: string
-      value:
+      role:
+        type: string
+      userId:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UpdateRoleRequest:
+    properties:
+      role:
         type: string
     required:
-    - mode
-    - value
+    - role
     type: object
   models.UpdateShortLinkAPIRequest:
     properties:
@@ -223,6 +301,83 @@ definitions:
       shortLink:
         $ref: '#/definitions/models.ShortLinkData'
     type: object
+  models.UpdateTenantConfigRequest:
+    properties:
+      idLength:
+        type: integer
+      idMaximumLength:
+        type: integer
+      idMinimumLength:
+        type: integer
+      notFoundMode:
+        type: string
+      notFoundValue:
+        type: string
+    type: object
+  models.UpdateTenantRequest:
+    properties:
+      name:
+        type: string
+      slug:
+        type: string
+    type: object
+  models.UpdateTenantStatusRequest:
+    properties:
+      isActive:
+        type: boolean
+    required:
+    - isActive
+    type: object
+  models.UpdateUserStatusRequest:
+    properties:
+      isActive:
+        type: boolean
+    required:
+    - isActive
+    type: object
+  models.UserData:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      isSuper:
+        type: boolean
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserDetailData:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      isSuper:
+        type: boolean
+      tenants:
+        items:
+          $ref: '#/definitions/models.UserTenantEntry'
+        type: array
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserTenantEntry:
+    properties:
+      role:
+        type: string
+      tenantId:
+        type: string
+      tenantName:
+        type: string
+    type: object
 info:
   contact:
     email: m.mjw.ma@gmail.com
@@ -232,11 +387,37 @@ info:
     name: MIT
     url: https://github.com/jwma/jump-jump/blob/master/LICENSE
 paths:
-  /config:
+  /auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: 修改账号密码
+      parameters:
+      - description: 修改密码请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangePasswordAPIRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 修改账号密码
+      tags:
+      - 账号
+  /auth/info:
     get:
       consumes:
       - application/json
-      description: 获取系统配置信息
+      description: 获取当前用户信息及租户列表
       produces:
       - application/json
       responses:
@@ -247,27 +428,27 @@ paths:
             - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/models.GetConfigAPIResponseData'
+                  $ref: '#/definitions/models.AuthInfoResponseData'
               type: object
         "401":
           description: Unauthorized
       security:
       - ApiKeyAuth: []
-      summary: 获取系统配置信息
+      summary: 获取当前用户信息及租户列表
       tags:
-      - 系统配置
-  /config/id-length:
-    patch:
+      - 账号
+  /auth/login:
+    post:
       consumes:
       - application/json
-      description: 更新短链接 ID 设置
+      description: 账号密码登入
       parameters:
-      - description: 更新短链接 ID 设置请求
+      - description: 登入请求
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateIdLengthRequest'
+          $ref: '#/definitions/models.LoginAPIRequest'
       produces:
       - application/json
       responses:
@@ -278,27 +459,16 @@ paths:
             - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/models.GetConfigAPIResponseData'
+                  $ref: '#/definitions/models.LoginAPIResponseData'
               type: object
-        "401":
-          description: Unauthorized
-      security:
-      - ApiKeyAuth: []
-      summary: 更新短链接 ID 设置
+      summary: 账号登入
       tags:
-      - 系统配置
-  /config/short-link-404-handling:
-    patch:
+      - 账号
+  /invitations:
+    get:
       consumes:
       - application/json
-      description: 更新短链接 404 设置
-      parameters:
-      - description: 更新短链接 404 设置请求
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.UpdateNotFoundConfigRequest'
+      description: 查看当前用户收到的所有待处理邀请
       produces:
       - application/json
       responses:
@@ -309,15 +479,67 @@ paths:
             - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/models.GetConfigAPIResponseData'
+                  items:
+                    $ref: '#/definitions/models.InvitationData'
+                  type: array
               type: object
         "401":
           description: Unauthorized
       security:
       - ApiKeyAuth: []
-      summary: 更新短链接 404 设置
+      summary: 查看我的邀请
       tags:
-      - 系统配置
+      - 邀请
+  /invitations/{id}/accept:
+    post:
+      consumes:
+      - application/json
+      description: 接受租户邀请
+      parameters:
+      - description: 邀请 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 接受邀请
+      tags:
+      - 邀请
+  /invitations/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: 拒绝租户邀请
+      parameters:
+      - description: 邀请 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 拒绝邀请
+      tags:
+      - 邀请
   /short-link/:
     get:
       consumes:
@@ -510,11 +732,337 @@ paths:
       summary: 短链接访问数据
       tags:
       - 短链接
+  /super/tenants:
+    get:
+      consumes:
+      - application/json
+      description: 超级管理员查看所有租户，支持分页
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 租户列表（超管）
+      tags:
+      - 超级管理员
+  /super/tenants/{id}/domains:
+    get:
+      consumes:
+      - application/json
+      description: 超级管理员查看指定租户的域名列表
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.TenantDomain'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 查看租户域名（超管）
+      tags:
+      - 超级管理员
+  /super/tenants/{id}/members:
+    get:
+      consumes:
+      - application/json
+      description: 超级管理员查看指定租户的成员列表
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.TenantMemberData'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 查看租户成员（超管）
+      tags:
+      - 超级管理员
+  /super/tenants/{id}/short-links:
+    get:
+      consumes:
+      - application/json
+      description: 超级管理员查看指定租户的短链接列表
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ListShortLinksAPIResponseData'
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 查看租户短链接（超管）
+      tags:
+      - 超级管理员
+  /super/tenants/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: 超级管理员启用或禁用租户
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新租户状态请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateTenantStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 启用/禁用租户
+      tags:
+      - 超级管理员
+  /super/users:
+    get:
+      consumes:
+      - application/json
+      description: 超级管理员查看所有用户，支持分页和搜索
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: pageSize
+        type: integer
+      - description: 搜索用户名
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ListUsersResponseData'
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 用户列表
+      tags:
+      - 超级管理员
+    post:
+      consumes:
+      - application/json
+      description: 超级管理员创建普通用户
+      parameters:
+      - description: 创建用户请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserData'
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 创建用户
+      tags:
+      - 超级管理员
+  /super/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 超级管理员查看用户详情，包括其所属的所有租户和角色
+      parameters:
+      - description: 用户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserDetailData'
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户详情
+      tags:
+      - 超级管理员
+  /super/users/{id}/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: 超级管理员重置指定用户的密码
+      parameters:
+      - description: 用户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 重置密码请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 重置用户密码
+      tags:
+      - 超级管理员
+  /super/users/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: 超级管理员启用或禁用指定用户
+      parameters:
+      - description: 用户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新用户状态请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 禁用/启用用户
+      tags:
+      - 超级管理员
   /tenant/:
     get:
       consumes:
       - application/json
-      description: 获取租户列表（仅管理员）
+      description: 列出当前用户所属的租户
       produces:
       - application/json
       responses:
@@ -533,13 +1081,13 @@ paths:
           description: Unauthorized
       security:
       - ApiKeyAuth: []
-      summary: 租户列表
+      summary: 我的租户列表
       tags:
       - 租户
     post:
       consumes:
       - application/json
-      description: 创建租户（仅管理员）
+      description: 创建租户（已登录用户均可创建，创建者自动成为管理员）
       parameters:
       - description: 创建租户请求
         in: body
@@ -570,7 +1118,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取租户详情（仅管理员）
+      description: 获取租户详情（租户成员或超管可查看）
       parameters:
       - description: 租户 ID
         in: path
@@ -596,20 +1144,50 @@ paths:
       summary: 获取租户详情
       tags:
       - 租户
-  /tenant/{id}/domains:
-    delete:
+    patch:
       consumes:
       - application/json
-      description: 删除租户域名（仅管理员）
+      description: 更新租户名称或 Slug（仅 admin 或超管）
       parameters:
       - description: 租户 ID
         in: path
         name: id
         required: true
         type: string
-      - description: 域名
-        in: query
-        name: domain
+      - description: 更新租户请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateTenantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Tenant'
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 更新租户信息
+      tags:
+      - 租户
+  /tenant/{id}/config:
+    get:
+      consumes:
+      - application/json
+      description: 获取租户配置（租户成员或超管可查看）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
         required: true
         type: string
       produces:
@@ -622,21 +1200,55 @@ paths:
             - $ref: '#/definitions/models.Response'
             - properties:
                 data:
-                  items:
-                    $ref: '#/definitions/models.TenantDomain'
-                  type: array
+                  $ref: '#/definitions/models.GetConfigAPIResponseData'
               type: object
         "401":
           description: Unauthorized
       security:
       - ApiKeyAuth: []
-      summary: 删除域名
+      summary: 获取租户配置
       tags:
-      - 租户
+      - 租户配置
+    patch:
+      consumes:
+      - application/json
+      description: 更新租户配置（租户 admin 或超管）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新配置请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateTenantConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.GetConfigAPIResponseData'
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 更新租户配置
+      tags:
+      - 租户配置
+  /tenant/{id}/domains:
     get:
       consumes:
       - application/json
-      description: 获取租户域名列表（仅管理员）
+      description: 获取租户域名列表（租户成员或超管可查看）
       parameters:
       - description: 租户 ID
         in: path
@@ -667,7 +1279,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 为租户添加域名（仅管理员）
+      description: 为租户添加域名（租户 admin 或超管）
       parameters:
       - description: 租户 ID
         in: path
@@ -701,18 +1313,90 @@ paths:
       summary: 添加域名
       tags:
       - 租户
-  /user/change-password:
+  /tenant/{id}/domains/{domain}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除租户域名（租户 admin 或超管）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 域名
+        in: path
+        name: domain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.TenantDomain'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 删除域名
+      tags:
+      - 租户
+  /tenant/{id}/invitations:
     post:
       consumes:
       - application/json
-      description: 修改账号密码
+      description: 邀请用户加入租户（仅 admin）
       parameters:
-      - description: 修改密码请求
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 邀请请求
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/models.ChangePasswordAPIRequest'
+          $ref: '#/definitions/models.InviteUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.TenantInvitation'
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 邀请用户加入租户
+      tags:
+      - 租户成员
+  /tenant/{id}/leave:
+    post:
+      consumes:
+      - application/json
+      description: 退出租户（任何成员均可操作）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -724,9 +1408,107 @@ paths:
           description: Unauthorized
       security:
       - ApiKeyAuth: []
-      summary: 修改账号密码
+      summary: 退出租户
       tags:
-      - 账号
+      - 租户成员
+  /tenant/{id}/members:
+    get:
+      consumes:
+      - application/json
+      description: 查看租户成员列表（租户内所有成员均可查看）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.TenantMemberData'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 租户成员列表
+      tags:
+      - 租户成员
+  /tenant/{id}/members/{userId}:
+    delete:
+      consumes:
+      - application/json
+      description: 移除租户成员（仅 admin，不能移除自己）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 用户 ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 移除成员
+      tags:
+      - 租户成员
+  /tenant/{id}/members/{userId}/role:
+    patch:
+      consumes:
+      - application/json
+      description: 修改租户成员角色（仅 admin，不能修改自己的角色）
+      parameters:
+      - description: 租户 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 用户 ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: 角色修改请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: 修改成员角色
+      tags:
+      - 租户成员
   /user/info:
     get:
       consumes:
@@ -749,33 +1531,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 获取账号信息
-      tags:
-      - 账号
-  /user/login:
-    post:
-      consumes:
-      - application/json
-      description: 账号密码登入
-      parameters:
-      - description: 登入请求
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.LoginAPIRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/models.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.LoginAPIResponseData'
-              type: object
-      summary: 账号登入
       tags:
       - 账号
   /user/logout:
@@ -822,7 +1577,7 @@ paths:
       summary: 获取用户偏好设置
       tags:
       - 账号
-    put:
+    patch:
       consumes:
       - application/json
       description: 更新用户偏好设置

@@ -79,15 +79,8 @@ func SetupRouter() *gin.Engine {
 	r.Use(handlers.AllowedHostsMiddleware())
 	r.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPaths([]string{"/v1/"})))
 
-	r.LoadHTMLFiles("./web/admin/index.html")
-	r.StaticFS("/static", http.Dir("./web/admin/static"))
 	r.NoRoute(func(c *gin.Context) {
-		// Skip API paths — let them return the default 404
-		if strings.HasPrefix(c.Request.URL.Path, "/v1/") || strings.HasPrefix(c.Request.URL.Path, "/swagger/") {
-			c.JSON(http.StatusNotFound, gin.H{"msg": "not found", "code": 404})
-			return
-		}
-		c.HTML(http.StatusOK, "index.html", gin.H{})
+		c.JSON(http.StatusNotFound, gin.H{"msg": "not found", "code": 404})
 	})
 
 	// Auth routes — no tenant context required
