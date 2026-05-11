@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/mssola/user_agent"
@@ -29,24 +30,24 @@ func Redirect(c *gin.Context) {
 		host := strings.Split(c.Request.Host, ":")[0]
 		tenantID, _ := config.ResolveTenantID(host)
 		if tenantID == "" {
-			c.String(http.StatusOK, "你访问的页面不存在哦")
+			c.String(http.StatusOK, i18n.T(c, "landing.pageNotFound"))
 			return
 		}
 
 		cc := config.GetShortLinkNotFoundConfig(tenantID)
 		switch cc.Mode {
 		case config.ShortLinkNotFoundContentMode:
-			c.String(http.StatusOK, cc.Value)
+			c.String(http.StatusOK, i18n.T(c, cc.Value))
 		case config.ShortLinkNotFoundRedirectMode:
 			c.Redirect(http.StatusTemporaryRedirect, cc.Value)
 		default:
-			c.String(http.StatusOK, "你访问的页面不存在哦")
+			c.String(http.StatusOK, i18n.T(c, "landing.pageNotFound"))
 		}
 		return
 	}
 
 	if !s.IsEnable {
-		c.String(http.StatusOK, "你访问的页面不存在哦")
+		c.String(http.StatusOK, i18n.T(c, "landing.pageNotFound"))
 		return
 	}
 

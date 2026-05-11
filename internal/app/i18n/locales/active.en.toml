@@ -1,0 +1,174 @@
+# Common
+[common.invalidParameters]
+one = "Invalid parameters"
+
+[common.operationFailed]
+one = "Operation failed"
+
+[common.serverBusy]
+one = "Server is busy, please try again later"
+
+[common.notFound]
+one = "Not found"
+
+[common.resourceNotFound]
+one = "Requested resource does not exist"
+
+# Auth
+[auth.invalidCredentials]
+one = "Incorrect username or password"
+
+[auth.accountDisabled]
+one = "Account has been disabled"
+
+[auth.passwordRequired]
+one = "Please enter current and new password"
+
+[auth.wrongPassword]
+one = "Current password is incorrect"
+
+# User
+[user.notFound]
+one = "User not found"
+
+# Tenant
+[tenant.notFound]
+one = "Tenant not found"
+
+[tenant.memberCreationFailed]
+one = "Failed to create tenant membership"
+
+[tenant.noViewPermission]
+one = "You do not have permission to view this tenant"
+
+[tenant.adminOnly]
+one = "Only admins can modify tenant information"
+
+[tenant.noDomainPermission]
+one = "You do not have permission to manage domains"
+
+[tenant.domainParamRequired]
+one = "Domain parameter is required"
+
+[tenant.noDomainViewPermission]
+one = "You do not have permission to view this tenant's domains"
+
+[tenant.noConfigViewPermission]
+one = "You do not have permission to view this tenant's config"
+
+[tenant.noConfigUpdatePermission]
+one = "You do not have permission to modify this tenant's config"
+
+[tenant.invalidIdLengthConfig]
+one = "min length <= default length <= max length, all values must be greater than 0"
+
+[tenant.invalidNotFoundMode]
+one = "Invalid not-found mode"
+
+[tenant.notMember]
+one = "You are not a member of this tenant"
+
+[tenant.memberListFailed]
+one = "Failed to query member list"
+
+# Member
+[member.relationNotFound]
+one = "Membership relation not found"
+
+[member.notFound]
+one = "Member not found"
+
+[member.adminOnlyInvite]
+one = "Only tenant admins can invite users"
+
+[member.alreadyMember]
+one = "User is already a tenant member"
+
+[member.cannotInviteSelf]
+one = "You cannot invite yourself"
+
+[member.pendingInvitationExists]
+one = "This user already has a pending invitation"
+
+[member.invitationCreationFailed]
+one = "Failed to create invitation"
+
+[member.invitationListFailed]
+one = "Failed to query invitation list"
+
+[member.adminOnlyChangeRole]
+one = "Only tenant admins can change roles"
+
+[member.cannotChangeOwnRole]
+one = "You cannot change your own role"
+
+[member.invalidRole]
+one = "Role must be admin or member"
+
+[member.userNotMember]
+one = "User is not a tenant member"
+
+[member.roleChangeFailed]
+one = "Failed to change role"
+
+[member.adminOnlyRemove]
+one = "Only tenant admins can remove members"
+
+[member.cannotRemoveSelf]
+one = "You cannot remove yourself, use the leave tenant feature instead"
+
+[member.removeFailed]
+one = "Failed to remove member"
+
+[member.leaveFailed]
+one = "Failed to leave tenant"
+
+# Invitation
+[invitation.notFound]
+one = "Invitation not found"
+
+[invitation.noPermission]
+one = "You do not have permission to act on this invitation"
+
+[invitation.alreadyProcessed]
+one = "Invitation has already been processed"
+
+[invitation.joinFailed]
+one = "Failed to join tenant"
+
+# Short Link
+[shortLink.notFound]
+one = "Short link not found"
+
+[shortLink.idOccupied]
+one = "{{.id}} is already taken"
+
+[shortLink.invalidId]
+one = "Invalid ID"
+
+[shortLink.invalidDateParams]
+one = "Invalid date parameters"
+
+# Super Admin
+[superAdmin.usernamePasswordRequired]
+one = "Please enter username and password"
+
+[superAdmin.newPasswordRequired]
+one = "Please enter a new password"
+
+[superAdmin.userStatusRequired]
+one = "Please specify user status"
+
+[superAdmin.tenantStatusRequired]
+one = "Please specify tenant status"
+
+# Middleware
+[middleware.tenantIdRequired]
+one = "X-Tenant-ID header is required"
+
+[middleware.superAdminOnly]
+one = "Only super admins can perform this operation"
+
+# Landing
+[landing.pageNotFound]
+one = "The page you visited does not exist"

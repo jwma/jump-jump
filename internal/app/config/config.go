@@ -74,7 +74,7 @@ func loadTenantConfig(tenantID string) *TenantConfig {
 		},
 		ShortLinkNotFoundConfig: &ShortLinkNotFoundConfig{
 			Mode:  ShortLinkNotFoundContentMode,
-			Value: "你访问的页面不存在哦",
+			Value: "landing.pageNotFound",
 		},
 	}
 

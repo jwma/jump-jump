@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 )
@@ -25,7 +26,7 @@ import (
 func CreateUserAPI(c *gin.Context) {
 	req := &models.CreateUserRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse("请填写用户名和密码"))
+		c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "superAdmin.usernamePasswordRequired")))
 		return
 	}
 
@@ -125,7 +126,7 @@ func ResetPasswordAPI(c *gin.Context) {
 	id := c.Param("id")
 	req := &models.ResetPasswordRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse("请填写新密码"))
+		c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "superAdmin.newPasswordRequired")))
 		return
 	}
 
@@ -154,7 +155,7 @@ func UpdateUserStatusAPI(c *gin.Context) {
 	id := c.Param("id")
 	req := &models.UpdateUserStatusRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse("请指定用户状态"))
+		c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "superAdmin.userStatusRequired")))
 		return
 	}
 
@@ -214,7 +215,7 @@ func UpdateTenantStatusAPI(c *gin.Context) {
 	id := c.Param("id")
 	req := &models.UpdateTenantStatusRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse("请指定租户状态"))
+		c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "superAdmin.tenantStatusRequired")))
 		return
 	}
 
@@ -282,7 +283,7 @@ func SuperListTenantMembersAPI(c *gin.Context) {
 	memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
 	members, err := memberRepo.ListByTenant(tenantID)
 	if err != nil {
-		c.JSON(http.StatusOK, models.NewErrorResponse("查询成员列表失败"))
+		c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.memberListFailed")))
 		return
 	}
 

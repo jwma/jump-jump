@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	docs "github.com/jwma/jump-jump/docs"
 	"github.com/jwma/jump-jump/internal/app/handlers"
+	appmw "github.com/jwma/jump-jump/internal/app/middleware"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -77,6 +78,7 @@ func SetupRouter() *gin.Engine {
 	}
 
 	r.Use(handlers.AllowedHostsMiddleware())
+	r.Use(appmw.LanguageMiddleware())
 	r.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPaths([]string{"/v1/"})))
 
 	r.NoRoute(func(c *gin.Context) {
@@ -178,6 +180,7 @@ func SetupRouter() *gin.Engine {
 
 func SetupLandingRouter() *gin.Engine {
 	r := gin.Default()
+	r.Use(appmw.LanguageMiddleware())
 
 	r.GET("/", handlers.LandingHome)
 	r.GET("/:id", handlers.Redirect)

@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 	"github.com/jwma/jump-jump/internal/app/utils"
@@ -24,7 +25,7 @@ func writeErrorResponse(c *gin.Context, err error) {
 	if errors.As(err, &nf) {
 		status = http.StatusNotFound
 	}
-	c.JSON(status, models.NewErrorResponse(err.Error()))
+	c.JSON(status, models.NewErrorResponse(i18n.TranslateError(c, err)))
 }
 
 // AuthContext carries the authenticated user and their tenant membership for the current request.
@@ -35,11 +36,11 @@ type AuthContext struct {
 
 func parseAuthorizationHeader(a string) (string, error) {
 	if a == "" {
-		return "", fmt.Errorf("authorization 为空字符串")
+		return "", fmt.Errorf("authorization header is empty")
 	}
 	t := strings.Split(a, " ")
 	if len(t) < 2 {
-		return "", fmt.Errorf("authorization 格式不正确")
+		return "", fmt.Errorf("invalid authorization header format")
 	}
 	return t[1], nil
 }
@@ -107,7 +108,7 @@ func TenantContextMiddleware() gin.HandlerFunc {
 
 		tenantID := c.GetHeader("X-Tenant-ID")
 		if tenantID == "" {
-			c.JSON(http.StatusOK, models.NewErrorResponse("X-Tenant-ID header is required"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "middleware.tenantIdRequired")))
 			c.Abort()
 			return
 		}
@@ -121,7 +122,7 @@ func TenantContextMiddleware() gin.HandlerFunc {
 			memberRepo := repository.GetTenantMemberRepo(db.GetPostgresPool())
 			m, err := memberRepo.Get(tenantID, ctx.User.ID)
 			if err != nil {
-				c.JSON(http.StatusOK, models.NewErrorResponse("你不是该租户的成员"))
+				c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.notMember")))
 				c.Abort()
 				return
 			}
@@ -163,7 +164,7 @@ func SuperAdminMiddleware() gin.HandlerFunc {
 		}
 		ctx := ac.(*AuthContext)
 		if !ctx.User.IsSuper {
-			c.JSON(http.StatusOK, models.NewErrorResponse("仅超级管理员可执行此操作"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "middleware.superAdminOnly")))
 			c.Abort()
 			return
 		}

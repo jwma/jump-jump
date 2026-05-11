@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jwma/jump-jump/internal/app/config"
 	"github.com/jwma/jump-jump/internal/app/db"
+	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/repository"
 )
@@ -25,7 +26,7 @@ func CreateTenantAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		p := &models.CreateTenantRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.invalidParameters")))
 			return
 		}
 
@@ -42,7 +43,7 @@ func CreateTenantAPI() gin.HandlerFunc {
 			UserID:   ctx.User.ID,
 			Role:     models.RoleAdmin,
 		}); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("创建租户成员关系失败"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.memberCreationFailed")))
 			return
 		}
 
@@ -65,7 +66,7 @@ func GetTenantAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
 		if getMemberOrNil(ctx.User, tenantID) == nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看此租户"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.noViewPermission")))
 			return
 		}
 
@@ -120,13 +121,13 @@ func UpdateTenantAPI() gin.HandlerFunc {
 		tenantID := c.Param("id")
 		member, err := isTenantAdmin(ctx.User, tenantID)
 		if err != nil || !member.IsAdmin() {
-			c.JSON(http.StatusOK, models.NewErrorResponse("仅管理员可修改租户信息"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.adminOnly")))
 			return
 		}
 
 		p := &models.UpdateTenantRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.invalidParameters")))
 			return
 		}
 
@@ -158,13 +159,13 @@ func AddDomainAPI() gin.HandlerFunc {
 		tenantID := c.Param("id")
 		member, err := isTenantAdmin(ctx.User, tenantID)
 		if err != nil || !member.IsAdmin() {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权管理域名"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.noDomainPermission")))
 			return
 		}
 
 		p := &models.AddDomainRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.invalidParameters")))
 			return
 		}
 
@@ -196,13 +197,13 @@ func RemoveDomainAPI() gin.HandlerFunc {
 		tenantID := c.Param("id")
 		member, err := isTenantAdmin(ctx.User, tenantID)
 		if err != nil || !member.IsAdmin() {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权管理域名"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.noDomainPermission")))
 			return
 		}
 
 		domain := c.Param("domain")
 		if domain == "" {
-			c.JSON(http.StatusOK, models.NewErrorResponse("domain 参数不能为空"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.domainParamRequired")))
 			return
 		}
 
@@ -232,7 +233,7 @@ func ListDomainsAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
 		if getMemberOrNil(ctx.User, tenantID) == nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看此租户域名"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.noDomainViewPermission")))
 			return
 		}
 
@@ -262,7 +263,7 @@ func GetTenantConfigAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, ctx *AuthContext) {
 		tenantID := c.Param("id")
 		if getMemberOrNil(ctx.User, tenantID) == nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权查看此租户配置"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.noConfigViewPermission")))
 			return
 		}
 
@@ -289,13 +290,13 @@ func UpdateTenantConfigAPI() gin.HandlerFunc {
 		tenantID := c.Param("id")
 		member, err := isTenantAdmin(ctx.User, tenantID)
 		if err != nil || !member.IsAdmin() {
-			c.JSON(http.StatusOK, models.NewErrorResponse("你无权修改此租户配置"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.noConfigUpdatePermission")))
 			return
 		}
 
 		p := &models.UpdateTenantConfigRequest{}
 		if err := c.ShouldBindJSON(p); err != nil {
-			c.JSON(http.StatusOK, models.NewErrorResponse("参数错误"))
+			c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "common.invalidParameters")))
 			return
 		}
 
@@ -308,7 +309,7 @@ func UpdateTenantConfigAPI() gin.HandlerFunc {
 					IdMaximumLength: *p.IdMaximumLength,
 				})
 			} else {
-				c.JSON(http.StatusOK, models.NewErrorResponse("最小长度 <= 默认长度 <= 最大长度，三个值均大于 0"))
+				c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.invalidIdLengthConfig")))
 				return
 			}
 		}
@@ -321,7 +322,7 @@ func UpdateTenantConfigAPI() gin.HandlerFunc {
 					Value: *p.NotFoundValue,
 				})
 			} else {
-				c.JSON(http.StatusOK, models.NewErrorResponse("处理模式参数不正确"))
+				c.JSON(http.StatusOK, models.NewErrorResponse(i18n.T(c, "tenant.invalidNotFoundMode")))
 				return
 			}
 		}
