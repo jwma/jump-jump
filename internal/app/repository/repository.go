@@ -10,7 +10,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jwma/jump-jump/internal/app/i18n"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/jwma/jump-jump/internal/app/utils"
 	"github.com/redis/go-redis/v9"
@@ -749,7 +748,7 @@ func (r *shortLinkRepository) Save(s *models.ShortLink) error {
 		s.Id, s.TenantID, s.Url, s.Description, s.IsEnable, s.CreatedBy, s.CreateTime)
 	if err != nil {
 		log.Printf("fail to save short link: %v", err)
-		return i18n.NewError("common.serverBusy")
+		return models.NewTranslatableError("common.serverBusy")
 	}
 	return nil
 }
@@ -764,7 +763,7 @@ func (r *shortLinkRepository) Update(s *models.ShortLink, params *models.UpdateS
 		`UPDATE short_links SET url = $1, description = $2, is_enabled = $3, updated_at = $4 WHERE id = $5`,
 		s.Url, s.Description, s.IsEnable, s.UpdateTime, s.Id)
 	if err != nil {
-		return i18n.NewError("common.serverBusy")
+		return models.NewTranslatableError("common.serverBusy")
 	}
 
 	r.rdb.Del(context.Background(), utils.GetShortLinkCacheKey(s.Id))
@@ -839,7 +838,7 @@ func (r *shortLinkRepository) ListByTenantID(tenantID string, start, pageSize in
 		 FROM short_links WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
 		tenantID, pageSize, start)
 	if err != nil {
-		return nil, i18n.NewError("common.serverBusy")
+		return nil, models.NewTranslatableError("common.serverBusy")
 	}
 	defer rows.Close()
 

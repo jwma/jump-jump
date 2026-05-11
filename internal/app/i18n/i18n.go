@@ -65,24 +65,9 @@ func localize(c *gin.Context, key string, data map[string]interface{}) string {
 	return msg
 }
 
-// Error is a translatable error that carries an i18n key.
-type Error struct {
-	Key  string
-	Data map[string]interface{}
-}
-
-func (e *Error) Error() string {
-	return e.Key
-}
-
-// NewError creates a translatable error with the given i18n key.
-func NewError(key string) *Error {
-	return &Error{Key: key}
-}
-
 // TranslateError translates an error for user-facing display.
 func TranslateError(c *gin.Context, err error) string {
-	var te *Error
+	var te *models.TranslatableError
 	if errors.As(err, &te) {
 		if te.Data != nil {
 			return TWithData(c, te.Key, te.Data)

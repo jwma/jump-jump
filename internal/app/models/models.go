@@ -36,6 +36,20 @@ func (e *NotFoundError) Error() string {
 	return e.Msg
 }
 
+// TranslatableError carries an i18n key for deferred translation at the handler layer.
+type TranslatableError struct {
+	Key  string
+	Data map[string]interface{}
+}
+
+func (e *TranslatableError) Error() string {
+	return e.Key
+}
+
+func NewTranslatableError(key string) *TranslatableError {
+	return &TranslatableError{Key: key}
+}
+
 // --- Tenant ---
 
 type Tenant struct {

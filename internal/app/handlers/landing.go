@@ -37,7 +37,7 @@ func Redirect(c *gin.Context) {
 		cc := config.GetShortLinkNotFoundConfig(tenantID)
 		switch cc.Mode {
 		case config.ShortLinkNotFoundContentMode:
-			c.String(http.StatusOK, cc.Value)
+			c.String(http.StatusOK, i18n.T(c, cc.Value))
 		case config.ShortLinkNotFoundRedirectMode:
 			c.Redirect(http.StatusTemporaryRedirect, cc.Value)
 		default:

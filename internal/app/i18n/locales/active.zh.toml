@@ -164,7 +164,7 @@ one = "请指定租户状态"
 
 # Middleware
 [middleware.tenantIdRequired]
-one = "X-Tenant-ID header is required"
+one = "请提供 X-Tenant-ID 请求头"
 
 [middleware.superAdminOnly]
 one = "仅超级管理员可执行此操作"
