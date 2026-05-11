@@ -49,9 +49,7 @@ export function useKeyboardShortcuts() {
       description: 'Focus search on current page',
       page: 'short-links',
       action: () => {
-        const searchInput = document.querySelector<HTMLInputElement>(
-          '[data-shortcut-search]',
-        )
+        const searchInput = document.querySelector<HTMLInputElement>('[data-shortcut-search]')
         if (searchInput) {
           searchInput.focus()
         }
@@ -62,9 +60,7 @@ export function useKeyboardShortcuts() {
       description: 'Close panels / Cancel search',
       action: () => {
         showHelp.value = false
-        const searchInput = document.querySelector<HTMLInputElement>(
-          '[data-shortcut-search]',
-        )
+        const searchInput = document.querySelector<HTMLInputElement>('[data-shortcut-search]')
         if (searchInput && document.activeElement === searchInput) {
           searchInput.blur()
         }
@@ -77,7 +73,8 @@ export function useKeyboardShortcuts() {
 
     handleKeydown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
-      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+      const isInput =
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
 
       for (const shortcut of shortcuts) {
         if (shortcut.page && route.name !== shortcut.page) continue
@@ -93,7 +90,7 @@ export function useKeyboardShortcuts() {
         if (isInput) continue
 
         const keyMatch = shortcut.key.toLowerCase() === e.key.toLowerCase()
-        const ctrlMatch = shortcut.ctrl ? (e.ctrlKey || e.metaKey) : !(e.ctrlKey || e.metaKey)
+        const ctrlMatch = shortcut.ctrl ? e.ctrlKey || e.metaKey : !(e.ctrlKey || e.metaKey)
 
         if (keyMatch && ctrlMatch) {
           e.preventDefault()

@@ -46,8 +46,7 @@ export function useGlobalSearch() {
       const linkData = await listShortLinks(1, 20)
       const matchingLinks = (linkData.shortLinks || []).filter(
         (l: ShortLinkData) =>
-          l.id.toLowerCase().includes(lower) ||
-          l.url.toLowerCase().includes(lower),
+          l.id.toLowerCase().includes(lower) || l.url.toLowerCase().includes(lower),
       )
       for (const link of matchingLinks.slice(0, 5)) {
         found.push({
@@ -64,8 +63,8 @@ export function useGlobalSearch() {
 
     try {
       const members = await listMembers(auth.currentTenantId!)
-      const matchingMembers = (members || []).filter(
-        (m: TenantMember) => m.username.toLowerCase().includes(lower),
+      const matchingMembers = (members || []).filter((m: TenantMember) =>
+        m.username.toLowerCase().includes(lower),
       )
       for (const member of matchingMembers.slice(0, 3)) {
         found.push({

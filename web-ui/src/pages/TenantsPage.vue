@@ -55,9 +55,13 @@ onMounted(fetchTenants)
   <div>
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('tenants.title') }}</h1>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {{ t('tenants.title') }}
+        </h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {{ t('tenants.count', { count: tenants.length, suffix: tenants.length !== 1 ? 's' : '' }) }}
+          {{
+            t('tenants.count', { count: tenants.length, suffix: tenants.length !== 1 ? 's' : '' })
+          }}
         </p>
       </div>
       <router-link
@@ -70,9 +74,13 @@ onMounted(fetchTenants)
     </div>
 
     <!-- Search -->
-    <div class="mt-4 flex flex-col gap-3 rounded-lg border bg-white dark:bg-gray-900 p-4 sm:flex-row sm:items-center">
+    <div
+      class="mt-4 flex flex-col gap-3 rounded-lg border bg-white dark:bg-gray-900 p-4 sm:flex-row sm:items-center"
+    >
       <div class="relative flex-1">
-        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+        <Search
+          class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+        />
         <input
           v-model="search"
           type="text"
@@ -99,7 +107,9 @@ onMounted(fetchTenants)
           </thead>
           <tbody class="divide-y">
             <tr v-if="loading">
-              <td colspan="5" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">{{ t('common.loading') }}</td>
+              <td colspan="5" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">
+                {{ t('common.loading') }}
+              </td>
             </tr>
             <tr v-else-if="filteredTenants.length === 0">
               <td colspan="5" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">
@@ -128,7 +138,9 @@ onMounted(fetchTenants)
                 </div>
               </td>
               <td class="px-4 py-3">
-                <span class="font-mono text-sm text-gray-600 dark:text-gray-400">{{ tenant.slug }}</span>
+                <span class="font-mono text-sm text-gray-600 dark:text-gray-400">{{
+                  tenant.slug
+                }}</span>
               </td>
               <td class="px-4 py-3">
                 <span
@@ -146,7 +158,9 @@ onMounted(fetchTenants)
                   {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
                 </span>
               </td>
-              <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">
+              <td
+                class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell"
+              >
                 {{ formatDate(tenant.createdAt) }}
               </td>
               <td class="px-4 py-3">

@@ -171,9 +171,11 @@ async function fetchLinkStats(
   for (let i = 0; i < results.length; i++) {
     const result = results[i]
     if (result.status === 'fulfilled' && result.value) {
-      const { daily, totalPv: linkTotalPv, todayPv: linkTodayPv } = aggregateFromHistories(
-        result.value.histories,
-      )
+      const {
+        daily,
+        totalPv: linkTotalPv,
+        todayPv: linkTodayPv,
+      } = aggregateFromHistories(result.value.histories)
 
       for (const [date, stats] of Object.entries(daily)) {
         if (!allDaily[date]) {
@@ -320,7 +322,7 @@ const chartOption = computed(() => {
 async function fetchAllPages() {
   let allLinks: ShortLinkData[] = []
   let page = 1
-  let total = 0
+  let total: number
 
   while (true) {
     const data = await listShortLinks(page, 100)
@@ -451,7 +453,9 @@ onMounted(() => fetchDashboardData())
     <!-- Welcome area -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">{{ greeting }}, {{ auth.username }}</h1>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
+          {{ greeting }}, {{ auth.username }}
+        </h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
           {{ t('dashboard.overview') }}
         </p>
@@ -479,10 +483,14 @@ onMounted(() => fetchDashboardData())
     <!-- Stats cards -->
     <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       <!-- Total Links -->
-      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5">
+      <div
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5"
+      >
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">{{ t('dashboard.totalLinks') }}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
+              {{ t('dashboard.totalLinks') }}
+            </p>
             <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
               <span
                 v-if="loading"
@@ -491,17 +499,23 @@ onMounted(() => fetchDashboardData())
               <template v-else>{{ totalLinks.toLocaleString() }}</template>
             </p>
           </div>
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 sm:h-10 sm:w-10">
+          <div
+            class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 sm:h-10 sm:w-10"
+          >
             <Link class="h-4 w-4 text-blue-600 dark:text-blue-400 sm:h-5 sm:w-5" />
           </div>
         </div>
       </div>
 
       <!-- Active Links -->
-      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5">
+      <div
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5"
+      >
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">{{ t('dashboard.activeLinks') }}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
+              {{ t('dashboard.activeLinks') }}
+            </p>
             <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
               <span
                 v-if="loading"
@@ -510,17 +524,23 @@ onMounted(() => fetchDashboardData())
               <template v-else>{{ activeLinks.toLocaleString() }}</template>
             </p>
           </div>
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20 sm:h-10 sm:w-10">
+          <div
+            class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20 sm:h-10 sm:w-10"
+          >
             <LinkIcon class="h-4 w-4 text-green-600 dark:text-green-400 sm:h-5 sm:w-5" />
           </div>
         </div>
       </div>
 
       <!-- Today's Visits -->
-      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5">
+      <div
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5"
+      >
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">{{ t('dashboard.todayVisits') }}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
+              {{ t('dashboard.todayVisits') }}
+            </p>
             <div class="mt-1 flex items-baseline gap-2">
               <p class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                 <span
@@ -532,7 +552,13 @@ onMounted(() => fetchDashboardData())
               <span
                 v-if="!loading && todayTrend"
                 class="inline-flex items-center gap-0.5 text-xs font-medium"
-                :class="todayTrend.dir === 'up' ? 'text-green-600 dark:text-green-400' : todayTrend.dir === 'down' ? 'text-red-500 dark:text-red-400' : 'text-gray-400'"
+                :class="
+                  todayTrend.dir === 'up'
+                    ? 'text-green-600 dark:text-green-400'
+                    : todayTrend.dir === 'down'
+                      ? 'text-red-500 dark:text-red-400'
+                      : 'text-gray-400'
+                "
               >
                 <TrendingUp v-if="todayTrend.dir === 'up'" class="h-3 w-3" />
                 <TrendingDown v-else-if="todayTrend.dir === 'down'" class="h-3 w-3" />
@@ -541,18 +567,26 @@ onMounted(() => fetchDashboardData())
               </span>
             </div>
           </div>
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/20 sm:h-10 sm:w-10">
+          <div
+            class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/20 sm:h-10 sm:w-10"
+          >
             <MousePointerClick class="h-4 w-4 text-purple-600 dark:text-purple-400 sm:h-5 sm:w-5" />
           </div>
         </div>
-        <p v-if="!loading && todayTrend" class="mt-1 text-xs text-gray-400">{{ t('dashboard.vsYesterday') }}</p>
+        <p v-if="!loading && todayTrend" class="mt-1 text-xs text-gray-400">
+          {{ t('dashboard.vsYesterday') }}
+        </p>
       </div>
 
       <!-- Period Visits -->
-      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5">
+      <div
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5"
+      >
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">{{ periodLabel }}</p>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 sm:text-sm">
+              {{ periodLabel }}
+            </p>
             <div class="mt-1 flex items-baseline gap-2">
               <p class="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                 <span
@@ -564,7 +598,13 @@ onMounted(() => fetchDashboardData())
               <span
                 v-if="!loading && periodTrend"
                 class="inline-flex items-center gap-0.5 text-xs font-medium"
-                :class="periodTrend.dir === 'up' ? 'text-green-600 dark:text-green-400' : periodTrend.dir === 'down' ? 'text-red-500 dark:text-red-400' : 'text-gray-400'"
+                :class="
+                  periodTrend.dir === 'up'
+                    ? 'text-green-600 dark:text-green-400'
+                    : periodTrend.dir === 'down'
+                      ? 'text-red-500 dark:text-red-400'
+                      : 'text-gray-400'
+                "
               >
                 <TrendingUp v-if="periodTrend.dir === 'up'" class="h-3 w-3" />
                 <TrendingDown v-else-if="periodTrend.dir === 'down'" class="h-3 w-3" />
@@ -573,28 +613,38 @@ onMounted(() => fetchDashboardData())
               </span>
             </div>
           </div>
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/20 sm:h-10 sm:w-10">
+          <div
+            class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/20 sm:h-10 sm:w-10"
+          >
             <BarChart3 class="h-4 w-4 text-orange-600 dark:text-orange-400 sm:h-5 sm:w-5" />
           </div>
         </div>
-        <p v-if="!loading && periodTrend" class="mt-1 text-xs text-gray-400">{{ t('dashboard.vsPrevious', { days: trendDays }) }}</p>
+        <p v-if="!loading && periodTrend" class="mt-1 text-xs text-gray-400">
+          {{ t('dashboard.vsPrevious', { days: trendDays }) }}
+        </p>
       </div>
     </div>
 
     <!-- Chart + Recent Links -->
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-6">
       <!-- Visit Trend Chart -->
-      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5 lg:col-span-3">
+      <div
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5 lg:col-span-3"
+      >
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <TrendingUp class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('dashboard.visitTrends') }}</h2>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ t('dashboard.visitTrends') }}
+            </h2>
           </div>
           <div class="flex rounded-lg border border-gray-200 dark:border-gray-700 p-0.5">
             <button
               :class="[
                 'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                trendDays === 7 ? 'bg-blue-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
+                trendDays === 7
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
               ]"
               @click="switchTrend(7)"
             >
@@ -603,7 +653,9 @@ onMounted(() => fetchDashboardData())
             <button
               :class="[
                 'rounded-md px-3 py-1 text-xs font-medium transition-colors',
-                trendDays === 30 ? 'bg-blue-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
+                trendDays === 30
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
               ]"
               @click="switchTrend(30)"
             >
@@ -614,13 +666,34 @@ onMounted(() => fetchDashboardData())
         <div v-if="chartLoading" class="h-64">
           <!-- Chart skeleton -->
           <div class="flex h-full items-end gap-3 px-2 pt-4">
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 55%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 75%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 45%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 85%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 65%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 40%" />
-            <div class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800" style="height: 70%" />
+            <div
+              class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800"
+              style="height: 55%"
+            />
+            <div
+              class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800"
+              style="height: 75%"
+            />
+            <div
+              class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800"
+              style="height: 45%"
+            />
+            <div
+              class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800"
+              style="height: 85%"
+            />
+            <div
+              class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800"
+              style="height: 65%"
+            />
+            <div
+              class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800"
+              style="height: 40%"
+            />
+            <div
+              class="flex-1 animate-pulse rounded-t bg-gray-100 dark:bg-gray-800"
+              style="height: 70%"
+            />
           </div>
           <div class="mt-3 flex justify-between px-2">
             <div class="h-2.5 w-10 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
@@ -641,11 +714,15 @@ onMounted(() => fetchDashboardData())
       </div>
 
       <!-- Recent Links -->
-      <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5 lg:col-span-2">
+      <div
+        class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 shadow-sm sm:p-5 lg:col-span-2"
+      >
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <Clock class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('dashboard.recentLinks') }}</h2>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ t('dashboard.recentLinks') }}
+            </h2>
           </div>
           <router-link
             :to="{ name: 'short-links' }"
@@ -656,7 +733,11 @@ onMounted(() => fetchDashboardData())
           </router-link>
         </div>
         <div v-if="loading" class="space-y-3">
-          <div v-for="i in 5" :key="i" class="h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
+          <div
+            v-for="i in 5"
+            :key="i"
+            class="h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800"
+          />
         </div>
         <div v-else-if="recentLinks.length === 0" class="py-8 text-center">
           <Link class="mx-auto h-8 w-8 text-gray-300" />
@@ -677,11 +758,15 @@ onMounted(() => fetchDashboardData())
           >
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
-                <span class="font-mono text-sm font-medium text-gray-900 dark:text-white">{{ link.id }}</span>
+                <span class="font-mono text-sm font-medium text-gray-900 dark:text-white">{{
+                  link.id
+                }}</span>
                 <span
                   class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium"
                   :class="
-                    link.isEnable ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                    link.isEnable
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                   "
                 >
                   {{ link.isEnable ? t('common.active') : t('common.inactive') }}
@@ -714,17 +799,29 @@ onMounted(() => fetchDashboardData())
     </div>
 
     <!-- Top 10 Links -->
-    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-      <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-5 py-4">
+    <div
+      class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm"
+    >
+      <div
+        class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-5 py-4"
+      >
         <div class="flex items-center gap-2">
           <BarChart3 class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('dashboard.topLinks') }}</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t('dashboard.topLinks') }}
+          </h2>
         </div>
-        <span class="text-xs text-gray-400">{{ t('dashboard.basedOnDays', { days: trendDays }) }}</span>
+        <span class="text-xs text-gray-400">{{
+          t('dashboard.basedOnDays', { days: trendDays })
+        }}</span>
       </div>
       <div v-if="loading" class="p-6">
         <div class="space-y-3">
-          <div v-for="i in 5" :key="i" class="h-10 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
+          <div
+            v-for="i in 5"
+            :key="i"
+            class="h-10 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800"
+          />
         </div>
       </div>
       <div v-else-if="topLinks.length === 0" class="px-5 py-12 text-center">
@@ -742,7 +839,9 @@ onMounted(() => fetchDashboardData())
             <span
               :class="[
                 'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                index < 3 ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
+                index < 3
+                  ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
               ]"
             >
               {{ index + 1 }}
@@ -757,7 +856,9 @@ onMounted(() => fetchDashboardData())
               <p class="truncate text-xs text-gray-400">{{ item.link.url }}</p>
             </div>
             <div class="shrink-0 text-right text-sm">
-              <p class="font-semibold text-gray-900 dark:text-white">{{ item.pv.toLocaleString() }}</p>
+              <p class="font-semibold text-gray-900 dark:text-white">
+                {{ item.pv.toLocaleString() }}
+              </p>
               <p class="text-xs text-gray-400">{{ item.uv.toLocaleString() }} uv</p>
             </div>
           </div>
@@ -786,7 +887,9 @@ onMounted(() => fetchDashboardData())
                   <span
                     :class="[
                       'inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold',
-                      index < 3 ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
+                      index < 3
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
                     ]"
                   >
                     {{ index + 1 }}
@@ -803,7 +906,9 @@ onMounted(() => fetchDashboardData())
                 <td class="max-w-[280px] truncate px-5 py-3 text-gray-500 dark:text-gray-400">
                   {{ item.link.url }}
                 </td>
-                <td class="whitespace-nowrap px-5 py-3 text-right font-semibold text-gray-900 dark:text-white">
+                <td
+                  class="whitespace-nowrap px-5 py-3 text-right font-semibold text-gray-900 dark:text-white"
+                >
                   {{ item.pv.toLocaleString() }}
                 </td>
                 <td class="whitespace-nowrap px-5 py-3 text-right text-gray-600 dark:text-gray-400">

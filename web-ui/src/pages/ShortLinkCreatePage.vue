@@ -26,8 +26,10 @@ const error = ref('')
 const createdLink = ref<ShortLinkData | null>(null)
 const copiedShortLink = ref(false)
 
-const isDirty = computed(() =>
-  !createdLink.value && (!!url.value || !!customId.value || !!description.value || !isEnable.value)
+const isDirty = computed(
+  () =>
+    !createdLink.value &&
+    (!!url.value || !!customId.value || !!description.value || !isEnable.value),
 )
 
 useUnsavedChanges(isDirty)
@@ -65,11 +67,7 @@ const urlError = computed(() => {
 })
 
 const canSubmit = computed(
-  () =>
-    !!url.value &&
-    !urlError.value &&
-    !customIdError.value &&
-    !loading.value,
+  () => !!url.value && !urlError.value && !customIdError.value && !loading.value,
 )
 
 function getShortLinkUrl(id: string) {
@@ -137,8 +135,12 @@ function goToLinks() {
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('shortLinkCreate.title') }}</h1>
-        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{{ t('shortLinkCreate.subtitle') }}</p>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {{ t('shortLinkCreate.title') }}
+        </h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+          {{ t('shortLinkCreate.subtitle') }}
+        </p>
       </div>
     </div>
 
@@ -147,7 +149,9 @@ function goToLinks() {
       v-if="createdLink"
       class="mt-6 max-w-lg rounded-lg border border-green-200 dark:border-green-800/50 bg-green-50 dark:bg-green-900/20 p-6"
     >
-      <h2 class="text-lg font-semibold text-green-800 dark:text-green-300">{{ t('shortLinkCreate.success') }}</h2>
+      <h2 class="text-lg font-semibold text-green-800 dark:text-green-300">
+        {{ t('shortLinkCreate.success') }}
+      </h2>
       <div class="mt-3 flex items-center gap-2 rounded-md bg-white dark:bg-gray-800 p-3 shadow-sm">
         <span class="font-mono text-sm font-medium text-gray-900 dark:text-white">
           {{ getShortLinkUrl(createdLink.id) }}
@@ -198,7 +202,11 @@ function goToLinks() {
     </div>
 
     <!-- Create form -->
-    <form v-else class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6" @submit.prevent="handleSubmit">
+    <form
+      v-else
+      class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6"
+      @submit.prevent="handleSubmit"
+    >
       <div class="space-y-5">
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -221,7 +229,9 @@ function goToLinks() {
         <div v-if="isAdmin">
           <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             {{ t('shortLinkCreate.customId') }}
-            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('shortLinkCreate.optional') }}</span>
+            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">{{
+              t('shortLinkCreate.optional')
+            }}</span>
           </label>
           <input
             v-model="customId"
@@ -240,7 +250,9 @@ function goToLinks() {
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             {{ t('shortLinkCreate.description') }}
-            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('shortLinkCreate.optional') }}</span>
+            <span class="text-xs font-normal text-gray-400 dark:text-gray-500">{{
+              t('shortLinkCreate.optional')
+            }}</span>
           </label>
           <textarea
             v-model="description"
@@ -251,7 +263,9 @@ function goToLinks() {
         </div>
 
         <div class="flex items-center gap-3">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('shortLinkCreate.enabled') }}</label>
+          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+            t('shortLinkCreate.enabled')
+          }}</label>
           <button
             type="button"
             role="switch"

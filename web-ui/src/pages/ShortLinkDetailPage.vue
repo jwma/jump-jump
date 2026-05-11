@@ -102,7 +102,9 @@ function formatShortDate(d: string) {
 const shortLinkUrl = computed(() => {
   if (!link.value) return ''
   if (landingHost.value) {
-    const protocol = landingHost.value.startsWith('localhost') ? 'http://' : `${window.location.protocol}//`
+    const protocol = landingHost.value.startsWith('localhost')
+      ? 'http://'
+      : `${window.location.protocol}//`
     return `${protocol}${landingHost.value}/${link.value.id}`
   }
   return `${window.location.origin}/${link.value.id}`
@@ -110,7 +112,9 @@ const shortLinkUrl = computed(() => {
 
 const qrUrl = computed(() => {
   if (!link.value || !qrSelectedDomain.value) return ''
-  const protocol = qrSelectedDomain.value.startsWith('localhost') ? 'http://' : `${window.location.protocol}//`
+  const protocol = qrSelectedDomain.value.startsWith('localhost')
+    ? 'http://'
+    : `${window.location.protocol}//`
   return `${protocol}${qrSelectedDomain.value}/${link.value.id}`
 })
 
@@ -290,25 +294,43 @@ function makePieOption(
           label: { show: true, fontSize: 14, fontWeight: 'bold' as const },
         },
         data: data.map((d) => ({ name: d.name, value: d.count })),
-        color: ['#2563eb', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#6b7280', '#10b981', '#ec4899'],
+        color: [
+          '#2563eb',
+          '#8b5cf6',
+          '#06b6d4',
+          '#f59e0b',
+          '#ef4444',
+          '#6b7280',
+          '#10b981',
+          '#ec4899',
+        ],
       },
     ],
   }
 }
 
 const osChartOption = computed(() =>
-  makePieOption(osDistribution.value, (name, value, total) =>
-    `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`),
+  makePieOption(
+    osDistribution.value,
+    (name, value, total) =>
+      `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`,
+  ),
 )
 
 const browserChartOption = computed(() =>
-  makePieOption(browserDistribution.value, (name, value, total) =>
-    `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`),
+  makePieOption(
+    browserDistribution.value,
+    (name, value, total) =>
+      `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`,
+  ),
 )
 
 const refererChartOption = computed(() =>
-  makePieOption(refererDistribution.value, (name, value, total) =>
-    `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`),
+  makePieOption(
+    refererDistribution.value,
+    (name, value, total) =>
+      `${name}<br/><b>${value}</b> 次访问 (${((value / total) * 100).toFixed(1)}%)`,
+  ),
 )
 
 function copyLink() {
@@ -421,7 +443,9 @@ watch([() => link.value, qrSelectedDomain], () => {
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div class="flex-1">
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('shortLinkDetail.title') }}</h1>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {{ t('shortLinkDetail.title') }}
+        </h1>
         <p v-if="link" class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
           <span class="font-mono font-medium text-blue-600">{{ shortLinkUrl }}</span>
         </p>
@@ -453,7 +477,9 @@ watch([() => link.value, qrSelectedDomain], () => {
       <div class="mt-4 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.shortLink') }}</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('shortLinkDetail.shortLink')
+            }}</label>
             <div class="mt-1 flex items-center gap-2">
               <a
                 :href="shortLinkUrl"
@@ -473,7 +499,9 @@ watch([() => link.value, qrSelectedDomain], () => {
             </div>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.targetUrl') }}</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('shortLinkDetail.targetUrl')
+            }}</label>
             <a
               :href="link.url"
               target="_blank"
@@ -485,14 +513,24 @@ watch([() => link.value, qrSelectedDomain], () => {
             </a>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.description') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ link.description || '—' }}</p>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('shortLinkDetail.description')
+            }}</label>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+              {{ link.description || '—' }}
+            </p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.status') }}</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('shortLinkDetail.status')
+            }}</label>
             <span
               class="mt-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-              :class="link.isEnable ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
+              :class="
+                link.isEnable
+                  ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+              "
             >
               <span
                 class="h-1.5 w-1.5 rounded-full"
@@ -502,29 +540,34 @@ watch([() => link.value, qrSelectedDomain], () => {
             </span>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.createdBy') }}</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('shortLinkDetail.createdBy')
+            }}</label>
             <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ link.createdBy }}</p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.created') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(link.createTime) }}</p>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('shortLinkDetail.created')
+            }}</label>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+              {{ formatDate(link.createTime) }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- QR Code card -->
       <div class="mt-4 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
-        <h3 class="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+        <h3
+          class="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300"
+        >
           <QrCode class="h-4 w-4" />
           {{ t('qrCode.title') }}
         </h3>
         <template v-if="qrLoadError">
           <div class="py-6 text-center">
             <p class="text-sm text-red-500">{{ t('qrCode.loadError') }}</p>
-            <button
-              class="mt-2 text-sm text-blue-600 hover:underline"
-              @click="fetchLandingHost()"
-            >
+            <button class="mt-2 text-sm text-blue-600 hover:underline" @click="fetchLandingHost()">
               {{ t('common.refresh') }}
             </button>
           </div>
@@ -538,10 +581,7 @@ watch([() => link.value, qrSelectedDomain], () => {
         <template v-else>
           <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
             <div class="flex shrink-0 items-center justify-center">
-              <div
-                v-if="qrLoading"
-                class="flex h-[192px] w-[192px] items-center justify-center"
-              >
+              <div v-if="qrLoading" class="flex h-[192px] w-[192px] items-center justify-center">
                 <Loader2 class="h-6 w-6 animate-spin text-gray-400" />
               </div>
               <img
@@ -560,11 +600,7 @@ watch([() => link.value, qrSelectedDomain], () => {
                   v-model="qrSelectedDomain"
                   class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 >
-                  <option
-                    v-for="d in qrDomains"
-                    :key="d.id"
-                    :value="d.domain"
-                  >
+                  <option v-for="d in qrDomains" :key="d.id" :value="d.domain">
                     {{ d.domain }}{{ d.isDefault ? ` (${t('common.default')})` : '' }}
                   </option>
                 </select>
@@ -595,14 +631,22 @@ watch([() => link.value, qrSelectedDomain], () => {
       <!-- Analytics section -->
       <div class="mt-6">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('shortLinkDetail.accessAnalytics') }}</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ t('shortLinkDetail.accessAnalytics') }}
+          </h2>
           <div class="flex items-center gap-2">
-            <div class="flex items-center gap-1 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-1">
+            <div
+              class="flex items-center gap-1 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-1"
+            >
               <button
                 v-for="d in [7, 14, 30]"
                 :key="d"
                 class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
-                :class="daysAgo === d ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                :class="
+                  daysAgo === d
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                "
                 @click="setDateRange(d)"
               >
                 {{ d }}d
@@ -616,23 +660,31 @@ watch([() => link.value, qrSelectedDomain], () => {
           <div class="rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
             <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
               <Calendar class="h-4 w-4" />
-              <span class="text-xs font-medium uppercase">{{ t('shortLinkDetail.totalVisits') }}</span>
+              <span class="text-xs font-medium uppercase">{{
+                t('shortLinkDetail.totalVisits')
+              }}</span>
             </div>
             <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ totalVisits }}</p>
           </div>
           <div class="rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
             <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
               <Globe class="h-4 w-4" />
-              <span class="text-xs font-medium uppercase">{{ t('shortLinkDetail.uniqueIps') }}</span>
+              <span class="text-xs font-medium uppercase">{{
+                t('shortLinkDetail.uniqueIps')
+              }}</span>
             </div>
             <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ uniqueIps }}</p>
           </div>
           <div class="rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
             <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
               <Monitor class="h-4 w-4" />
-              <span class="text-xs font-medium uppercase">{{ t('shortLinkDetail.platforms') }}</span>
+              <span class="text-xs font-medium uppercase">{{
+                t('shortLinkDetail.platforms')
+              }}</span>
             </div>
-            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ osDistribution.length }}</p>
+            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+              {{ osDistribution.length }}
+            </p>
           </div>
           <div class="rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
             <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500">
@@ -646,10 +698,16 @@ watch([() => link.value, qrSelectedDomain], () => {
         </div>
 
         <!-- Tab switcher -->
-        <div class="mt-6 flex gap-1 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-1 w-fit">
+        <div
+          class="mt-6 flex gap-1 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-1 w-fit"
+        >
           <button
             class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="activeTab === 'trend' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'"
+            :class="
+              activeTab === 'trend'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+            "
             @click="activeTab = 'trend'"
           >
             <LayoutGrid class="h-3.5 w-3.5" />
@@ -657,7 +715,11 @@ watch([() => link.value, qrSelectedDomain], () => {
           </button>
           <button
             class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="activeTab === 'records' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'"
+            :class="
+              activeTab === 'records'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+            "
             @click="activeTab = 'records'"
           >
             <FileText class="h-3.5 w-3.5" />
@@ -669,7 +731,9 @@ watch([() => link.value, qrSelectedDomain], () => {
         <template v-if="activeTab === 'trend'">
           <!-- Visit trend chart -->
           <div class="mt-4 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
-            <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('shortLinkDetail.visitTrend') }}</h3>
+            <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {{ t('shortLinkDetail.visitTrend') }}
+            </h3>
             <div v-if="chartLoading" class="flex h-56 items-center justify-center">
               <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
             </div>
@@ -693,7 +757,9 @@ watch([() => link.value, qrSelectedDomain], () => {
           <!-- OS & Browser distribution charts -->
           <div class="mt-4 grid gap-4 lg:grid-cols-2">
             <div class="rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
-              <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('shortLinkDetail.osDistribution') }}</h3>
+              <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {{ t('shortLinkDetail.osDistribution') }}
+              </h3>
               <div v-if="chartLoading" class="flex h-56 items-center justify-center">
                 <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
               </div>
@@ -715,7 +781,9 @@ watch([() => link.value, qrSelectedDomain], () => {
             </div>
 
             <div class="rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
-              <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('shortLinkDetail.browserDistribution') }}</h3>
+              <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {{ t('shortLinkDetail.browserDistribution') }}
+              </h3>
               <div v-if="chartLoading" class="flex h-56 items-center justify-center">
                 <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
               </div>
@@ -739,7 +807,9 @@ watch([() => link.value, qrSelectedDomain], () => {
 
           <!-- Referer distribution -->
           <div class="mt-4 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
-            <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('shortLinkDetail.refererSources') }}</h3>
+            <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {{ t('shortLinkDetail.refererSources') }}
+            </h3>
             <div v-if="chartLoading" class="flex h-56 items-center justify-center">
               <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
             </div>
@@ -762,8 +832,13 @@ watch([() => link.value, qrSelectedDomain], () => {
 
           <!-- IP distribution table -->
           <div class="mt-4 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
-            <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t('shortLinkDetail.topIps') }}</h3>
-            <div v-if="ipDistribution.length === 0" class="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+            <h3 class="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {{ t('shortLinkDetail.topIps') }}
+            </h3>
+            <div
+              v-if="ipDistribution.length === 0"
+              class="py-8 text-center text-sm text-gray-400 dark:text-gray-500"
+            >
               No data for this period.
             </div>
             <table v-else class="w-full text-left text-sm">
@@ -780,12 +855,18 @@ watch([() => link.value, qrSelectedDomain], () => {
                   :key="item.ip"
                   class="border-b border-gray-50 dark:border-gray-800 last:border-0"
                 >
-                  <td class="py-2 pr-4 font-mono text-gray-700 dark:text-gray-300">{{ item.ip }}</td>
-                  <td class="py-2 pr-4 text-right font-medium text-gray-600 dark:text-gray-400">{{ item.count }}</td>
+                  <td class="py-2 pr-4 font-mono text-gray-700 dark:text-gray-300">
+                    {{ item.ip }}
+                  </td>
+                  <td class="py-2 pr-4 text-right font-medium text-gray-600 dark:text-gray-400">
+                    {{ item.count }}
+                  </td>
                   <td class="py-2 text-right">
                     <span class="inline-flex items-center gap-2">
                       <span class="text-gray-500 dark:text-gray-400">{{ item.percent }}%</span>
-                      <span class="inline-block h-1.5 w-16 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                      <span
+                        class="inline-block h-1.5 w-16 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800"
+                      >
                         <span
                           class="inline-block h-full rounded-full bg-emerald-500"
                           :style="{ width: `${item.percent}%` }"
@@ -815,7 +896,9 @@ watch([() => link.value, qrSelectedDomain], () => {
               <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
                   <thead>
-                    <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-xs font-medium uppercase text-gray-400 dark:text-gray-500">
+                    <tr
+                      class="border-b bg-gray-50 dark:bg-gray-800/50 text-xs font-medium uppercase text-gray-400 dark:text-gray-500"
+                    >
                       <th class="px-4 py-3">{{ t('shortLinkDetail.time') }}</th>
                       <th class="px-4 py-3">{{ t('shortLinkDetail.ip') }}</th>
                       <th class="px-4 py-3">{{ t('shortLinkDetail.browser') }}</th>
@@ -833,7 +916,9 @@ watch([() => link.value, qrSelectedDomain], () => {
                       <td class="whitespace-nowrap px-4 py-2.5 text-gray-600 dark:text-gray-400">
                         {{ formatDate(h.time) }}
                       </td>
-                      <td class="whitespace-nowrap px-4 py-2.5 font-mono text-gray-700 dark:text-gray-300">
+                      <td
+                        class="whitespace-nowrap px-4 py-2.5 font-mono text-gray-700 dark:text-gray-300"
+                      >
                         {{ h.ip }}
                       </td>
                       <td class="whitespace-nowrap px-4 py-2.5 text-gray-600 dark:text-gray-400">
@@ -842,7 +927,9 @@ watch([() => link.value, qrSelectedDomain], () => {
                       <td class="whitespace-nowrap px-4 py-2.5 text-gray-600 dark:text-gray-400">
                         {{ parseOS(h.ua) }}
                       </td>
-                      <td class="max-w-[200px] truncate px-4 py-2.5 text-gray-600 dark:text-gray-400">
+                      <td
+                        class="max-w-[200px] truncate px-4 py-2.5 text-gray-600 dark:text-gray-400"
+                      >
                         {{ h.referer ? extractRefererSource(h.referer) : 'Direct' }}
                       </td>
                       <td

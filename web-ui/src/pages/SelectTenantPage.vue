@@ -103,7 +103,9 @@ async function handleLogout() {
         </div>
       </template>
       <template v-else>
-        <h1 class="mb-2 text-center text-2xl font-bold dark:text-white">{{ t('selectTenant.title') }}</h1>
+        <h1 class="mb-2 text-center text-2xl font-bold dark:text-white">
+          {{ t('selectTenant.title') }}
+        </h1>
         <p class="mb-6 text-center text-sm text-gray-500 dark:text-gray-400">
           {{ t('selectTenant.welcome', { username: auth.authUser?.username }) }}
         </p>
@@ -116,14 +118,20 @@ async function handleLogout() {
             @click="selectTenant(tenant.tenantId)"
           >
             <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20"
+              >
                 <Building2 class="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <div class="font-medium text-gray-900 dark:text-white">{{ tenant.tenantName }}</div>
                 <span
                   class="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
-                  :class="tenant.role === 'admin' ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'"
+                  :class="
+                    tenant.role === 'admin'
+                      ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
+                  "
                 >
                   {{ tenant.role }}
                 </span>
@@ -140,7 +148,9 @@ async function handleLogout() {
         >
           <div class="flex items-center gap-3">
             <Shield class="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            <span class="font-medium text-amber-700 dark:text-amber-300">{{ t('selectTenant.superAdminPanel') }}</span>
+            <span class="font-medium text-amber-700 dark:text-amber-300">{{
+              t('selectTenant.superAdminPanel')
+            }}</span>
           </div>
           <ArrowRight class="h-4 w-4 text-amber-400 dark:text-amber-300" />
         </button>
@@ -154,7 +164,10 @@ async function handleLogout() {
         </button>
 
         <div class="mt-6 text-center">
-          <button class="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" @click="handleLogout">
+          <button
+            class="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            @click="handleLogout"
+          >
             {{ t('selectTenant.signOut') }}
           </button>
         </div>
@@ -165,11 +178,17 @@ async function handleLogout() {
           class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
           @click.self="showCreateDialog = false"
         >
-          <div class="w-full max-w-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-lg">
-            <h2 class="mb-4 text-lg font-semibold dark:text-white">{{ t('selectTenant.createTenant') }}</h2>
+          <div
+            class="w-full max-w-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-lg"
+          >
+            <h2 class="mb-4 text-lg font-semibold dark:text-white">
+              {{ t('selectTenant.createTenant') }}
+            </h2>
             <form @submit.prevent="handleCreateTenant">
               <div class="mb-3">
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('selectTenant.name') }}</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  t('selectTenant.name')
+                }}</label>
                 <input
                   v-model="createForm.name"
                   type="text"
@@ -179,7 +198,9 @@ async function handleLogout() {
                 />
               </div>
               <div class="mb-3">
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('selectTenant.slug') }}</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  t('selectTenant.slug')
+                }}</label>
                 <input
                   v-model="createForm.slug"
                   type="text"
@@ -188,7 +209,9 @@ async function handleLogout() {
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   @input="slugManuallyEdited = true"
                 />
-                <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ t('selectTenant.slugHint') }}</p>
+                <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                  {{ t('selectTenant.slugHint') }}
+                </p>
               </div>
               <p v-if="createError" class="mb-3 text-sm text-red-600">{{ createError }}</p>
               <div class="flex justify-end gap-2">

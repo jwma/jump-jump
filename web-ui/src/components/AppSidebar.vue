@@ -46,15 +46,11 @@ const menuItems = computed(() => {
     )
 
     if (auth.user?.role === UserRole.Admin) {
-      items.push(
-        { icon: Settings, label: t('nav.settings'), to: { name: 'settings' } },
-      )
+      items.push({ icon: Settings, label: t('nav.settings'), to: { name: 'settings' } })
     }
   }
 
-  items.push(
-    { icon: KeyRound, label: t('nav.changePassword'), to: { name: 'change-password' } },
-  )
+  items.push({ icon: KeyRound, label: t('nav.changePassword'), to: { name: 'change-password' } })
 
   return items
 })
@@ -89,6 +85,19 @@ async function handleTenantSwitch(tenantId: string) {
 async function handleLogout() {
   await auth.logout()
   router.push({ name: 'login' })
+}
+
+function closeTenantDropdown() {
+  tenantDropdownOpen.value = false
+  layout.closeMobileMenu()
+}
+
+function toggleSuperRoute() {
+  if (isSuperRoute.value) {
+    router.push({ name: auth.currentTenantId ? 'dashboard' : 'select-tenant' })
+  } else {
+    router.push({ name: 'super-dashboard' })
+  }
 }
 </script>
 
@@ -160,19 +169,29 @@ async function handleLogout() {
       >
         <ChevronLeft class="h-3 w-3 rotate-180" />
       </button>
-      <span class="sidebar-tooltip" style="left: calc(100% + 16px); top: 16px; transform: none;">{{ t('nav.expandSidebar') }}</span>
+      <span class="sidebar-tooltip" style="left: calc(100% + 16px); top: 16px; transform: none">{{
+        t('nav.expandSidebar')
+      }}</span>
     </div>
 
     <!-- Tenant switcher (hidden on super admin routes) -->
-    <div v-if="!layout.sidebarCollapsed && showTenantSwitcher" class="border-b border-gray-200 dark:border-gray-700 px-3 py-2">
+    <div
+      v-if="!layout.sidebarCollapsed && showTenantSwitcher"
+      class="border-b border-gray-200 dark:border-gray-700 px-3 py-2"
+    >
       <button
         class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
         @click="tenantDropdownOpen = !tenantDropdownOpen"
       >
         <div class="min-w-0 flex-1">
-          <div class="truncate text-xs text-gray-400 dark:text-gray-500">{{ t('nav.currentTenant') }}</div>
+          <div class="truncate text-xs text-gray-400 dark:text-gray-500">
+            {{ t('nav.currentTenant') }}
+          </div>
           <div class="truncate font-medium text-gray-700 dark:text-gray-300">
-            {{ auth.currentTenant?.tenantName || (auth.isSuper ? t('nav.superAdmin') : t('nav.notSelected')) }}
+            {{
+              auth.currentTenant?.tenantName ||
+              (auth.isSuper ? t('nav.superAdmin') : t('nav.notSelected'))
+            }}
           </div>
         </div>
         <ChevronDown class="h-4 w-4 shrink-0 text-gray-400" />
@@ -183,7 +202,11 @@ async function handleLogout() {
           v-for="tenant in auth.tenants"
           :key="tenant.tenantId"
           class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
-          :class="auth.currentTenantId === tenant.tenantId ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'"
+          :class="
+            auth.currentTenantId === tenant.tenantId
+              ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+              : 'text-gray-600 dark:text-gray-400'
+          "
           @click="handleTenantSwitch(tenant.tenantId)"
         >
           <span class="truncate">{{ tenant.tenantName }}</span>
@@ -192,7 +215,7 @@ async function handleLogout() {
         <router-link
           :to="{ name: 'select-tenant' }"
           class="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-gray-400 hover:bg-gray-50 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-          @click="tenantDropdownOpen = false; layout.closeMobileMenu()"
+          @click="closeTenantDropdown"
         >
           <ChevronRight class="h-3 w-3" />
           {{ t('nav.manageTenants') }}
@@ -201,16 +224,27 @@ async function handleLogout() {
     </div>
 
     <!-- Super admin toggle -->
-    <div v-if="auth.isSuper" class="sidebar-tooltip-wrapper border-b border-gray-200 dark:border-gray-700 px-2 py-2">
+    <div
+      v-if="auth.isSuper"
+      class="sidebar-tooltip-wrapper border-b border-gray-200 dark:border-gray-700 px-2 py-2"
+    >
       <button
         class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors"
-        :class="isSuperRoute ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-        @click="isSuperRoute ? router.push({ name: auth.currentTenantId ? 'dashboard' : 'select-tenant' }) : router.push({ name: 'super-dashboard' })"
+        :class="
+          isSuperRoute
+            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
+            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'
+        "
+        @click="toggleSuperRoute"
       >
         <Shield class="h-4 w-4 shrink-0" />
-        <span v-show="!layout.sidebarCollapsed">{{ isSuperRoute ? t('nav.backToApp') : t('nav.superAdmin') }}</span>
+        <span v-show="!layout.sidebarCollapsed">{{
+          isSuperRoute ? t('nav.backToApp') : t('nav.superAdmin')
+        }}</span>
       </button>
-      <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{ isSuperRoute ? t('nav.backToApp') : t('nav.superAdmin') }}</span>
+      <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{
+        isSuperRoute ? t('nav.backToApp') : t('nav.superAdmin')
+      }}</span>
     </div>
 
     <!-- Navigation -->
@@ -231,10 +265,7 @@ async function handleLogout() {
             <component :is="item.icon" class="h-5 w-5 shrink-0" />
             <span v-show="!layout.sidebarCollapsed">{{ item.label }}</span>
           </router-link>
-          <span
-            v-if="layout.sidebarCollapsed"
-            class="sidebar-tooltip"
-          >{{ item.label }}</span>
+          <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{ item.label }}</span>
         </li>
       </ul>
     </nav>
@@ -249,7 +280,9 @@ async function handleLogout() {
         >
           <span class="relative">
             <Bell class="h-5 w-5 shrink-0" />
-            <span class="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+            <span
+              class="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+            >
               {{ auth.pendingInvitationCount > 9 ? '9+' : auth.pendingInvitationCount }}
             </span>
           </span>

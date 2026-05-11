@@ -83,13 +83,20 @@ async function handleSubmit() {
 
 <template>
   <div>
-    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('changePassword.title') }}</h1>
+    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+      {{ t('changePassword.title') }}
+    </h1>
     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('changePassword.subtitle') }}</p>
 
-    <form class="mt-6 max-w-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6" @submit.prevent="handleSubmit">
+    <form
+      class="mt-6 max-w-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6"
+      @submit.prevent="handleSubmit"
+    >
       <div class="space-y-4">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('changePassword.currentPassword') }}</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+            t('changePassword.currentPassword')
+          }}</label>
           <div class="relative">
             <input
               v-model="currentPassword"
@@ -99,7 +106,11 @@ async function handleSubmit() {
             />
             <button
               type="button"
-              :aria-label="showCurrentPassword ? t('changePassword.hideCurrentPassword') : t('changePassword.showCurrentPassword')"
+              :aria-label="
+                showCurrentPassword
+                  ? t('changePassword.hideCurrentPassword')
+                  : t('changePassword.showCurrentPassword')
+              "
               :aria-pressed="showCurrentPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               @click="showCurrentPassword = !showCurrentPassword"
@@ -110,7 +121,9 @@ async function handleSubmit() {
           </div>
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('changePassword.newPassword') }}</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+            t('changePassword.newPassword')
+          }}</label>
           <div class="relative">
             <input
               v-model="newPassword"
@@ -121,7 +134,11 @@ async function handleSubmit() {
             />
             <button
               type="button"
-              :aria-label="showNewPassword ? t('changePassword.hideNewPassword') : t('changePassword.showNewPassword')"
+              :aria-label="
+                showNewPassword
+                  ? t('changePassword.hideNewPassword')
+                  : t('changePassword.showNewPassword')
+              "
               :aria-pressed="showNewPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               @click="showNewPassword = !showNewPassword"
@@ -136,16 +153,23 @@ async function handleSubmit() {
                 v-for="i in 5"
                 :key="i"
                 class="h-1.5 flex-1 rounded-full"
-                :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200 dark:bg-gray-700'"
+                :class="
+                  i <= passwordStrength.score
+                    ? passwordStrength.color
+                    : 'bg-gray-200 dark:bg-gray-700'
+                "
               />
             </div>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {{ t('changePassword.strength') }} <span class="font-medium">{{ passwordStrength.label }}</span>
+              {{ t('changePassword.strength') }}
+              <span class="font-medium">{{ passwordStrength.label }}</span>
             </p>
           </div>
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('changePassword.confirmNewPassword') }}</label>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+            t('changePassword.confirmNewPassword')
+          }}</label>
           <div class="relative">
             <input
               v-model="confirmPassword"
@@ -157,7 +181,11 @@ async function handleSubmit() {
             />
             <button
               type="button"
-              :aria-label="showConfirmPassword ? t('changePassword.hideConfirmPassword') : t('changePassword.showConfirmPassword')"
+              :aria-label="
+                showConfirmPassword
+                  ? t('changePassword.hideConfirmPassword')
+                  : t('changePassword.showConfirmPassword')
+              "
               :aria-pressed="showConfirmPassword"
               class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               @click="showConfirmPassword = !showConfirmPassword"

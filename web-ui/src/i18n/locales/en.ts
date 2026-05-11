@@ -168,7 +168,8 @@ export default {
     customId: 'Custom ID',
     optional: '(optional)',
     customIdPlaceholder: 'my-custom-id',
-    customIdHint: 'Letters, numbers, hyphens, underscores. 2-64 characters. Leave empty to auto-generate.',
+    customIdHint:
+      'Letters, numbers, hyphens, underscores. 2-64 characters. Leave empty to auto-generate.',
     customIdMinLength: 'Custom ID must be at least 2 characters',
     customIdMaxLength: 'Custom ID must be at most {max} characters',
     customIdInvalid: 'Custom ID can only contain letters, numbers, hyphens, and underscores',
@@ -379,7 +380,8 @@ export default {
     leaving: 'Leaving...',
     leave: 'Leave',
     leaveTitle: 'Leave Tenant',
-    leaveConfirm: 'Are you sure you want to leave {tenant}? You will need to be re-invited to join again.',
+    leaveConfirm:
+      'Are you sure you want to leave {tenant}? You will need to be re-invited to join again.',
     noMatch: 'No members match "{query}".',
     changeRoleFailed: 'Failed to update role',
     removeFailed: 'Failed to remove member',

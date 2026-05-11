@@ -5,15 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { getTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
 import { ApiError } from '@/api/http'
 import type { Tenant, TenantDomain } from '@/types/api'
-import {
-  ArrowLeft,
-  Globe,
-  Plus,
-  Trash2,
-  Star,
-  Loader2,
-  ExternalLink,
-} from 'lucide-vue-next'
+import { ArrowLeft, Globe, Plus, Trash2, Star, Loader2, ExternalLink } from 'lucide-vue-next'
 
 defineOptions({ name: 'TenantDetailPage' })
 
@@ -142,9 +134,13 @@ onMounted(() => {
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div class="flex-1">
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('tenantDetail.title') }}</h1>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {{ t('tenantDetail.title') }}
+        </h1>
         <p v-if="tenant" class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-          <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{ tenant.id }}</span>
+          <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{
+            tenant.id
+          }}</span>
         </p>
       </div>
     </div>
@@ -155,10 +151,7 @@ onMounted(() => {
 
     <div v-else-if="notFound" class="mt-6 text-center text-gray-400 dark:text-gray-500">
       {{ t('tenantDetail.notFound') }}
-      <button
-        class="ml-2 text-blue-600 hover:underline"
-        @click="router.push({ name: 'tenants' })"
-      >
+      <button class="ml-2 text-blue-600 hover:underline" @click="router.push({ name: 'tenants' })">
         {{ t('tenantDetail.backToList') }}
       </button>
     </div>
@@ -182,7 +175,11 @@ onMounted(() => {
           </div>
           <span
             class="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-            :class="tenant.isActive ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
+            :class="
+              tenant.isActive
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+            "
           >
             <span
               class="h-1.5 w-1.5 rounded-full"
@@ -193,20 +190,32 @@ onMounted(() => {
         </div>
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('tenantDetail.tenantId') }}</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('tenantDetail.tenantId')
+            }}</label>
             <p class="mt-1 font-mono text-sm text-gray-900 dark:text-white">{{ tenant.id }}</p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('tenantDetail.slug') }}</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('tenantDetail.slug')
+            }}</label>
             <p class="mt-1 font-mono text-sm text-gray-900 dark:text-white">{{ tenant.slug }}</p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('tenantDetail.created') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(tenant.createdAt) }}</p>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('tenantDetail.created')
+            }}</label>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+              {{ formatDate(tenant.createdAt) }}
+            </p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('tenantDetail.updated') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(tenant.updatedAt) }}</p>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('tenantDetail.updated')
+            }}</label>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+              {{ formatDate(tenant.updatedAt) }}
+            </p>
           </div>
         </div>
       </div>
@@ -216,8 +225,12 @@ onMounted(() => {
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <Globe class="h-5 w-5 text-gray-500 dark:text-gray-400" />
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('tenantDetail.domains') }}</h2>
-            <span class="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ t('tenantDetail.domains') }}
+            </h2>
+            <span
+              class="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400"
+            >
               {{ domains.length }}
             </span>
           </div>
@@ -227,7 +240,9 @@ onMounted(() => {
         <div class="mt-4 rounded-lg border bg-white dark:bg-gray-900 p-4">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div class="flex-1">
-              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('tenantDetail.domain') }}</label>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                t('tenantDetail.domain')
+              }}</label>
               <input
                 v-model="newDomain"
                 type="text"
@@ -259,10 +274,16 @@ onMounted(() => {
         </div>
 
         <!-- Domain list -->
-        <div v-if="domainsLoading" class="mt-4 flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8">
+        <div
+          v-if="domainsLoading"
+          class="mt-4 flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8"
+        >
           <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
         </div>
-        <div v-else-if="domains.length > 0" class="mt-4 overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
+        <div
+          v-else-if="domains.length > 0"
+          class="mt-4 overflow-hidden rounded-lg border bg-white dark:bg-gray-900"
+        >
           <table class="w-full text-sm">
             <thead>
               <tr
@@ -283,17 +304,24 @@ onMounted(() => {
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2">
                     <Globe class="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                    <span class="font-mono text-sm text-gray-900 dark:text-white">{{ d.domain }}</span>
+                    <span class="font-mono text-sm text-gray-900 dark:text-white">{{
+                      d.domain
+                    }}</span>
                   </div>
                 </td>
                 <td class="px-4 py-3">
-                  <span v-if="d.isDefault" class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
+                  <span
+                    v-if="d.isDefault"
+                    class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600"
+                  >
                     <Star class="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
                     {{ t('tenantDetail.default') }}
                   </span>
                   <span v-else class="text-xs text-gray-400 dark:text-gray-500">—</span>
                 </td>
-                <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">
+                <td
+                  class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell"
+                >
                   {{ formatDate(d.createdAt) }}
                 </td>
                 <td class="px-4 py-3">
@@ -320,7 +348,10 @@ onMounted(() => {
             </tbody>
           </table>
         </div>
-        <div v-else class="mt-4 rounded-lg border bg-white dark:bg-gray-900 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+        <div
+          v-else
+          class="mt-4 rounded-lg border bg-white dark:bg-gray-900 py-8 text-center text-sm text-gray-400 dark:text-gray-500"
+        >
           {{ t('tenantDetail.noDomains') }}
         </div>
       </div>
@@ -341,7 +372,9 @@ onMounted(() => {
           tabindex="-1"
           class="mx-4 w-full max-w-sm rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl"
         >
-          <h3 id="remove-domain-title" class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('tenantDetail.removeDomain') }}</h3>
+          <h3 id="remove-domain-title" class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ t('tenantDetail.removeDomain') }}
+          </h3>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {{ t('tenantDetail.removeDomainConfirm', { domain: confirmDeleteDomain }) }}
           </p>

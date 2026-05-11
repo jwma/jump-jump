@@ -3,7 +3,13 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
-import { listMembers, inviteMember, updateMemberRole, removeMember, leaveTenant } from '@/api/member'
+import {
+  listMembers,
+  inviteMember,
+  updateMemberRole,
+  removeMember,
+  leaveTenant,
+} from '@/api/member'
 import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import type { TenantMember } from '@/types/api'
@@ -44,7 +50,12 @@ const inviteLoading = ref(false)
 const inviteError = ref('')
 
 // Role change confirm
-const confirmRoleChange = ref<{ userId: string; username: string; currentRole: string; newRole: string } | null>(null)
+const confirmRoleChange = ref<{
+  userId: string
+  username: string
+  currentRole: string
+  newRole: string
+} | null>(null)
 const roleLoading = ref(false)
 const roleError = ref('')
 
@@ -132,7 +143,11 @@ async function executeRoleChange() {
   roleLoading.value = true
   roleError.value = ''
   try {
-    await updateMemberRole(auth.currentTenantId, confirmRoleChange.value.userId, confirmRoleChange.value.newRole)
+    await updateMemberRole(
+      auth.currentTenantId,
+      confirmRoleChange.value.userId,
+      confirmRoleChange.value.newRole,
+    )
     confirmRoleChange.value = null
     await fetchMembers()
   } catch (e: unknown) {
@@ -202,15 +217,22 @@ onMounted(fetchMembers)
     <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <Users class="h-5 w-5 text-gray-500 dark:text-gray-400" />
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('members.title') }}</h1>
-        <span v-if="!loading" class="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {{ t('members.title') }}
+        </h1>
+        <span
+          v-if="!loading"
+          class="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400"
+        >
           {{ members.length }}
         </span>
       </div>
       <div class="flex items-center gap-2">
         <!-- Search -->
         <div class="relative">
-          <Search class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+          <Search
+            class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+          />
           <input
             v-model="searchQuery"
             type="text"
@@ -238,7 +260,9 @@ onMounted(fetchMembers)
     <div v-else class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
       <table class="w-full text-sm">
         <thead>
-          <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+          <tr
+            class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+          >
             <th class="px-4 py-3">{{ t('members.user') }}</th>
             <th class="px-4 py-3">{{ t('members.role') }}</th>
             <th class="hidden px-4 py-3 sm:table-cell">{{ t('members.joined') }}</th>
@@ -246,36 +270,57 @@ onMounted(fetchMembers)
           </tr>
         </thead>
         <tbody class="divide-y">
-          <tr v-for="m in filteredMembers" :key="m.userId" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50">
+          <tr
+            v-for="m in filteredMembers"
+            :key="m.userId"
+            class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
+          >
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
                 <div
                   class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                  :class="m.role === UserRole.Admin ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                  :class="
+                    m.role === UserRole.Admin
+                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                  "
                 >
                   {{ m.username.charAt(0).toUpperCase() }}
                 </div>
                 <div>
                   <span class="font-medium text-gray-900 dark:text-white">{{ m.username }}</span>
-                  <span v-if="m.userId === auth.authUser?.id" class="ml-1 text-xs text-gray-400 dark:text-gray-500">{{ t('members.you') }}</span>
+                  <span
+                    v-if="m.userId === auth.authUser?.id"
+                    class="ml-1 text-xs text-gray-400 dark:text-gray-500"
+                    >{{ t('members.you') }}</span
+                  >
                 </div>
               </div>
             </td>
             <td class="px-4 py-3">
               <span
                 class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="m.role === UserRole.Admin ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                :class="
+                  m.role === UserRole.Admin
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                "
               >
                 <Shield v-if="m.role === UserRole.Admin" class="h-3 w-3" />
                 <User v-else class="h-3 w-3" />
                 {{ m.role }}
               </span>
             </td>
-            <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 sm:table-cell">
+            <td
+              class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 sm:table-cell"
+            >
               {{ formatDate(m.joinedAt) }}
             </td>
             <td v-if="auth.isAdmin" class="px-4 py-3">
-              <div v-if="m.userId !== auth.authUser?.id" class="flex items-center justify-end gap-1">
+              <div
+                v-if="m.userId !== auth.authUser?.id"
+                class="flex items-center justify-end gap-1"
+              >
                 <button
                   class="rounded p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                   :title="t('members.changeRole')"
@@ -296,13 +341,20 @@ onMounted(fetchMembers)
         </tbody>
       </table>
 
-      <div v-if="filteredMembers.length === 0 && members.length > 0" class="py-12 text-center text-sm text-gray-400 dark:text-gray-500">
+      <div
+        v-if="filteredMembers.length === 0 && members.length > 0"
+        class="py-12 text-center text-sm text-gray-400 dark:text-gray-500"
+      >
         {{ t('members.noMatch', { query: searchQuery }) }}
       </div>
       <div v-else-if="members.length === 0" class="py-12 text-center">
         <Users class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
-        <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('members.noMembersYet') }}</p>
-        <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">{{ t('members.inviteToCollaborate') }}</p>
+        <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+          {{ t('members.noMembersYet') }}
+        </p>
+        <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">
+          {{ t('members.inviteToCollaborate') }}
+        </p>
         <button
           v-if="auth.isAdmin"
           class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
@@ -333,15 +385,24 @@ onMounted(fetchMembers)
       >
         <div class="mx-4 w-full max-w-sm rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl">
           <div class="mb-4 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('members.inviteMember') }}</h3>
-            <button class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" @click="showInvite = false">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ t('members.inviteMember') }}
+            </h3>
+            <button
+              class="rounded p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              @click="showInvite = false"
+            >
               <X class="h-4 w-4" />
             </button>
           </div>
 
           <form @submit.prevent="handleInvite">
             <div class="mb-3">
-              <label for="invite-username-input" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('members.username') }}</label>
+              <label
+                for="invite-username-input"
+                class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >{{ t('members.username') }}</label
+              >
               <input
                 id="invite-username-input"
                 v-model="inviteUsername"
@@ -350,7 +411,9 @@ onMounted(fetchMembers)
                 :placeholder="t('members.invitePlaceholder')"
                 class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               />
-              <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ t('members.inviteHint') }}</p>
+              <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                {{ t('members.inviteHint') }}
+              </p>
             </div>
 
             <p v-if="inviteError" class="mb-3 text-sm text-red-600">{{ inviteError }}</p>
@@ -386,17 +449,27 @@ onMounted(fetchMembers)
       @cancel="confirmRoleChange = null"
     >
       <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-        {{ t('members.changeRoleQuestion', {
-          username: confirmRoleChange?.username,
-          currentRole: confirmRoleChange?.currentRole,
-          newRole: confirmRoleChange?.newRole
-        }) }}
+        {{
+          t('members.changeRoleQuestion', {
+            username: confirmRoleChange?.username,
+            currentRole: confirmRoleChange?.currentRole,
+            newRole: confirmRoleChange?.newRole,
+          })
+        }}
       </p>
-      <div class="mt-3 rounded-lg border bg-gray-50 dark:bg-gray-800/50 p-3 text-xs text-gray-600 dark:text-gray-400">
+      <div
+        class="mt-3 rounded-lg border bg-gray-50 dark:bg-gray-800/50 p-3 text-xs text-gray-600 dark:text-gray-400"
+      >
         <p class="font-medium text-gray-700 dark:text-gray-300">
-          {{ confirmRoleChange?.newRole === UserRole.Admin ? t('members.admin') : t('members.member') }} {{ t('members.permissions') }}:
+          {{
+            confirmRoleChange?.newRole === UserRole.Admin ? t('members.admin') : t('members.member')
+          }}
+          {{ t('members.permissions') }}:
         </p>
-        <ul v-if="confirmRoleChange?.newRole === UserRole.Admin" class="mt-1 list-inside list-disc space-y-0.5 text-gray-500 dark:text-gray-400">
+        <ul
+          v-if="confirmRoleChange?.newRole === UserRole.Admin"
+          class="mt-1 list-inside list-disc space-y-0.5 text-gray-500 dark:text-gray-400"
+        >
           <li>{{ t('members.adminPermSettings') }}</li>
           <li>{{ t('members.adminPermMembers') }}</li>
           <li>{{ t('members.adminPermRoles') }}</li>

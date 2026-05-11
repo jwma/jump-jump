@@ -60,15 +60,24 @@ async function handleSubmit() {
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('tenantCreate.title') }}</h1>
-        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{{ t('tenantCreate.description') }}</p>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {{ t('tenantCreate.title') }}
+        </h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
+          {{ t('tenantCreate.description') }}
+        </p>
       </div>
     </div>
 
-    <form class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6" @submit.prevent="handleSubmit">
+    <form
+      class="mt-6 max-w-lg rounded-lg border bg-white dark:bg-gray-900 p-6"
+      @submit.prevent="handleSubmit"
+    >
       <div class="space-y-5">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
+          <label
+            class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600"
+          >
             {{ t('tenantCreate.name') }} <span class="text-red-500">*</span>
           </label>
           <input
@@ -81,7 +90,9 @@ async function handleSubmit() {
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">
+          <label
+            class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600"
+          >
             {{ t('tenantCreate.slug') }} <span class="text-red-500">*</span>
           </label>
           <input
@@ -93,7 +104,9 @@ async function handleSubmit() {
             :class="slugError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />
           <p v-if="slugError" class="mt-1 text-xs text-red-600">{{ slugError }}</p>
-          <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ t('tenantCreate.slugHint') }}</p>
+          <p v-else class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+            {{ t('tenantCreate.slugHint') }}
+          </p>
         </div>
       </div>
 

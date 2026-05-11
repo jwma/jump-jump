@@ -68,7 +68,11 @@ const items = computed<BreadcrumbItem[]>(() => {
     </router-link>
     <template v-for="(item, i) in items" :key="i">
       <ChevronRight class="h-3.5 w-3.5 text-gray-300 dark:text-gray-600" />
-      <router-link v-if="item.to" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" :to="item.to">
+      <router-link
+        v-if="item.to"
+        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        :to="item.to"
+      >
         {{ item.label }}
       </router-link>
       <span v-else class="font-medium text-gray-900 dark:text-white">{{ item.label }}</span>

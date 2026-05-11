@@ -49,7 +49,10 @@ export function listSuperTenantMembers(tenantId: string) {
 }
 
 export function listSuperTenantShortLinks(tenantId: string, page = 1, pageSize = 20) {
-  return request<ListShortLinksResponse>('GET', `/super/tenants/${tenantId}/short-links`, { page, pageSize })
+  return request<ListShortLinksResponse>('GET', `/super/tenants/${tenantId}/short-links`, {
+    page,
+    pageSize,
+  })
 }
 
 export function listSuperTenantDomains(tenantId: string) {

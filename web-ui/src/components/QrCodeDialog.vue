@@ -31,7 +31,9 @@ let previousFocusEl: HTMLElement | null = null
 
 const qrUrl = computed(() => {
   if (!selectedDomain.value) return ''
-  const protocol = selectedDomain.value.startsWith('localhost') ? 'http://' : `${window.location.protocol}//`
+  const protocol = selectedDomain.value.startsWith('localhost')
+    ? 'http://'
+    : `${window.location.protocol}//`
   return `${protocol}${selectedDomain.value}/${props.shortLinkId}`
 })
 
@@ -117,9 +119,12 @@ watch(selectedDomain, () => {
   generateQR()
 })
 
-watch(() => props.shortLinkId, () => {
-  generateQR()
-})
+watch(
+  () => props.shortLinkId,
+  () => {
+    generateQR()
+  },
+)
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
@@ -161,10 +166,7 @@ onBeforeUnmount(() => {
         <!-- Error state -->
         <div v-else-if="loadError" class="mt-4 text-center">
           <p class="text-sm text-red-500">{{ t('qrCode.loadError') }}</p>
-          <button
-            class="mt-2 text-sm text-blue-600 hover:underline"
-            @click="fetchDomains"
-          >
+          <button class="mt-2 text-sm text-blue-600 hover:underline" @click="fetchDomains">
             {{ t('common.refresh') }}
           </button>
         </div>
@@ -178,10 +180,7 @@ onBeforeUnmount(() => {
         <!-- QR Code content -->
         <template v-else>
           <div class="mt-4 flex justify-center">
-            <div
-              v-if="loadingQR"
-              class="flex h-[256px] w-[256px] items-center justify-center"
-            >
+            <div v-if="loadingQR" class="flex h-[256px] w-[256px] items-center justify-center">
               <Loader2 class="h-6 w-6 animate-spin text-gray-400" />
             </div>
             <img
@@ -198,7 +197,9 @@ onBeforeUnmount(() => {
               {{ t('shortLinkDetail.shortLink') }}
             </label>
             <div class="mt-1 flex items-center gap-2">
-              <span class="flex-1 truncate rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 font-mono text-sm text-gray-700 dark:text-gray-300">
+              <span
+                class="flex-1 truncate rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 font-mono text-sm text-gray-700 dark:text-gray-300"
+              >
                 {{ qrUrl }}
               </span>
               <button
@@ -221,11 +222,7 @@ onBeforeUnmount(() => {
               v-model="selectedDomain"
               class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             >
-              <option
-                v-for="d in domains"
-                :key="d.id"
-                :value="d.domain"
-              >
+              <option v-for="d in domains" :key="d.id" :value="d.domain">
                 {{ d.domain }}{{ d.isDefault ? ` (${t('common.default')})` : '' }}
               </option>
             </select>

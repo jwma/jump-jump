@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"log"
 	"testing"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jwma/jump-jump/internal/app/config"
+	"github.com/jwma/jump-jump/internal/app/db"
 	"github.com/jwma/jump-jump/internal/app/models"
 	"github.com/redis/go-redis/v9"
 )
@@ -29,6 +31,14 @@ func init() {
 
 	pool := getTestPool()
 	config.SetupConfig(pool, rdb)
+
+	if err := db.InitPostgres(); err != nil {
+		log.Fatalf("Failed to initialize postgres: %v", err)
+	}
+	if err := db.RunMigrations(); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+	db.ClosePostgres()
 }
 
 func TestShortLinkRepository_Save(t *testing.T) {

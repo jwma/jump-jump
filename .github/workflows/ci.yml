@@ -33,7 +33,7 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgres://jumpjump:jumpjump@127.0.0.1:5432/jumpjump_test?sslmode=disable
-      REDIS_HOST: 127.0.0.1
+      REDIS_HOST: 127.0.0.1:6379
       REDIS_DB: 1
     steps:
       - uses: actions/checkout@v4

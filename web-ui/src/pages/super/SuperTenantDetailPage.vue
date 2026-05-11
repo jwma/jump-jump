@@ -4,19 +4,15 @@ const { t } = useI18n()
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getTenant, listDomains, addDomain, removeDomain } from '@/api/tenant'
-import { listSuperTenantMembers, listSuperTenantShortLinks, setSuperTenantStatus } from '@/api/super'
+import {
+  listSuperTenantMembers,
+  listSuperTenantShortLinks,
+  setSuperTenantStatus,
+} from '@/api/super'
 import { ApiError } from '@/api/http'
 import type { Tenant, TenantDomain, ShortLinkData } from '@/types/api'
 import type { SuperTenantMember } from '@/types/api'
-import {
-  ArrowLeft,
-  Globe,
-  Plus,
-  Trash2,
-  Star,
-  Loader2,
-  ExternalLink,
-} from 'lucide-vue-next'
+import { ArrowLeft, Globe, Plus, Trash2, Star, Loader2, ExternalLink } from 'lucide-vue-next'
 
 defineOptions({ name: 'SuperTenantDetailPage' })
 
@@ -175,9 +171,13 @@ onMounted(fetchTenant)
         <ArrowLeft class="h-5 w-5" />
       </button>
       <div class="flex-1">
-        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('super.tenantDetail.title') }}</h1>
+        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+          {{ t('super.tenantDetail.title') }}
+        </h1>
         <p v-if="tenant" class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-          <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{ tenant.id }}</span>
+          <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{
+            tenant.id
+          }}</span>
         </p>
       </div>
     </div>
@@ -201,12 +201,18 @@ onMounted(fetchTenant)
 
     <div v-else-if="notFound" class="mt-6 text-center text-gray-400 dark:text-gray-500">
       Tenant not found.
-      <button class="ml-2 text-blue-600 hover:underline" @click="router.push({ name: 'super-tenants' })">
+      <button
+        class="ml-2 text-blue-600 hover:underline"
+        @click="router.push({ name: 'super-tenants' })"
+      >
         Back to list
       </button>
     </div>
 
-    <div v-else-if="pageError" class="mt-6 rounded-lg border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 p-4">
+    <div
+      v-else-if="pageError"
+      class="mt-6 rounded-lg border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/20 p-4"
+    >
       <p class="text-sm text-red-600">{{ pageError }}</p>
     </div>
 
@@ -225,17 +231,26 @@ onMounted(fetchTenant)
           </div>
           <span
             class="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-            :class="tenant.isActive ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
+            :class="
+              tenant.isActive
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+            "
           >
-            <span class="h-1.5 w-1.5 rounded-full" :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'" />
+            <span
+              class="h-1.5 w-1.5 rounded-full"
+              :class="tenant.isActive ? 'bg-green-500' : 'bg-gray-400'"
+            />
             {{ tenant.isActive ? t('common.active') : t('common.inactive') }}
           </span>
           <button
             :disabled="toggleLoading"
             class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
-            :class="tenant.isActive
-              ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30'
-              : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'"
+            :class="
+              tenant.isActive
+                ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30'
+                : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
+            "
             @click="handleToggleStatus"
           >
             <Loader2 v-if="toggleLoading" class="mr-1 inline h-3 w-3 animate-spin" />
@@ -244,16 +259,26 @@ onMounted(fetchTenant)
         </div>
         <div class="mt-4 grid gap-4 sm:grid-cols-3">
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('super.tenantDetail.tenantId') }}</label>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('super.tenantDetail.tenantId')
+            }}</label>
             <p class="mt-1 font-mono text-sm text-gray-900 dark:text-white">{{ tenant.id }}</p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('common.created') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(tenant.createdAt) }}</p>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('common.created')
+            }}</label>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+              {{ formatDate(tenant.createdAt) }}
+            </p>
           </div>
           <div>
-            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('common.updated') }}</label>
-            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">{{ formatDate(tenant.updatedAt) }}</p>
+            <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+              t('common.updated')
+            }}</label>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300">
+              {{ formatDate(tenant.updatedAt) }}
+            </p>
           </div>
         </div>
       </div>
@@ -262,12 +287,14 @@ onMounted(fetchTenant)
       <div class="mt-4 border-b">
         <nav class="flex gap-6">
           <button
-            v-for="tab in (['info', 'members', 'short-links', 'domains'] as const)"
+            v-for="tab in ['info', 'members', 'short-links', 'domains'] as const"
             :key="tab"
             class="whitespace-nowrap border-b-2 pb-3 pt-2 text-sm font-medium transition-colors"
-            :class="activeTab === tab
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+            :class="
+              activeTab === tab
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            "
             @click="onTabChange(tab)"
           >
             {{ tab === 'short-links' ? 'Short Links' : tab.charAt(0).toUpperCase() + tab.slice(1) }}
@@ -281,11 +308,15 @@ onMounted(fetchTenant)
         <div v-if="activeTab === 'info'" class="rounded-lg border bg-white dark:bg-gray-900 p-5">
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('common.name') }}</label>
+              <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+                t('common.name')
+              }}</label>
               <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ tenant.name }}</p>
             </div>
             <div>
-              <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{ t('common.slug') }}</label>
+              <label class="text-xs font-medium uppercase text-gray-400 dark:text-gray-500">{{
+                t('common.slug')
+              }}</label>
               <p class="mt-1 font-mono text-sm text-gray-900 dark:text-white">{{ tenant.slug }}</p>
             </div>
           </div>
@@ -293,13 +324,18 @@ onMounted(fetchTenant)
 
         <!-- Members tab -->
         <div v-if="activeTab === 'members'">
-          <div v-if="membersLoading" class="flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8">
+          <div
+            v-if="membersLoading"
+            class="flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8"
+          >
             <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
           </div>
           <div v-else class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
             <table class="w-full text-sm">
               <thead>
-                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                <tr
+                  class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                >
                   <th class="px-4 py-3">{{ t('super.users.username') }}</th>
                   <th class="px-4 py-3">{{ t('members.role') }}</th>
                   <th class="hidden px-4 py-3 lg:table-cell">{{ t('members.joined') }}</th>
@@ -307,26 +343,42 @@ onMounted(fetchTenant)
               </thead>
               <tbody class="divide-y">
                 <tr v-if="members.length === 0">
-                  <td colspan="3" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">No members in this tenant.</td>
+                  <td colspan="3" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">
+                    No members in this tenant.
+                  </td>
                 </tr>
-                <tr v-for="m in members" :key="m.userId" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50">
+                <tr
+                  v-for="m in members"
+                  :key="m.userId"
+                  class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
+                >
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
-                      <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-600 dark:text-gray-400">
+                      <div
+                        class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-600 dark:text-gray-400"
+                      >
                         {{ m.username.charAt(0).toUpperCase() }}
                       </div>
-                      <span class="font-medium text-gray-900 dark:text-white">{{ m.username }}</span>
+                      <span class="font-medium text-gray-900 dark:text-white">{{
+                        m.username
+                      }}</span>
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <span
                       class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="m.role === 'admin' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                      :class="
+                        m.role === 'admin'
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                      "
                     >
                       {{ m.role }}
                     </span>
                   </td>
-                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">
+                  <td
+                    class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell"
+                  >
                     {{ formatDate(m.joinedAt) }}
                   </td>
                 </tr>
@@ -337,42 +389,79 @@ onMounted(fetchTenant)
 
         <!-- Short Links tab -->
         <div v-if="activeTab === 'short-links'">
-          <div v-if="shortLinksLoading" class="flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8">
+          <div
+            v-if="shortLinksLoading"
+            class="flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8"
+          >
             <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
           </div>
           <div v-else class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
             <table class="w-full text-sm">
               <thead>
-                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                <tr
+                  class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                >
                   <th class="px-4 py-3">{{ t('common.name') }}</th>
-                  <th class="hidden px-4 py-3 md:table-cell">{{ t('shortLinkDetail.targetUrl') }}</th>
+                  <th class="hidden px-4 py-3 md:table-cell">
+                    {{ t('shortLinkDetail.targetUrl') }}
+                  </th>
                   <th class="px-4 py-3">{{ t('common.status') }}</th>
-                  <th class="hidden px-4 py-3 lg:table-cell">{{ t('shortLinkDetail.createdBy') }}</th>
+                  <th class="hidden px-4 py-3 lg:table-cell">
+                    {{ t('shortLinkDetail.createdBy') }}
+                  </th>
                   <th class="hidden px-4 py-3 lg:table-cell">{{ t('common.created') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y">
                 <tr v-if="shortLinks.length === 0">
-                  <td colspan="5" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">No short links in this tenant.</td>
+                  <td colspan="5" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">
+                    No short links in this tenant.
+                  </td>
                 </tr>
-                <tr v-for="sl in shortLinks" :key="sl.id" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50">
-                  <td class="px-4 py-3 font-mono text-sm font-medium text-gray-900 dark:text-white">{{ sl.id }}</td>
-                  <td class="hidden max-w-[240px] truncate px-4 py-3 text-gray-500 dark:text-gray-400 md:table-cell">{{ sl.url }}</td>
+                <tr
+                  v-for="sl in shortLinks"
+                  :key="sl.id"
+                  class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
+                >
+                  <td class="px-4 py-3 font-mono text-sm font-medium text-gray-900 dark:text-white">
+                    {{ sl.id }}
+                  </td>
+                  <td
+                    class="hidden max-w-[240px] truncate px-4 py-3 text-gray-500 dark:text-gray-400 md:table-cell"
+                  >
+                    {{ sl.url }}
+                  </td>
                   <td class="px-4 py-3">
                     <span
                       class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
-                      :class="sl.isEnable ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'"
+                      :class="
+                        sl.isEnable
+                          ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                      "
                     >
-                      <span class="h-1.5 w-1.5 rounded-full" :class="sl.isEnable ? 'bg-green-500' : 'bg-gray-400'" />
+                      <span
+                        class="h-1.5 w-1.5 rounded-full"
+                        :class="sl.isEnable ? 'bg-green-500' : 'bg-gray-400'"
+                      />
                       {{ sl.isEnable ? t('common.active') : t('common.inactive') }}
                     </span>
                   </td>
-                  <td class="hidden px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">{{ sl.createdBy }}</td>
-                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">{{ formatDate(sl.createTime) }}</td>
+                  <td class="hidden px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">
+                    {{ sl.createdBy }}
+                  </td>
+                  <td
+                    class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell"
+                  >
+                    {{ formatDate(sl.createTime) }}
+                  </td>
                 </tr>
               </tbody>
             </table>
-            <div v-if="shortLinksTotal > 20" class="border-t px-4 py-3 text-center text-xs text-gray-400 dark:text-gray-500">
+            <div
+              v-if="shortLinksTotal > 20"
+              class="border-t px-4 py-3 text-center text-xs text-gray-400 dark:text-gray-500"
+            >
               {{ t('super.tenantDetail.showingOf', { shown: 20, total: shortLinksTotal }) }}
             </div>
           </div>
@@ -384,7 +473,9 @@ onMounted(fetchTenant)
           <div class="mb-4 rounded-lg border bg-white dark:bg-gray-900 p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
               <div class="flex-1">
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('common.domain') }}</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  t('common.domain')
+                }}</label>
                 <input
                   v-model="newDomain"
                   type="text"
@@ -405,13 +496,21 @@ onMounted(fetchTenant)
             </div>
           </div>
 
-          <div v-if="domainsLoading" class="flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8">
+          <div
+            v-if="domainsLoading"
+            class="flex items-center justify-center rounded-lg border bg-white dark:bg-gray-900 py-8"
+          >
             <Loader2 class="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
           </div>
-          <div v-else-if="domains.length > 0" class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
+          <div
+            v-else-if="domains.length > 0"
+            class="overflow-hidden rounded-lg border bg-white dark:bg-gray-900"
+          >
             <table class="w-full text-sm">
               <thead>
-                <tr class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                <tr
+                  class="border-b bg-gray-50 dark:bg-gray-800/50 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                >
                   <th class="px-4 py-3">{{ t('common.domain') }}</th>
                   <th class="px-4 py-3">{{ t('common.default') }}</th>
                   <th class="hidden px-4 py-3 lg:table-cell">{{ t('common.created') }}</th>
@@ -419,21 +518,34 @@ onMounted(fetchTenant)
                 </tr>
               </thead>
               <tbody class="divide-y">
-                <tr v-for="d in domains" :key="d.id" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50">
+                <tr
+                  v-for="d in domains"
+                  :key="d.id"
+                  class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800/50"
+                >
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2">
                       <Globe class="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                      <span class="font-mono text-sm text-gray-900 dark:text-white">{{ d.domain }}</span>
+                      <span class="font-mono text-sm text-gray-900 dark:text-white">{{
+                        d.domain
+                      }}</span>
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <span v-if="d.isDefault" class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600">
+                    <span
+                      v-if="d.isDefault"
+                      class="inline-flex items-center gap-1 text-xs font-medium text-yellow-600"
+                    >
                       <Star class="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
                       Default
                     </span>
                     <span v-else class="text-xs text-gray-400 dark:text-gray-500">-</span>
                   </td>
-                  <td class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell">{{ formatDate(d.createdAt) }}</td>
+                  <td
+                    class="hidden whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400 lg:table-cell"
+                  >
+                    {{ formatDate(d.createdAt) }}
+                  </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center justify-end gap-1">
                       <a
@@ -456,7 +568,10 @@ onMounted(fetchTenant)
               </tbody>
             </table>
           </div>
-          <div v-else class="rounded-lg border bg-white dark:bg-gray-900 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+          <div
+            v-else
+            class="rounded-lg border bg-white dark:bg-gray-900 py-8 text-center text-sm text-gray-400 dark:text-gray-500"
+          >
             No domains configured for this tenant.
           </div>
         </div>
@@ -471,10 +586,15 @@ onMounted(fetchTenant)
         @click.self="confirmDeleteDomain = null"
       >
         <div class="mx-4 w-full max-w-sm rounded-lg bg-white dark:bg-gray-900 p-6 shadow-xl">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.removeDomain') }}</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ t('settings.removeDomain') }}
+          </h3>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Are you sure you want to remove
-            <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{ confirmDeleteDomain }}</span>?
+            <span class="font-mono font-medium text-gray-700 dark:text-gray-300">{{
+              confirmDeleteDomain
+            }}</span
+            >?
           </p>
           <div class="mt-4 flex justify-end gap-2">
             <button
