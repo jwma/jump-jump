@@ -92,6 +92,9 @@ export default {
     dark: '深色',
     system: '跟随系统',
     switchLanguage: '切换语言',
+    toggleTheme: '切换主题',
+    closeNotifications: '关闭通知',
+    userMenu: '用户菜单',
     logout: '退出',
   },
   dashboard: {
@@ -247,8 +250,8 @@ export default {
     referer: '来源',
     userAgent: '用户代理',
     direct: '直接访问',
-    visitsWithCount: '{count} 次访问',
-    visitsWithPercent: '{count} 次访问（{percent}%）',
+    visitsWithCount: '次访问',
+    visitsWithPercent: '次访问（{percent}%）',
   },
   settings: {
     title: '设置',

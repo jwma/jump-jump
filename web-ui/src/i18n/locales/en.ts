@@ -92,6 +92,9 @@ export default {
     dark: 'Dark',
     system: 'System',
     switchLanguage: 'Switch language',
+    toggleTheme: 'Toggle theme',
+    closeNotifications: 'Close notifications',
+    userMenu: 'User menu',
     logout: 'Logout',
   },
   dashboard: {
@@ -248,8 +251,8 @@ export default {
     referer: 'Referer',
     userAgent: 'User Agent',
     direct: 'Direct',
-    visitsWithCount: '{count} visits',
-    visitsWithPercent: '{count} visits ({percent}%)',
+    visitsWithCount: 'visits',
+    visitsWithPercent: 'visits ({percent}%)',
   },
   settings: {
     title: 'Settings',

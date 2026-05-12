@@ -234,7 +234,7 @@ const visitChartOption = computed(() => ({
     trigger: 'axis' as const,
     formatter: (params: { name: string; value: number }[]) => {
       const p = params[0]
-      return `${p.name}<br/><b>${p.value}</b> ${t('shortLinkDetail.visitsWithCount', { count: p.value })}`
+      return `${p.name}<br/><b>${p.value}</b> ${t('shortLinkDetail.visitsWithCount')}`
     },
   },
   grid: { top: 16, right: 16, bottom: 32, left: 48 },
@@ -313,7 +313,7 @@ const osChartOption = computed(() =>
   makePieOption(
     osDistribution.value,
     (name, value, total) =>
-      `${name}<br/><b>${value}</b> ${t('shortLinkDetail.visitsWithPercent', { count: value, percent: ((value / total) * 100).toFixed(1) })}`,
+      `${name}<br/><b>${value}</b> ${t('shortLinkDetail.visitsWithPercent', { percent: ((value / total) * 100).toFixed(1) })}`,
   ),
 )
 
@@ -321,7 +321,7 @@ const browserChartOption = computed(() =>
   makePieOption(
     browserDistribution.value,
     (name, value, total) =>
-      `${name}<br/><b>${value}</b> ${t('shortLinkDetail.visitsWithPercent', { count: value, percent: ((value / total) * 100).toFixed(1) })}`,
+      `${name}<br/><b>${value}</b> ${t('shortLinkDetail.visitsWithPercent', { percent: ((value / total) * 100).toFixed(1) })}`,
   ),
 )
 
@@ -329,7 +329,7 @@ const refererChartOption = computed(() =>
   makePieOption(
     refererDistribution.value,
     (name, value, total) =>
-      `${name}<br/><b>${value}</b> ${t('shortLinkDetail.visitsWithPercent', { count: value, percent: ((value / total) * 100).toFixed(1) })}`,
+      `${name}<br/><b>${value}</b> ${t('shortLinkDetail.visitsWithPercent', { percent: ((value / total) * 100).toFixed(1) })}`,
   ),
 )
 

@@ -124,7 +124,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
       <div class="topbar-dropdown relative">
         <button
           class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-          :aria-label="t('topbar.switchLanguage')"
+          :aria-label="t('topbar.toggleTheme')"
           @click.stop="themeDropdownOpen = !themeDropdownOpen"
         >
           <Sun v-if="theme === 'light'" class="h-5 w-5" />
@@ -191,7 +191,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
             </h3>
             <button
               class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-              :aria-label="t('topbar.notifications')"
+              :aria-label="t('topbar.closeNotifications')"
               @click="notifDropdownOpen = false"
             >
               <X class="h-4 w-4" />
@@ -244,7 +244,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
       <div class="topbar-dropdown relative">
         <button
           class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-          :aria-label="t('topbar.switchLanguage')"
+          :aria-label="t('topbar.userMenu')"
           aria-haspopup="menu"
           :aria-expanded="userDropdownOpen"
           @click.stop="userDropdownOpen = !userDropdownOpen"
