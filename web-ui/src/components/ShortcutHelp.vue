@@ -41,7 +41,9 @@ function handleKeydown(e: KeyboardEvent) {
 
         <div class="space-y-1 px-5 py-4">
           <div class="flex items-center justify-between py-2">
-            <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('shortcuts.openGlobalSearch') }}</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{
+              t('shortcuts.openGlobalSearch')
+            }}</span>
             <div class="flex items-center gap-1">
               <kbd
                 class="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"
@@ -57,7 +59,9 @@ function handleKeydown(e: KeyboardEvent) {
           <div class="border-t border-gray-100 dark:border-gray-800" />
 
           <div class="flex items-center justify-between py-2">
-            <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('shortcuts.showHelp') }}</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{
+              t('shortcuts.showHelp')
+            }}</span>
             <kbd
               class="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"
               >?</kbd
@@ -71,7 +75,9 @@ function handleKeydown(e: KeyboardEvent) {
           </p>
 
           <div class="flex items-center justify-between py-2">
-            <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('shortcuts.createNewLink') }}</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{
+              t('shortcuts.createNewLink')
+            }}</span>
             <kbd
               class="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"
               >N</kbd
@@ -79,17 +85,21 @@ function handleKeydown(e: KeyboardEvent) {
           </div>
 
           <div class="flex items-center justify-between py-2">
-            <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('shortcuts.focusSearch') }}</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{
+              t('shortcuts.focusSearch')
+            }}</span>
             <kbd
               class="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"
               >/</kbd
-              >
+            >
           </div>
 
           <div class="border-t border-gray-100 dark:border-gray-800" />
 
           <div class="flex items-center justify-between py-2">
-            <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('shortcuts.closePanels') }}</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{
+              t('shortcuts.closePanels')
+            }}</span>
             <kbd
               class="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-500 dark:text-gray-400"
               >Esc</kbd

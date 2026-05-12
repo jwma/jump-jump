@@ -460,7 +460,9 @@ watch([() => link.value, qrSelectedDomain], () => {
       </button>
     </div>
 
-    <div v-if="loading" class="mt-6 text-center text-gray-400 dark:text-gray-500">{{ t('shortLinkDetail.loading') }}</div>
+    <div v-if="loading" class="mt-6 text-center text-gray-400 dark:text-gray-500">
+      {{ t('shortLinkDetail.loading') }}
+    </div>
 
     <div v-else-if="notFound" class="mt-6 text-center text-gray-400 dark:text-gray-500">
       {{ t('shortLinkDetail.notFound') }}
@@ -930,7 +932,9 @@ watch([() => link.value, qrSelectedDomain], () => {
                       <td
                         class="max-w-[200px] truncate px-4 py-2.5 text-gray-600 dark:text-gray-400"
                       >
-                        {{ h.referer ? extractRefererSource(h.referer) : t('shortLinkDetail.direct') }}
+                        {{
+                          h.referer ? extractRefererSource(h.referer) : t('shortLinkDetail.direct')
+                        }}
                       </td>
                       <td
                         class="max-w-[300px] truncate px-4 py-2.5 text-xs text-gray-400 dark:text-gray-500"
@@ -943,7 +947,12 @@ watch([() => link.value, qrSelectedDomain], () => {
                 </table>
               </div>
               <div class="border-t px-4 py-3 text-xs text-gray-400 dark:text-gray-500">
-                {{ t('shortLinkDetail.recordCount', { count: histories.length, suffix: histories.length !== 1 ? 's' : '' }) }}
+                {{
+                  t('shortLinkDetail.recordCount', {
+                    count: histories.length,
+                    suffix: histories.length !== 1 ? 's' : '',
+                  })
+                }}
               </div>
             </template>
           </div>
