@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useLayoutStore } from '@/stores/layout'
 import { useTheme } from '@/composables/useTheme'
@@ -16,8 +17,10 @@ import {
   Sun,
   Moon,
   Monitor,
+  Languages,
 } from 'lucide-vue-next'
 
+const { t, locale } = useI18n()
 const auth = useAuthStore()
 const layout = useLayoutStore()
 const router = useRouter()
@@ -26,6 +29,7 @@ const { theme } = useTheme()
 const userDropdownOpen = ref(false)
 const notifDropdownOpen = ref(false)
 const themeDropdownOpen = ref(false)
+const langDropdownOpen = ref(false)
 
 const pendingInvitations = computed(() => auth.invitations.filter((i) => i.status === 'pending'))
 
@@ -40,6 +44,12 @@ function setTheme(value: 'light' | 'dark' | 'system') {
   themeDropdownOpen.value = false
 }
 
+function setLocale(lang: string) {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+  langDropdownOpen.value = false
+}
+
 function navigateToChangePassword() {
   userDropdownOpen.value = false
   router.push({ name: 'change-password' })
@@ -51,6 +61,7 @@ function closeDropdowns(e: MouseEvent) {
     userDropdownOpen.value = false
     notifDropdownOpen.value = false
     themeDropdownOpen.value = false
+    langDropdownOpen.value = false
   }
 }
 
@@ -78,11 +89,42 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
       <!-- Global Search -->
       <GlobalSearch />
 
+      <!-- Language switcher -->
+      <div class="topbar-dropdown relative">
+        <button
+          class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+          :aria-label="t('topbar.switchLanguage')"
+          @click.stop="langDropdownOpen = !langDropdownOpen"
+        >
+          <Languages class="h-5 w-5" />
+        </button>
+        <div
+          v-if="langDropdownOpen"
+          class="absolute right-0 top-full z-50 mt-2 w-32 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900"
+          @click.stop
+        >
+          <button
+            class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+            :class="{ 'bg-gray-50 dark:bg-gray-800': locale === 'en' }"
+            @click="setLocale('en')"
+          >
+            EN
+          </button>
+          <button
+            class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+            :class="{ 'bg-gray-50 dark:bg-gray-800': locale === 'zh' }"
+            @click="setLocale('zh')"
+          >
+            中文
+          </button>
+        </div>
+      </div>
+
       <!-- Theme toggle -->
       <div class="topbar-dropdown relative">
         <button
           class="rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-          aria-label="Toggle theme"
+          :aria-label="t('topbar.toggleTheme')"
           @click.stop="themeDropdownOpen = !themeDropdownOpen"
         >
           <Sun v-if="theme === 'light'" class="h-5 w-5" />
@@ -99,21 +141,21 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
             :class="{ 'bg-gray-50 dark:bg-gray-800': theme === 'light' }"
             @click="setTheme('light')"
           >
-            <Sun class="h-4 w-4" /> Light
+            <Sun class="h-4 w-4" /> {{ t('topbar.light') }}
           </button>
           <button
             class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
             :class="{ 'bg-gray-50 dark:bg-gray-800': theme === 'dark' }"
             @click="setTheme('dark')"
           >
-            <Moon class="h-4 w-4" /> Dark
+            <Moon class="h-4 w-4" /> {{ t('topbar.dark') }}
           </button>
           <button
             class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
             :class="{ 'bg-gray-50 dark:bg-gray-800': theme === 'system' }"
             @click="setTheme('system')"
           >
-            <Monitor class="h-4 w-4" /> System
+            <Monitor class="h-4 w-4" /> {{ t('topbar.system') }}
           </button>
         </div>
       </div>
@@ -122,7 +164,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
       <div class="topbar-dropdown relative">
         <button
           class="relative rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-          aria-label="Open notifications"
+          :aria-label="t('topbar.notifications')"
           aria-haspopup="menu"
           :aria-expanded="notifDropdownOpen"
           @click.stop="notifDropdownOpen = !notifDropdownOpen"
@@ -144,10 +186,12 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
           <div
             class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3"
           >
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+              {{ t('topbar.notifications') }}
+            </h3>
             <button
               class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-              aria-label="Close notifications"
+              :aria-label="t('topbar.closeNotifications')"
               @click="notifDropdownOpen = false"
             >
               <X class="h-4 w-4" />
@@ -168,18 +212,20 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
                 </div>
                 <div class="min-w-0 flex-1">
                   <p class="text-sm text-gray-700 dark:text-gray-300">
-                    Invited to <span class="font-medium">{{ inv.tenantName }}</span>
+                    {{ t('topbar.invitedTo', { tenant: inv.tenantName }) }}
                   </p>
                   <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
                     <Clock class="mr-0.5 inline h-3 w-3" />
-                    Invited by {{ inv.inviterUsername }}
+                    {{ t('topbar.invitedBy', { inviter: inv.inviterUsername }) }}
                   </p>
                 </div>
               </div>
             </template>
             <div v-else class="px-4 py-8 text-center">
               <Bell class="mx-auto h-8 w-8 text-gray-200 dark:text-gray-700" />
-              <p class="mt-2 text-sm text-gray-400 dark:text-gray-500">No new notifications</p>
+              <p class="mt-2 text-sm text-gray-400 dark:text-gray-500">
+                {{ t('topbar.noNotifications') }}
+              </p>
             </div>
           </div>
 
@@ -189,7 +235,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
             class="block border-t border-gray-200 dark:border-gray-700 px-4 py-2.5 text-center text-sm font-medium text-blue-600 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
             @click="notifDropdownOpen = false"
           >
-            View all invitations
+            {{ t('topbar.viewAllInvitations') }}
           </router-link>
         </div>
       </div>
@@ -198,7 +244,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
       <div class="topbar-dropdown relative">
         <button
           class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-          aria-label="User menu"
+          :aria-label="t('topbar.userMenu')"
           aria-haspopup="menu"
           :aria-expanded="userDropdownOpen"
           @click.stop="userDropdownOpen = !userDropdownOpen"
@@ -234,14 +280,14 @@ onBeforeUnmount(() => document.removeEventListener('click', closeDropdowns))
               @click="navigateToChangePassword"
             >
               <KeyRound class="h-4 w-4 text-gray-400" />
-              Change Password
+              {{ t('topbar.changePassword') }}
             </button>
             <button
               class="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
               @click="handleLogout"
             >
               <LogOut class="h-4 w-4" />
-              Logout
+              {{ t('topbar.logout') }}
             </button>
           </div>
         </div>
