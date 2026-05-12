@@ -479,7 +479,7 @@ onMounted(fetchTenant)
                 <input
                   v-model="newDomain"
                   type="text"
-                  placeholder="example.com"
+                  :placeholder="t('settings.domainPlaceholder')"
                   class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   @keydown.enter.prevent="handleAddDomain"
                 />

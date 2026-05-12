@@ -36,7 +36,7 @@ func (r *TenantRepository) Create(req *models.CreateTenantRequest) (*models.Tena
 		`INSERT INTO tenants (name, slug) VALUES ($1, $2) RETURNING id, name, slug, is_active, created_at, updated_at`,
 		req.Name, req.Slug).Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("创建租户失败: %w", err)
+		return nil, fmt.Errorf("failed to create tenant: %w", err)
 	}
 	r.db.Exec(context.Background(), `INSERT INTO tenant_configs (tenant_id) VALUES ($1)`, t.ID)
 	return t, nil
@@ -80,7 +80,7 @@ func (r *TenantRepository) Update(id string, req *models.UpdateTenantRequest) (*
 		 WHERE id = $3 RETURNING id, name, slug, is_active, created_at, updated_at`,
 		req.Name, req.Slug, id).Scan(&t.ID, &t.Name, &t.Slug, &t.IsActive, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("更新租户失败: %w", err)
+		return nil, fmt.Errorf("failed to update tenant: %w", err)
 	}
 	return t, nil
 }
@@ -92,7 +92,7 @@ func (r *TenantRepository) UpdateStatus(id string, isActive bool) error {
 		return err
 	}
 	if ct.RowsAffected() == 0 {
-		return &models.NotFoundError{Msg: "租户不存在"}
+		return &models.NotFoundError{Msg: "tenant.notFound"}
 	}
 	return nil
 }
@@ -164,7 +164,7 @@ func (r *TenantRepository) AddDomain(tenantID, domain string, isDefault bool) er
 		`INSERT INTO tenant_domains (tenant_id, domain, is_default) VALUES ($1, $2, $3)`,
 		tenantID, domain, isDefault)
 	if err != nil {
-		return fmt.Errorf("添加域名失败: %w", err)
+		return fmt.Errorf("failed to add domain: %w", err)
 	}
 	return nil
 }
@@ -336,7 +336,7 @@ func (r *userRepository) List(opts ListOptions) (*UserListResult, error) {
 
 	err := r.db.QueryRow(context.Background(), countQuery, args...).Scan(&result.Total)
 	if err != nil {
-		return nil, fmt.Errorf("查询用户总数失败: %w", err)
+		return nil, fmt.Errorf("failed to count users: %w", err)
 	}
 	if result.Total == 0 {
 		return result, nil
@@ -345,19 +345,19 @@ func (r *userRepository) List(opts ListOptions) (*UserListResult, error) {
 	dataArgs := append(args, opts.PageSize, offset)
 	rows, err := r.db.Query(context.Background(), dataQuery, dataArgs...)
 	if err != nil {
-		return nil, fmt.Errorf("查询用户列表失败: %w", err)
+		return nil, fmt.Errorf("failed to query user list: %w", err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		u := &models.User{}
 		if err := rows.Scan(&u.ID, &u.Username, &u.IsActive, &u.IsSuper, &u.CreatedAt, &u.UpdatedAt); err != nil {
-			return nil, fmt.Errorf("查询用户列表失败: %w", err)
+			return nil, fmt.Errorf("failed to query user list: %w", err)
 		}
 		result.Users = append(result.Users, u)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("查询用户列表失败: %w", err)
+		return nil, fmt.Errorf("failed to query user list: %w", err)
 	}
 	return result, nil
 }
@@ -365,11 +365,11 @@ func (r *userRepository) List(opts ListOptions) (*UserListResult, error) {
 func (r *userRepository) UpdatePasswordByID(userID, newPassword string) error {
 	salt, err := utils.RandomSalt(32)
 	if err != nil {
-		return fmt.Errorf("生成盐失败: %w", err)
+		return fmt.Errorf("failed to generate salt: %w", err)
 	}
 	dk, err := utils.EncodePassword([]byte(newPassword), salt)
 	if err != nil {
-		return fmt.Errorf("编码密码失败: %w", err)
+		return fmt.Errorf("failed to encode password: %w", err)
 	}
 	ct, err := r.db.Exec(context.Background(),
 		`UPDATE users SET password = $1, salt = $2, updated_at = now() WHERE id = $3`,
@@ -378,7 +378,7 @@ func (r *userRepository) UpdatePasswordByID(userID, newPassword string) error {
 		return err
 	}
 	if ct.RowsAffected() == 0 {
-		return &models.NotFoundError{Msg: "用户不存在"}
+		return &models.NotFoundError{Msg: "user.notFound"}
 	}
 	return nil
 }
@@ -391,7 +391,7 @@ func (r *userRepository) UpdateStatus(userID string, isActive bool) error {
 		return err
 	}
 	if ct.RowsAffected() == 0 {
-		return &models.NotFoundError{Msg: "用户不存在"}
+		return &models.NotFoundError{Msg: "user.notFound"}
 	}
 	return nil
 }
@@ -730,13 +730,13 @@ func (r *shortLinkRepository) GenerateId(l int) (string, error) {
 
 func (r *shortLinkRepository) Save(s *models.ShortLink) error {
 	if s.Id == "" {
-		return fmt.Errorf("id不能为空")
+		return models.NewTranslatableError("shortLink.invalidId")
 	}
 	if s.Url == "" {
-		return fmt.Errorf("请填写url")
+		return models.NewTranslatableError("common.invalidParameters")
 	}
 	if s.CreatedBy == "" {
-		return fmt.Errorf("未设置创建者")
+		return fmt.Errorf("created_by is required")
 	}
 
 	s.CreateTime = time.Now()
@@ -827,7 +827,7 @@ func (r *shortLinkRepository) ListByTenantID(tenantID string, start, pageSize in
 	err := r.db.QueryRow(context.Background(),
 		`SELECT COUNT(*) FROM short_links WHERE tenant_id = $1`, tenantID).Scan(&result.Total)
 	if err != nil {
-		return nil, fmt.Errorf("查询短链接总数失败: %w", err)
+		return nil, fmt.Errorf("failed to count short links: %w", err)
 	}
 	if result.Total == 0 {
 		return result, nil

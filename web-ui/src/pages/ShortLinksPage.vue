@@ -794,9 +794,9 @@ onMounted(fetchLinks)
               {{ size }}
             </option>
           </select>
-          <span class="text-sm text-gray-500 dark:text-gray-400">per page</span>
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('shortLinks.perPage') }}</span>
           <span class="ml-2 text-sm text-gray-400 dark:text-gray-500">
-            {{ (page - 1) * pageSize + 1 }}–{{ Math.min(page * pageSize, total) }} of {{ total }}
+            {{ (page - 1) * pageSize + 1 }}–{{ Math.min(page * pageSize, total) }} {{ t('shortLinks.of') }} {{ total }}
           </span>
         </div>
         <div v-if="totalPages > 1" class="flex items-center gap-1">

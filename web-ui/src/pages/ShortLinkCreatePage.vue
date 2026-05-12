@@ -41,11 +41,11 @@ const CUSTOM_ID_MAX_LENGTH = 64
 
 const customIdError = computed(() => {
   if (!customId.value) return ''
-  if (customId.value.length < 2) return 'Custom ID must be at least 2 characters'
+  if (customId.value.length < 2) return t('shortLinkCreate.customIdMinLength')
   if (customId.value.length > CUSTOM_ID_MAX_LENGTH)
     return t('shortLinkCreate.customIdMaxLength', { max: CUSTOM_ID_MAX_LENGTH })
   if (!CUSTOM_ID_REGEX.test(customId.value))
-    return 'Custom ID can only contain letters, numbers, hyphens, and underscores'
+    return t('shortLinkCreate.customIdInvalid')
   return ''
 })
 
@@ -62,7 +62,7 @@ const urlError = computed(() => {
     new URL(normalizeUrl(url.value))
     return ''
   } catch {
-    return 'Please enter a valid URL (e.g. https://example.com)'
+    return t('shortLinkCreate.urlInvalid')
   }
 })
 

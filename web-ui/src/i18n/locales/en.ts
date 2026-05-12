@@ -42,6 +42,7 @@ export default {
     viewAll: 'View all',
     removeConfirm: 'Are you sure you want to remove {name}?',
     cannotUndo: 'This action cannot be undone.',
+    startTypingToSearch: 'Start typing to search…',
   },
   auth: {
     appName: 'Jump Jump',

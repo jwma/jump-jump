@@ -50,7 +50,7 @@ const urlError = computed(() => {
     new URL(normalizeUrl(url.value))
     return ''
   } catch {
-    return 'Please enter a valid URL (e.g. https://example.com)'
+    return t('shortLinkEdit.urlInvalid')
   }
 })
 
@@ -210,7 +210,7 @@ onMounted(fetchData)
             v-model="url"
             type="text"
             required
-            placeholder="example.com/long-url or https://example.com"
+            :placeholder="t('shortLinkCreate.urlPlaceholder')"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             :class="urlError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''"
           />

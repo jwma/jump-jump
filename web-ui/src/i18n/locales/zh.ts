@@ -42,6 +42,7 @@ export default {
     viewAll: '查看全部',
     removeConfirm: '确定要移除 {name} 吗？',
     cannotUndo: '此操作无法撤销。',
+    startTypingToSearch: '输入关键词开始搜索…',
   },
   auth: {
     appName: 'Jump Jump',
