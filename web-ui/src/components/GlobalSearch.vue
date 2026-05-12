@@ -83,7 +83,7 @@ onBeforeUnmount(() => {
             ref="inputRef"
             v-model="query"
             type="text"
-            :placeholder="t('common.search') + '...'"
+            :placeholder="t('common.searchPlaceholder')"
             class="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
           />
           <Loader2 v-if="loading" class="h-4 w-4 animate-spin text-gray-400" />
@@ -137,7 +137,9 @@ onBeforeUnmount(() => {
 
         <!-- Empty state -->
         <div v-else class="px-4 py-6 text-center">
-          <p class="text-sm text-gray-400 dark:text-gray-500">{{ t('common.startTypingToSearch') }}</p>
+          <p class="text-sm text-gray-400 dark:text-gray-500">
+            {{ t('common.startTypingToSearch') }}
+          </p>
           <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
             <kbd
               class="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500"

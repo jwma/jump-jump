@@ -523,18 +523,22 @@ onMounted(fetchUsers)
               <div class="rounded-lg border bg-gray-50 dark:bg-gray-800/50 p-3 text-sm">
                 <div class="grid gap-2 sm:grid-cols-2">
                   <div>
-                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ t('super.users.superAdmin') }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">{{
+                      t('super.users.superAdmin')
+                    }}</span>
                     <p
                       class="font-medium"
                       :class="
                         userDetail.isSuper ? 'text-indigo-600' : 'text-gray-600 dark:text-gray-400'
                       "
                     >
-                      {{ userDetail.isSuper ? t('common.enabled') : t('common.disabled') }}
+                      {{ userDetail.isSuper ? t('common.yes') : t('common.no') }}
                     </p>
                   </div>
                   <div>
-                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ t('common.created') }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">{{
+                      t('common.created')
+                    }}</span>
                     <p class="font-medium text-gray-600 dark:text-gray-400">
                       {{ formatDate(userDetail.createdAt) }}
                     </p>

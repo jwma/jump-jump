@@ -736,7 +736,7 @@ func (r *shortLinkRepository) Save(s *models.ShortLink) error {
 		return models.NewTranslatableError("common.invalidParameters")
 	}
 	if s.CreatedBy == "" {
-		return fmt.Errorf("created_by is required")
+		return models.NewTranslatableError("common.invalidParameters")
 	}
 
 	s.CreateTime = time.Now()

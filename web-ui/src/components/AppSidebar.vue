@@ -288,7 +288,9 @@ function toggleSuperRoute() {
           </span>
           <span v-show="!layout.sidebarCollapsed">{{ t('nav.invitations') }}</span>
         </router-link>
-        <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{ t('nav.invitations') }}</span>
+        <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{
+          t('nav.invitations')
+        }}</span>
       </div>
       <div class="sidebar-tooltip-wrapper">
         <button

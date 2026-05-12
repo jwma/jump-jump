@@ -43,6 +43,9 @@ export default {
     removeConfirm: '确定要移除 {name} 吗？',
     cannotUndo: '此操作无法撤销。',
     startTypingToSearch: '输入关键词开始搜索…',
+    yes: '是',
+    no: '否',
+    searchPlaceholder: '搜索...',
   },
   auth: {
     appName: 'Jump Jump',
@@ -164,6 +167,7 @@ export default {
     deleteFailed: '删除短链接失败',
     deleteSomeFailed: '部分短链接删除失败',
     enableDisableFailed: '{action} 部分短链接失败',
+    rangeOfTotal: '{start}–{end} / {total}',
   },
   shortLinkCreate: {
     title: '创建短链接',

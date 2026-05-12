@@ -43,6 +43,9 @@ export default {
     removeConfirm: 'Are you sure you want to remove {name}?',
     cannotUndo: 'This action cannot be undone.',
     startTypingToSearch: 'Start typing to search…',
+    yes: 'Yes',
+    no: 'No',
+    searchPlaceholder: 'Search...',
   },
   auth: {
     appName: 'Jump Jump',
@@ -164,6 +167,7 @@ export default {
     deleteFailed: 'Failed to delete short link',
     deleteSomeFailed: 'Failed to delete some short links',
     enableDisableFailed: 'Failed to {action} some short links',
+    rangeOfTotal: '{start}–{end} of {total}',
   },
   shortLinkCreate: {
     title: 'Create Short Link',

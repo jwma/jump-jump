@@ -44,8 +44,7 @@ const customIdError = computed(() => {
   if (customId.value.length < 2) return t('shortLinkCreate.customIdMinLength')
   if (customId.value.length > CUSTOM_ID_MAX_LENGTH)
     return t('shortLinkCreate.customIdMaxLength', { max: CUSTOM_ID_MAX_LENGTH })
-  if (!CUSTOM_ID_REGEX.test(customId.value))
-    return t('shortLinkCreate.customIdInvalid')
+  if (!CUSTOM_ID_REGEX.test(customId.value)) return t('shortLinkCreate.customIdInvalid')
   return ''
 })
 
