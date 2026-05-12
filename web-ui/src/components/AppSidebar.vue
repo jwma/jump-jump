@@ -286,9 +286,11 @@ function toggleSuperRoute() {
               {{ auth.pendingInvitationCount > 9 ? '9+' : auth.pendingInvitationCount }}
             </span>
           </span>
-          <span v-show="!layout.sidebarCollapsed">Invitations</span>
+          <span v-show="!layout.sidebarCollapsed">{{ t('nav.invitations') }}</span>
         </router-link>
-        <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">Invitations</span>
+        <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{
+          t('nav.invitations')
+        }}</span>
       </div>
       <div class="sidebar-tooltip-wrapper">
         <button
@@ -296,9 +298,9 @@ function toggleSuperRoute() {
           @click="handleLogout"
         >
           <LogOut class="h-5 w-5 shrink-0" />
-          <span v-show="!layout.sidebarCollapsed">Logout</span>
+          <span v-show="!layout.sidebarCollapsed">{{ t('nav.logout') }}</span>
         </button>
-        <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">Logout</span>
+        <span v-if="layout.sidebarCollapsed" class="sidebar-tooltip">{{ t('nav.logout') }}</span>
       </div>
     </div>
   </aside>

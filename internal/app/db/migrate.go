@@ -29,7 +29,7 @@ var migrationStmts = []string{
     id_min_length   SMALLINT NOT NULL DEFAULT 2,
     id_max_length   SMALLINT NOT NULL DEFAULT 10,
     not_found_mode  VARCHAR(20) NOT NULL DEFAULT 'content',
-    not_found_value TEXT NOT NULL DEFAULT '你访问的页面不存在哦',
+    not_found_value TEXT NOT NULL DEFAULT 'landing.pageNotFound',
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 )`,
 
