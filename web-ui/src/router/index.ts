@@ -54,6 +54,19 @@ const router = createRouter({
     },
     {
       path: '/',
+      component: () => import('@/layouts/LandingLayout.vue'),
+      meta: { requiresAuth: false },
+      children: [
+        {
+          path: '',
+          name: 'landing',
+          component: () => import('@/pages/LandingPage.vue'),
+          meta: { requiresAuth: false },
+        },
+      ],
+    },
+    {
+      path: '/dashboard',
       component: () => import('@/layouts/DefaultLayout.vue'),
       meta: { requiresAuth: true },
       children: [

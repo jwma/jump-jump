@@ -589,6 +589,106 @@ export default {
     focusSearch: 'Focus search',
     closePanels: 'Close panels / Cancel',
   },
+  landing: {
+    nav: {
+      dashboard: 'Dashboard',
+      login: 'Log in',
+      getStarted: 'Get Started Free',
+    },
+    hero: {
+      title: 'Simple & Powerful URL Shortener',
+      subtitle:
+        'Create short links, track visits, manage team collaboration — all in one platform.',
+      cta: 'Get Started Free',
+      secondary: 'Learn More',
+    },
+    features: {
+      title: 'Everything You Need',
+      subtitle: 'From creation to analytics — the full short link management workflow.',
+      items: [
+        {
+          icon: 'Link',
+          title: 'Short Link Management',
+          description:
+            'Custom IDs, batch enable/disable/delete, search by ID or URL — manage all your links with ease.',
+        },
+        {
+          icon: 'BarChart3',
+          title: 'Visit Analytics',
+          description:
+            'Visit trends, OS & browser breakdowns, referer sources, top IPs — filter by custom date range.',
+        },
+        {
+          icon: 'QrCode',
+          title: 'QR Code Generation',
+          description:
+            'Auto-generated QR codes for every short link, with PNG download for offline sharing.',
+        },
+        {
+          icon: 'Globe',
+          title: 'Custom Domains',
+          description:
+            'Bind your own domains per tenant, configure multiple domains with a default — build your brand.',
+        },
+        {
+          icon: 'Users',
+          title: 'Multi-Tenant Collaboration',
+          description:
+            'Create multiple tenants (teams), assign admin & member roles, and invite members to collaborate.',
+        },
+        {
+          icon: 'Code2',
+          title: 'Open Source & Self-Hostable',
+          description:
+            'MIT licensed, fully open source. Self-host on your own server, configure ID length and 404 handling.',
+        },
+      ],
+    },
+    howItWorks: {
+      title: 'How It Works',
+      subtitle: 'Get started in three steps.',
+      steps: [
+        {
+          number: '1',
+          title: 'Create a Short Link',
+          description:
+            'Paste your target URL, optionally set a custom ID and description, and generate instantly.',
+        },
+        {
+          number: '2',
+          title: 'Share & Distribute',
+          description:
+            'Copy the short link or download the QR code — share via social media, print, or any channel.',
+        },
+        {
+          number: '3',
+          title: 'View Visit Analytics',
+          description:
+            'Track visit trends, OS/browser breakdowns, referer sources, and top IPs with detailed charts.',
+        },
+      ],
+    },
+    openSource: {
+      title: 'Open Source & Free',
+      subtitle:
+        'Jump Jump is MIT licensed and fully open source. Self-host on your own infrastructure and keep complete control of your data.',
+      starGithub: 'Star on GitHub',
+      selfHost: 'Self-Host Now',
+      githubUrl: 'https://github.com/jwma/jump-jump',
+    },
+    cta: {
+      title: 'Ready to Get Started?',
+      subtitle: 'No credit card required. Start shortening URLs in seconds.',
+      button: 'Get Started Free',
+    },
+    footer: {
+      description: 'A simple and powerful URL shortener.',
+      github: 'GitHub',
+      githubUrl: 'https://github.com/jwma/jump-jump',
+      license: 'MIT License',
+      copyright: '© 2026 Jump Jump. MIT License.',
+    },
+  },
   qrCode: {
     title: 'QR Code',
     imageAlt: 'QR code for short link',

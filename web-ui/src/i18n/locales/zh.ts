@@ -587,6 +587,97 @@ export default {
     focusSearch: '聚焦搜索',
     closePanels: '关闭面板 / 取消',
   },
+  landing: {
+    nav: {
+      dashboard: '进入控制台',
+      login: '登录',
+      getStarted: '免费开始',
+    },
+    hero: {
+      title: '简单好用的短链接管理平台',
+      subtitle: '创建短链接、追踪访问数据、管理团队协作，一个平台搞定。',
+      cta: '免费开始使用',
+      secondary: '了解更多',
+    },
+    features: {
+      title: '核心功能',
+      subtitle: '从创建到分析，满足短链接管理全流程需求。',
+      items: [
+        {
+          icon: 'Link',
+          title: '短链接管理',
+          description:
+            '支持自定义 ID、批量启用/禁用/删除，按 ID 或 URL 搜索筛选，灵活管理所有链接。',
+        },
+        {
+          icon: 'BarChart3',
+          title: '访问分析',
+          description: '追踪访问趋势、操作系统与浏览器分布、来源分析、热门 IP，支持按时间段查看。',
+        },
+        {
+          icon: 'QrCode',
+          title: '二维码生成',
+          description: '每个短链接自动生成二维码，支持下载 PNG，方便线下分享和推广。',
+        },
+        {
+          icon: 'Globe',
+          title: '自定义域名',
+          description: '为租户绑定自有域名，支持多域名配置和默认域名设置，打造品牌形象。',
+        },
+        {
+          icon: 'Users',
+          title: '多租户协作',
+          description: '支持创建多个租户（团队），管理员与成员角色分离，邀请成员加入协作。',
+        },
+        {
+          icon: 'Code2',
+          title: '开源可自部署',
+          description:
+            'MIT 协议开源，可自行部署到私有服务器，完全掌控数据，也可配置 ID 长度和 404 处理。',
+        },
+      ],
+    },
+    howItWorks: {
+      title: '使用流程',
+      subtitle: '三步即可开始使用。',
+      steps: [
+        {
+          number: '1',
+          title: '创建短链接',
+          description: '粘贴目标 URL，可选填自定义 ID 和描述，一键生成短链接和二维码。',
+        },
+        {
+          number: '2',
+          title: '分享与分发',
+          description: '复制短链接或下载二维码，通过社交媒体、线下物料等渠道分发。',
+        },
+        {
+          number: '3',
+          title: '查看访问分析',
+          description: '实时查看访问趋势、操作系统/浏览器分布、来源统计和热门 IP 等详细数据。',
+        },
+      ],
+    },
+    openSource: {
+      title: '开源免费',
+      subtitle: 'Jump Jump 采用 MIT 协议，完全开源。可以在自己的服务器上部署，完全掌控您的数据。',
+      starGithub: 'Star on GitHub',
+      selfHost: '自行部署',
+      githubUrl: 'https://github.com/jwma/jump-jump',
+    },
+    cta: {
+      title: '准备好开始了吗？',
+      subtitle: '无需信用卡，几秒钟即可开始使用。',
+      button: '免费开始使用',
+    },
+    footer: {
+      description: '简单好用的短链接管理平台。',
+      github: 'GitHub',
+      githubUrl: 'https://github.com/jwma/jump-jump',
+      license: 'MIT License',
+      copyright: '© 2026 Jump Jump. MIT License.',
+    },
+  },
   qrCode: {
     title: '二维码',
     imageAlt: '短链接二维码',
