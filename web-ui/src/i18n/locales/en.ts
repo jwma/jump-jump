@@ -604,58 +604,67 @@ export default {
     },
     features: {
       title: 'Everything You Need',
-      subtitle: 'Powerful features to manage and track your short links.',
+      subtitle: 'From creation to analytics — the full short link management workflow.',
       items: [
         {
           icon: 'Link',
           title: 'Short Link Management',
-          description: 'Create, edit, enable, or disable short links with one click.',
+          description:
+            'Custom IDs, batch enable/disable/delete, search by ID or URL — manage all your links with ease.',
         },
         {
           icon: 'BarChart3',
           title: 'Visit Analytics',
-          description: 'Track PV/UV, visit trends, device and IP distribution.',
+          description:
+            'Visit trends, OS & browser breakdowns, referer sources, top IPs — filter by custom date range.',
         },
         {
           icon: 'QrCode',
           title: 'QR Code Generation',
-          description: 'Auto-generate QR codes for every short link for easy sharing.',
+          description:
+            'Auto-generated QR codes for every short link, with PNG download for offline sharing.',
         },
         {
           icon: 'Globe',
           title: 'Custom Domains',
-          description: 'Bind your own domain to build your brand identity.',
+          description:
+            'Bind your own domains per tenant, configure multiple domains with a default — build your brand.',
         },
         {
           icon: 'Users',
-          title: 'Team Collaboration',
-          description: 'Multi-tenant architecture with role-based access control.',
+          title: 'Multi-Tenant Collaboration',
+          description:
+            'Create multiple tenants (teams), assign admin & member roles, and invite members to collaborate.',
         },
         {
           icon: 'Code2',
-          title: 'Open Source',
-          description: 'MIT licensed. Self-host and keep full control of your data.',
+          title: 'Open Source & Self-Hostable',
+          description:
+            'MIT licensed, fully open source. Self-host on your own server, configure ID length and 404 handling.',
         },
       ],
     },
     howItWorks: {
       title: 'How It Works',
-      subtitle: 'Get started in three simple steps.',
+      subtitle: 'Get started in three steps.',
       steps: [
         {
           number: '1',
           title: 'Create a Short Link',
-          description: 'Paste your long URL and generate a short link instantly.',
+          description:
+            'Paste your target URL, optionally set a custom ID and description, and generate instantly.',
         },
         {
           number: '2',
           title: 'Share & Distribute',
-          description: 'Share via link or QR code to reach your audience.',
+          description:
+            'Copy the short link or download the QR code — share via social media, print, or any channel.',
         },
         {
           number: '3',
-          title: 'Track & Analyze',
-          description: 'Monitor visits, sources, devices, and more in real time.',
+          title: 'View Visit Analytics',
+          description:
+            'Track visit trends, OS/browser breakdowns, referer sources, and top IPs with detailed charts.',
         },
       ],
     },

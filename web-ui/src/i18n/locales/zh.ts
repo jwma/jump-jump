@@ -601,47 +601,61 @@ export default {
     },
     features: {
       title: '核心功能',
-      subtitle: '强大功能，管理和追踪您的短链接。',
+      subtitle: '从创建到分析，满足短链接管理全流程需求。',
       items: [
         {
           icon: 'Link',
           title: '短链接管理',
-          description: '一键创建、编辑、启用或禁用短链接。',
+          description:
+            '支持自定义 ID、批量启用/禁用/删除，按 ID 或 URL 搜索筛选，灵活管理所有链接。',
         },
         {
           icon: 'BarChart3',
-          title: '访问统计',
-          description: '追踪 PV/UV、访问趋势、设备和 IP 分布。',
+          title: '访问分析',
+          description: '追踪访问趋势、操作系统与浏览器分布、来源分析、热门 IP，支持按时间段查看。',
         },
         {
           icon: 'QrCode',
           title: '二维码生成',
-          description: '每个短链接自动生成二维码，方便分享。',
+          description: '每个短链接自动生成二维码，支持下载 PNG，方便线下分享和推广。',
         },
         {
           icon: 'Globe',
           title: '自定义域名',
-          description: '绑定自己的域名，打造品牌形象。',
+          description: '为租户绑定自有域名，支持多域名配置和默认域名设置，打造品牌形象。',
         },
         {
           icon: 'Users',
-          title: '团队协作',
-          description: '多租户架构，支持角色权限管理。',
+          title: '多租户协作',
+          description: '支持创建多个租户（团队），管理员与成员角色分离，邀请成员加入协作。',
         },
         {
           icon: 'Code2',
-          title: '开源免费',
-          description: 'MIT 协议，可自行部署，数据自主掌控。',
+          title: '开源可自部署',
+          description:
+            'MIT 协议开源，可自行部署到私有服务器，完全掌控数据，也可配置 ID 长度和 404 处理。',
         },
       ],
     },
     howItWorks: {
       title: '使用流程',
-      subtitle: '三个简单步骤，快速上手。',
+      subtitle: '三步即可开始使用。',
       steps: [
-        { number: '1', title: '创建短链接', description: '粘贴长链接，一键生成短链接。' },
-        { number: '2', title: '分享传播', description: '通过链接或二维码分享给目标用户。' },
-        { number: '3', title: '追踪数据', description: '实时查看访问量、来源、设备等数据。' },
+        {
+          number: '1',
+          title: '创建短链接',
+          description: '粘贴目标 URL，可选填自定义 ID 和描述，一键生成短链接和二维码。',
+        },
+        {
+          number: '2',
+          title: '分享与分发',
+          description: '复制短链接或下载二维码，通过社交媒体、线下物料等渠道分发。',
+        },
+        {
+          number: '3',
+          title: '查看访问分析',
+          description: '实时查看访问趋势、操作系统/浏览器分布、来源统计和热门 IP 等详细数据。',
+        },
       ],
     },
     openSource: {

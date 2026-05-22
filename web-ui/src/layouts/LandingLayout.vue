@@ -2,21 +2,36 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
-import { Link2 } from 'lucide-vue-next'
+import { Link2, Languages } from 'lucide-vue-next'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const auth = useAuthStore()
 const scrolled = ref(false)
+const langDropdownOpen = ref(false)
+
+function setLocale(lang: string) {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+  langDropdownOpen.value = false
+}
 
 function onScroll() {
   scrolled.value = window.scrollY > 16
 }
 
+function closeDropdowns() {
+  langDropdownOpen.value = false
+}
+
 onMounted(() => {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
+  document.addEventListener('click', closeDropdowns)
 })
-onUnmounted(() => window.removeEventListener('scroll', onScroll))
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+  document.removeEventListener('click', closeDropdowns)
+})
 </script>
 
 <template>
@@ -39,6 +54,37 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
         </router-link>
 
         <div class="flex items-center gap-3">
+          <!-- Language switcher -->
+          <div class="relative">
+            <button
+              class="rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+              :aria-label="t('topbar.switchLanguage')"
+              @click.stop="langDropdownOpen = !langDropdownOpen"
+            >
+              <Languages class="h-5 w-5" />
+            </button>
+            <div
+              v-if="langDropdownOpen"
+              class="absolute right-0 top-full z-50 mt-2 w-28 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900"
+              @click.stop
+            >
+              <button
+                class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                :class="{ 'bg-gray-50 font-medium dark:bg-gray-800': locale === 'en' }"
+                @click="setLocale('en')"
+              >
+                English
+              </button>
+              <button
+                class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                :class="{ 'bg-gray-50 font-medium dark:bg-gray-800': locale === 'zh' }"
+                @click="setLocale('zh')"
+              >
+                中文
+              </button>
+            </div>
+          </div>
+
           <router-link
             v-if="auth.isLoggedIn"
             :to="{ name: 'dashboard' }"
