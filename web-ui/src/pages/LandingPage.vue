@@ -34,8 +34,12 @@ function goToLogin() {
       <div
         class="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-950/30 dark:via-gray-950 dark:to-indigo-950/20"
       />
-      <div class="pointer-events-none absolute top-20 left-1/4 h-72 w-72 rounded-full bg-blue-400/10 blur-3xl dark:bg-blue-500/5" />
-      <div class="pointer-events-none absolute bottom-10 right-1/4 h-72 w-72 rounded-full bg-indigo-400/10 blur-3xl dark:bg-indigo-500/5" />
+      <div
+        class="pointer-events-none absolute top-20 left-1/4 h-72 w-72 rounded-full bg-blue-400/10 blur-3xl dark:bg-blue-500/5"
+      />
+      <div
+        class="pointer-events-none absolute bottom-10 right-1/4 h-72 w-72 rounded-full bg-indigo-400/10 blur-3xl dark:bg-indigo-500/5"
+      />
 
       <div class="relative mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
         <h1
@@ -48,14 +52,14 @@ function goToLogin() {
         </p>
         <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <button
-            class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 hover:shadow-blue-500/40"
+            class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-colors hover:bg-blue-700 hover:shadow-blue-500/40"
             @click="goToLogin"
           >
             {{ t('landing.hero.cta') }}
             <ArrowRight class="h-5 w-5" />
           </button>
           <button
-            class="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-8 py-3.5 text-base font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+            class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-300 px-8 py-3.5 text-base font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             @click="scrollToFeatures"
           >
             {{ t('landing.hero.secondary') }}
@@ -78,16 +82,18 @@ function goToLogin() {
 
         <div class="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <div
-            v-for="(item, i) in (t('landing.features.items') as unknown as any[])"
+            v-for="(item, i) in t('landing.features.items') as unknown as any[]"
             :key="i"
-            class="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 transition-all hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/5 dark:hover:border-blue-700"
+            class="group rounded-2xl border border-gray-200 bg-white p-6 transition-colors hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-blue-700"
           >
             <div
               class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-400 dark:group-hover:bg-blue-900"
             >
               <component :is="iconMap[item.icon]" class="h-6 w-6" />
             </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ item.title }}</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ item.title }}
+            </h3>
             <p class="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
               {{ item.description }}
             </p>
@@ -97,7 +103,9 @@ function goToLogin() {
     </section>
 
     <!-- How It Works -->
-    <section class="border-y border-gray-200 bg-gray-50 py-20 dark:border-gray-800 dark:bg-gray-900 sm:py-28">
+    <section
+      class="border-y border-gray-200 bg-gray-50 py-20 dark:border-gray-800 dark:bg-gray-900 sm:py-28"
+    >
       <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div class="text-center">
           <h2 class="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
@@ -110,7 +118,7 @@ function goToLogin() {
 
         <div class="mt-16 grid gap-8 sm:grid-cols-3">
           <div
-            v-for="(step, i) in (t('landing.howItWorks.steps') as unknown as any[])"
+            v-for="(step, i) in t('landing.howItWorks.steps') as unknown as any[]"
             :key="i"
             class="relative text-center"
           >
@@ -119,7 +127,9 @@ function goToLogin() {
             >
               {{ step.number }}
             </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ step.title }}</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ step.title }}
+            </h3>
             <p class="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
               {{ step.description }}
             </p>
@@ -136,7 +146,9 @@ function goToLogin() {
     <!-- Open Source -->
     <section class="py-20 sm:py-28">
       <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div class="rounded-3xl border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-blue-50 to-indigo-50 p-10 text-center dark:from-blue-950/30 dark:to-indigo-950/20 sm:p-16">
+        <div
+          class="rounded-3xl border border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-10 text-center dark:border-gray-800 dark:from-blue-950/30 dark:to-indigo-950/20 sm:p-16"
+        >
           <h2 class="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
             {{ t('landing.openSource.title') }}
           </h2>
@@ -148,7 +160,7 @@ function goToLogin() {
               :href="t('landing.openSource.githubUrl')"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+              class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               <Github class="h-5 w-5" />
               {{ t('landing.openSource.starGithub') }}
@@ -157,7 +169,7 @@ function goToLogin() {
               :href="t('landing.openSource.githubUrl')"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+              class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               <Server class="h-5 w-5" />
               {{ t('landing.openSource.selfHost') }}
@@ -168,7 +180,9 @@ function goToLogin() {
     </section>
 
     <!-- CTA -->
-    <section class="border-t border-gray-200 bg-gray-50 py-20 dark:border-gray-800 dark:bg-gray-900 sm:py-28">
+    <section
+      class="border-t border-gray-200 bg-gray-50 py-20 dark:border-gray-800 dark:bg-gray-900 sm:py-28"
+    >
       <div class="mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
         <h2 class="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
           {{ t('landing.cta.title') }}
@@ -177,7 +191,7 @@ function goToLogin() {
           {{ t('landing.cta.subtitle') }}
         </p>
         <button
-          class="mt-8 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 hover:shadow-blue-500/40"
+          class="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/25 transition-colors hover:bg-blue-700 hover:shadow-blue-500/40"
           @click="goToLogin"
         >
           {{ t('landing.cta.button') }}

@@ -642,9 +642,21 @@ export default {
       title: 'How It Works',
       subtitle: 'Get started in three simple steps.',
       steps: [
-        { number: '1', title: 'Create a Short Link', description: 'Paste your long URL and generate a short link instantly.' },
-        { number: '2', title: 'Share & Distribute', description: 'Share via link or QR code to reach your audience.' },
-        { number: '3', title: 'Track & Analyze', description: 'Monitor visits, sources, devices, and more in real time.' },
+        {
+          number: '1',
+          title: 'Create a Short Link',
+          description: 'Paste your long URL and generate a short link instantly.',
+        },
+        {
+          number: '2',
+          title: 'Share & Distribute',
+          description: 'Share via link or QR code to reach your audience.',
+        },
+        {
+          number: '3',
+          title: 'Track & Analyze',
+          description: 'Monitor visits, sources, devices, and more in real time.',
+        },
       ],
     },
     openSource: {

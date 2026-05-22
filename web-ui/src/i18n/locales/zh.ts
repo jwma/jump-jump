@@ -646,8 +646,7 @@ export default {
     },
     openSource: {
       title: '开源免费',
-      subtitle:
-        'Jump Jump 采用 MIT 协议，完全开源。可以在自己的服务器上部署，完全掌控您的数据。',
+      subtitle: 'Jump Jump 采用 MIT 协议，完全开源。可以在自己的服务器上部署，完全掌控您的数据。',
       starGithub: 'Star on GitHub',
       selfHost: '自行部署',
       githubUrl: 'https://github.com/jwma/jump-jump',
