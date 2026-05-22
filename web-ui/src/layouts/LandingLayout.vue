@@ -187,7 +187,7 @@ onUnmounted(() => {
           </span>
           <div class="flex items-center gap-1">
             <button
-              v-for="opt in (['light', 'dark', 'system'] as const)"
+              v-for="opt in ['light', 'dark', 'system'] as const"
               :key="opt"
               class="rounded-lg px-3 py-1.5 text-sm transition-colors"
               :class="
