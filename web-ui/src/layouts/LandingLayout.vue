@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useTheme } from '@/composables/useTheme'
-import { Link2, Languages, Sun, Moon, Monitor } from 'lucide-vue-next'
+import { Link2, Languages, Sun, Moon, Monitor, Menu, X } from 'lucide-vue-next'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
@@ -11,6 +11,7 @@ const { theme } = useTheme()
 const scrolled = ref(false)
 const langDropdownOpen = ref(false)
 const themeDropdownOpen = ref(false)
+const mobileMenuOpen = ref(false)
 
 function setLocale(lang: string) {
   locale.value = lang
@@ -30,6 +31,11 @@ function onScroll() {
 function closeDropdowns() {
   langDropdownOpen.value = false
   themeDropdownOpen.value = false
+}
+
+function closeMobileMenu() {
+  mobileMenuOpen.value = false
+  closeDropdowns()
 }
 
 onMounted(() => {
@@ -62,7 +68,8 @@ onUnmounted(() => {
           <span class="text-lg font-bold text-gray-900 dark:text-white">Jump Jump</span>
         </router-link>
 
-        <div class="flex items-center gap-3">
+        <!-- Desktop nav (sm+) -->
+        <div class="hidden items-center gap-3 sm:flex">
           <!-- Theme toggle -->
           <div class="relative">
             <button
@@ -151,6 +158,93 @@ onUnmounted(() => {
             <router-link
               :to="{ name: 'login' }"
               class="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+            >
+              {{ t('landing.nav.getStarted') }}
+            </router-link>
+          </template>
+        </div>
+
+        <!-- Mobile hamburger button -->
+        <button
+          class="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 sm:hidden"
+          :aria-label="mobileMenuOpen ? 'Close menu' : 'Open menu'"
+          @click="mobileMenuOpen = !mobileMenuOpen"
+        >
+          <X v-if="mobileMenuOpen" class="h-6 w-6" />
+          <Menu v-else class="h-6 w-6" />
+        </button>
+      </div>
+
+      <!-- Mobile menu dropdown -->
+      <div
+        v-if="mobileMenuOpen"
+        class="border-t border-gray-200 bg-white px-4 pb-4 pt-2 dark:border-gray-800 dark:bg-gray-950 sm:hidden"
+      >
+        <div class="flex items-center justify-between">
+          <!-- Theme toggle -->
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            {{ t('topbar.toggleTheme') }}
+          </span>
+          <div class="flex items-center gap-1">
+            <button
+              v-for="opt in (['light', 'dark', 'system'] as const)"
+              :key="opt"
+              class="rounded-lg px-3 py-1.5 text-sm transition-colors"
+              :class="
+                theme === opt
+                  ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-950 dark:text-blue-400'
+                  : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+              "
+              @click="setTheme(opt)"
+            >
+              {{ t(`topbar.${opt}`) }}
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between">
+          <!-- Language switcher -->
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            {{ t('topbar.switchLanguage') }}
+          </span>
+          <div class="flex items-center gap-1">
+            <button
+              v-for="loc in ['en', 'zh']"
+              :key="loc"
+              class="rounded-lg px-3 py-1.5 text-sm transition-colors"
+              :class="
+                locale === loc
+                  ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-950 dark:text-blue-400'
+                  : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+              "
+              @click="setLocale(loc)"
+            >
+              {{ loc === 'en' ? 'English' : '中文' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-col gap-2 border-t border-gray-200 pt-4 dark:border-gray-800">
+          <router-link
+            v-if="auth.isLoggedIn"
+            :to="{ name: 'dashboard' }"
+            class="cursor-pointer rounded-lg px-4 py-2.5 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+            @click="closeMobileMenu"
+          >
+            {{ t('landing.nav.dashboard') }}
+          </router-link>
+          <template v-else>
+            <router-link
+              :to="{ name: 'login' }"
+              class="cursor-pointer rounded-lg px-4 py-2.5 text-center text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+              @click="closeMobileMenu"
+            >
+              {{ t('landing.nav.login') }}
+            </router-link>
+            <router-link
+              :to="{ name: 'login' }"
+              class="cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-blue-700"
+              @click="closeMobileMenu"
             >
               {{ t('landing.nav.getStarted') }}
             </router-link>
