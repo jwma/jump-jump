@@ -13,7 +13,7 @@ import {
   Server,
 } from 'lucide-vue-next'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
 const router = useRouter()
 
 const iconMap: Record<string, typeof Link> = { Link, BarChart3, QrCode, Globe, Users, Code2 }
@@ -82,7 +82,7 @@ function goToLogin() {
 
         <div class="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <div
-            v-for="(item, i) in t('landing.features.items') as unknown as any[]"
+            v-for="(item, i) in tm('landing.features.items') as unknown as any[]"
             :key="i"
             class="group rounded-2xl border border-gray-200 bg-white p-6 transition-colors hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/5 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-blue-700"
           >
@@ -118,7 +118,7 @@ function goToLogin() {
 
         <div class="mt-16 grid gap-8 sm:grid-cols-3">
           <div
-            v-for="(step, i) in t('landing.howItWorks.steps') as unknown as any[]"
+            v-for="(step, i) in tm('landing.howItWorks.steps') as unknown as any[]"
             :key="i"
             class="relative text-center"
           >

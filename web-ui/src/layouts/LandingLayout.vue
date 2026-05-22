@@ -12,7 +12,10 @@ function onScroll() {
   scrolled.value = window.scrollY > 16
 }
 
-onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
 onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </script>
 

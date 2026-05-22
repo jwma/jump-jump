@@ -51,13 +51,13 @@ onMounted(async () => {
 
 function selectTenant(tenantId: string) {
   auth.selectTenant(tenantId)
-  const redirect = (route.query.redirect as string) || '/'
+  const redirect = (route.query.redirect as string) || '/dashboard'
   router.push(redirect)
 }
 
 function enterSuperAdmin() {
   auth.clearTenant()
-  const redirect = (route.query.redirect as string) || '/'
+  const redirect = (route.query.redirect as string) || '/dashboard'
   router.push(redirect)
 }
 
