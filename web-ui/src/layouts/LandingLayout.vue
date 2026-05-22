@@ -2,17 +2,25 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
-import { Link2, Languages } from 'lucide-vue-next'
+import { useTheme } from '@/composables/useTheme'
+import { Link2, Languages, Sun, Moon, Monitor } from 'lucide-vue-next'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
+const { theme } = useTheme()
 const scrolled = ref(false)
 const langDropdownOpen = ref(false)
+const themeDropdownOpen = ref(false)
 
 function setLocale(lang: string) {
   locale.value = lang
   localStorage.setItem('locale', lang)
   langDropdownOpen.value = false
+}
+
+function setTheme(value: 'light' | 'dark' | 'system') {
+  theme.value = value
+  themeDropdownOpen.value = false
 }
 
 function onScroll() {
@@ -21,6 +29,7 @@ function onScroll() {
 
 function closeDropdowns() {
   langDropdownOpen.value = false
+  themeDropdownOpen.value = false
 }
 
 onMounted(() => {
@@ -54,6 +63,46 @@ onUnmounted(() => {
         </router-link>
 
         <div class="flex items-center gap-3">
+          <!-- Theme toggle -->
+          <div class="relative">
+            <button
+              class="rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+              :aria-label="t('topbar.toggleTheme')"
+              @click.stop="themeDropdownOpen = !themeDropdownOpen"
+            >
+              <Sun v-if="theme === 'light'" class="h-5 w-5" />
+              <Moon v-else-if="theme === 'dark'" class="h-5 w-5" />
+              <Monitor v-else class="h-5 w-5" />
+            </button>
+            <div
+              v-if="themeDropdownOpen"
+              class="absolute right-0 top-full z-50 mt-2 w-36 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900"
+              @click.stop
+            >
+              <button
+                class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                :class="{ 'bg-gray-50 font-medium dark:bg-gray-800': theme === 'light' }"
+                @click="setTheme('light')"
+              >
+                <Sun class="h-4 w-4" /> {{ t('topbar.light') }}
+              </button>
+              <button
+                class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                :class="{ 'bg-gray-50 font-medium dark:bg-gray-800': theme === 'dark' }"
+                @click="setTheme('dark')"
+              >
+                <Moon class="h-4 w-4" /> {{ t('topbar.dark') }}
+              </button>
+              <button
+                class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                :class="{ 'bg-gray-50 font-medium dark:bg-gray-800': theme === 'system' }"
+                @click="setTheme('system')"
+              >
+                <Monitor class="h-4 w-4" /> {{ t('topbar.system') }}
+              </button>
+            </div>
+          </div>
+
           <!-- Language switcher -->
           <div class="relative">
             <button
