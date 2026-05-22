@@ -587,6 +587,84 @@ export default {
     focusSearch: '聚焦搜索',
     closePanels: '关闭面板 / 取消',
   },
+  landing: {
+    nav: {
+      dashboard: '进入控制台',
+      login: '登录',
+      getStarted: '免费开始',
+    },
+    hero: {
+      title: '简单好用的短链接管理平台',
+      subtitle: '创建短链接、追踪访问数据、管理团队协作，一个平台搞定。',
+      cta: '免费开始使用',
+      secondary: '了解更多',
+    },
+    features: {
+      title: '核心功能',
+      subtitle: '强大功能，管理和追踪您的短链接。',
+      items: [
+        {
+          icon: 'Link',
+          title: '短链接管理',
+          description: '一键创建、编辑、启用或禁用短链接。',
+        },
+        {
+          icon: 'BarChart3',
+          title: '访问统计',
+          description: '追踪 PV/UV、访问趋势、设备和 IP 分布。',
+        },
+        {
+          icon: 'QrCode',
+          title: '二维码生成',
+          description: '每个短链接自动生成二维码，方便分享。',
+        },
+        {
+          icon: 'Globe',
+          title: '自定义域名',
+          description: '绑定自己的域名，打造品牌形象。',
+        },
+        {
+          icon: 'Users',
+          title: '团队协作',
+          description: '多租户架构，支持角色权限管理。',
+        },
+        {
+          icon: 'Code2',
+          title: '开源免费',
+          description: 'MIT 协议，可自行部署，数据自主掌控。',
+        },
+      ],
+    },
+    howItWorks: {
+      title: '使用流程',
+      subtitle: '三个简单步骤，快速上手。',
+      steps: [
+        { number: '1', title: '创建短链接', description: '粘贴长链接，一键生成短链接。' },
+        { number: '2', title: '分享传播', description: '通过链接或二维码分享给目标用户。' },
+        { number: '3', title: '追踪数据', description: '实时查看访问量、来源、设备等数据。' },
+      ],
+    },
+    openSource: {
+      title: '开源免费',
+      subtitle:
+        'Jump Jump 采用 MIT 协议，完全开源。可以在自己的服务器上部署，完全掌控您的数据。',
+      starGithub: 'Star on GitHub',
+      selfHost: '自行部署',
+      githubUrl: 'https://github.com/jwma/jump-jump',
+    },
+    cta: {
+      title: '准备好开始了吗？',
+      subtitle: '无需信用卡，几秒钟即可开始使用。',
+      button: '免费开始使用',
+    },
+    footer: {
+      description: '简单好用的短链接管理平台。',
+      github: 'GitHub',
+      githubUrl: 'https://github.com/jwma/jump-jump',
+      license: 'MIT License',
+      copyright: '© 2026 Jump Jump. MIT License.',
+    },
+  },
   qrCode: {
     title: '二维码',
     imageAlt: '短链接二维码',

@@ -589,6 +589,85 @@ export default {
     focusSearch: 'Focus search',
     closePanels: 'Close panels / Cancel',
   },
+  landing: {
+    nav: {
+      dashboard: 'Dashboard',
+      login: 'Log in',
+      getStarted: 'Get Started Free',
+    },
+    hero: {
+      title: 'Simple & Powerful URL Shortener',
+      subtitle:
+        'Create short links, track visits, manage team collaboration — all in one platform.',
+      cta: 'Get Started Free',
+      secondary: 'Learn More',
+    },
+    features: {
+      title: 'Everything You Need',
+      subtitle: 'Powerful features to manage and track your short links.',
+      items: [
+        {
+          icon: 'Link',
+          title: 'Short Link Management',
+          description: 'Create, edit, enable, or disable short links with one click.',
+        },
+        {
+          icon: 'BarChart3',
+          title: 'Visit Analytics',
+          description: 'Track PV/UV, visit trends, device and IP distribution.',
+        },
+        {
+          icon: 'QrCode',
+          title: 'QR Code Generation',
+          description: 'Auto-generate QR codes for every short link for easy sharing.',
+        },
+        {
+          icon: 'Globe',
+          title: 'Custom Domains',
+          description: 'Bind your own domain to build your brand identity.',
+        },
+        {
+          icon: 'Users',
+          title: 'Team Collaboration',
+          description: 'Multi-tenant architecture with role-based access control.',
+        },
+        {
+          icon: 'Code2',
+          title: 'Open Source',
+          description: 'MIT licensed. Self-host and keep full control of your data.',
+        },
+      ],
+    },
+    howItWorks: {
+      title: 'How It Works',
+      subtitle: 'Get started in three simple steps.',
+      steps: [
+        { number: '1', title: 'Create a Short Link', description: 'Paste your long URL and generate a short link instantly.' },
+        { number: '2', title: 'Share & Distribute', description: 'Share via link or QR code to reach your audience.' },
+        { number: '3', title: 'Track & Analyze', description: 'Monitor visits, sources, devices, and more in real time.' },
+      ],
+    },
+    openSource: {
+      title: 'Open Source & Free',
+      subtitle:
+        'Jump Jump is MIT licensed and fully open source. Self-host on your own infrastructure and keep complete control of your data.',
+      starGithub: 'Star on GitHub',
+      selfHost: 'Self-Host Now',
+      githubUrl: 'https://github.com/jwma/jump-jump',
+    },
+    cta: {
+      title: 'Ready to Get Started?',
+      subtitle: 'No credit card required. Start shortening URLs in seconds.',
+      button: 'Get Started Free',
+    },
+    footer: {
+      description: 'A simple and powerful URL shortener.',
+      github: 'GitHub',
+      githubUrl: 'https://github.com/jwma/jump-jump',
+      license: 'MIT License',
+      copyright: '© 2026 Jump Jump. MIT License.',
+    },
+  },
   qrCode: {
     title: 'QR Code',
     imageAlt: 'QR code for short link',
